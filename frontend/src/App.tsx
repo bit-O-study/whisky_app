@@ -251,14 +251,14 @@ export default function App() {
           <>
             {!searchQuery && !loading && !error && <FeaturedPick liquors={groupedLiquors} />}
             {!searchQuery && !loading && !error && (
-              <section className="mb-8 rounded-3xl border border-amber-100 bg-gradient-to-r from-amber-50 via-orange-50 to-white p-6 shadow-sm">
-                <p className="text-xs font-bold uppercase tracking-wide text-amber-700">Onboarding</p>
-                <h2 className="mt-1 text-2xl font-black text-gray-900">90초 성향 테스트로 나에게 맞는 위스키 찾기</h2>
-                <p className="mt-2 text-sm text-gray-600">10문항 설문을 완료하면 Flavor Vector 기반 Top 5 추천과 추천 이유를 보여드려요.</p>
+              <section className="mb-10 rounded-3xl border border-amber-100 bg-gradient-to-r from-amber-50 via-orange-50 to-white p-7 sm:p-8 shadow-sm">
+                <p className="text-sm font-bold uppercase tracking-wide text-amber-700">Whisky Match</p>
+                <h2 className="mt-2 text-3xl sm:text-4xl font-black text-gray-900 leading-tight">90초만에, 지금 내 취향에 맞는 위스키 찾기</h2>
+                <p className="mt-3 text-base sm:text-lg text-gray-600">10문항에 답하면 당신의 취향을 분석해 추천 5가지와 왜 잘 맞는지까지 한 번에 보여드려요.</p>
                 <button
                   type="button"
                   onClick={() => setPage("quiz")}
-                  className="mt-4 px-5 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800 transition-colors"
+                  className="mt-5 px-6 py-3.5 rounded-xl bg-gray-900 text-white text-base font-semibold hover:bg-gray-800 transition-colors"
                 >
                   테스트 시작하기
                 </button>

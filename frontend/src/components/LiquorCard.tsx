@@ -21,7 +21,7 @@ export default function LiquorCard({ liquor }: { liquor: GroupedLiquor }) {
     >
       <div className="aspect-[3/4] overflow-hidden bg-gray-100">
         <img
-          src={liquor.image_url || "/images/logo.png"}
+          src={liquor.image_url || "https://jeqvxzkvumkiraclauvo.supabase.co/storage/v1/object/public/whisky-images/default_whisky.webp"}
           alt={liquor.name}
           className="w-full h-full object-cover"
         />
