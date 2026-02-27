@@ -1,8 +1,13 @@
 import { useState } from "react";
 import type { GroupedLiquor } from "../types/liquor";
 
+function normalizePrice(value: number) {
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
 function formatPrice(price: number) {
-  return price.toLocaleString("ko-KR") + "원";
+  const normalized = normalizePrice(price);
+  return normalized.toLocaleString("ko-KR") + "원";
 }
 
 export default function LiquorCard({ liquor }: { liquor: GroupedLiquor }) {
@@ -16,7 +21,7 @@ export default function LiquorCard({ liquor }: { liquor: GroupedLiquor }) {
     >
       <div className="aspect-[3/4] overflow-hidden bg-gray-100">
         <img
-          src={liquor.image_url}
+          src={liquor.image_url || "https://jeqvxzkvumkiraclauvo.supabase.co/storage/v1/object/public/whisky-images/default_whisky.webp"}
           alt={liquor.name}
           className="w-full h-full object-cover"
         />

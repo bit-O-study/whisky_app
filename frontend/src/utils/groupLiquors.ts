@@ -1,5 +1,9 @@
 import type { GroupedLiquor, Liquor } from "../types/liquor";
 
+function normalizePrice(value: number): number {
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
 export function groupLiquors(liquors: Liquor[]): GroupedLiquor[] {
   const map = new Map<string, GroupedLiquor>();
 
@@ -19,14 +23,17 @@ export function groupLiquors(liquors: Liquor[]): GroupedLiquor[] {
     }
 
     const g = map.get(l.name)!;
+    const currentPrice = normalizePrice(l.current_price);
+    const originalPrice = normalizePrice(l.original_price);
+
     g.vendors.push({
       source: l.source,
-      current_price: l.current_price,
-      original_price: l.original_price,
+      current_price: currentPrice,
+      original_price: originalPrice,
       product_url: l.product_url,
     });
-    if (l.current_price < g.lowest_price) {
-      g.lowest_price = l.current_price;
+    if (currentPrice < g.lowest_price) {
+      g.lowest_price = currentPrice;
     }
   }
 

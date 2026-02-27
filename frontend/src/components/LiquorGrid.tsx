@@ -1,3 +1,4 @@
+import type { RefObject } from "react";
 import type { GroupedLiquor } from "../types/liquor";
 import LiquorCard from "./LiquorCard";
 
@@ -5,10 +6,13 @@ interface LiquorGridProps {
   searchQuery: string;
   liquors: GroupedLiquor[];
   loading: boolean;
+  loadingMore: boolean;
+  hasNext: boolean;
   error: string | null;
+  loadMoreRef: RefObject<HTMLDivElement | null>;
 }
 
-export default function LiquorGrid({ searchQuery, liquors, loading, error }: LiquorGridProps) {
+export default function LiquorGrid({ searchQuery, liquors, loading, loadingMore, hasNext, error, loadMoreRef }: LiquorGridProps) {
   if (loading) {
     return (
       <div className="py-20 text-center text-gray-500">
@@ -46,7 +50,7 @@ export default function LiquorGrid({ searchQuery, liquors, loading, error }: Liq
     <>
       {searchQuery && (
         <p className="text-sm text-gray-500 mb-4">
-          "{searchQuery}" 검색 결과: <span className="font-semibold text-gray-700">{liquors.length}개</span>
+          "{searchQuery}" 검색 결과: <span className="font-semibold text-gray-700">현재 {liquors.length}개 표시</span>
         </p>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -54,6 +58,12 @@ export default function LiquorGrid({ searchQuery, liquors, loading, error }: Liq
           <LiquorCard key={l.name} liquor={l} />
         ))}
       </div>
+      {hasNext && <div ref={loadMoreRef} className="h-10" aria-hidden="true" />}
+      {loadingMore && (
+        <div className="py-8 text-center text-sm text-gray-500">
+          더 불러오는 중...
+        </div>
+      )}
     </>
   );
 }

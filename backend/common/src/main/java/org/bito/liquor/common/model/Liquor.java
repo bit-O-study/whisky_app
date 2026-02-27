@@ -50,6 +50,18 @@ public class Liquor {
     @Column(name = "image_url", length = 1000)
     private String imageUrl;
 
+    private Double sweet;
+
+    private Double smoky;
+
+    private Double fruity;
+
+    private Double spicy;
+
+    private Double woody;
+
+    private Double body;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

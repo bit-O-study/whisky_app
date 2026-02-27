@@ -22,6 +22,8 @@ bin/
 node_modules/
 dist/
 dist-ssr/
+frontend/playwright-report/
+frontend/test-results/
 *.local
 logs
 *.log

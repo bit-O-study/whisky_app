@@ -47,7 +47,7 @@ export default function FeaturedPick({ liquors }: FeaturedPickProps) {
       <div className="relative overflow-hidden sm:rounded-3xl h-56 sm:h-72">
         {/* 배경 이미지 */}
         <img
-          src={pick.image_url}
+          src={pick.image_url || "https://jeqvxzkvumkiraclauvo.supabase.co/storage/v1/object/public/whisky-images/default_whisky.webp"}
           alt=""
           className="absolute inset-0 w-full h-full object-cover scale-110 blur-sm"
         />
@@ -59,7 +59,7 @@ export default function FeaturedPick({ liquors }: FeaturedPickProps) {
           {/* 상품 이미지 */}
           <div className="shrink-0 w-28 h-40 sm:w-36 sm:h-52 rounded-2xl overflow-hidden bg-white/10 ring-1 ring-white/20 shadow-2xl -mb-4">
             <img
-              src={pick.image_url}
+              src={pick.image_url || "https://jeqvxzkvumkiraclauvo.supabase.co/storage/v1/object/public/whisky-images/default_whisky.webp"}
               alt={pick.name}
               className="w-full h-full object-cover"
             />

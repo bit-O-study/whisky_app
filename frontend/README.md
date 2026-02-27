@@ -33,4 +33,7 @@ npm run dev
 npm run build
 npm run lint
 npm run preview
+npm run test:e2e
+npm run test:e2e:headed
+npm run test:e2e:ui
 ```
