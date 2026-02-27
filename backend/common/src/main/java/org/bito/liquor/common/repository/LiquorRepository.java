@@ -12,4 +12,8 @@ public interface LiquorRepository extends JpaRepository<Liquor, Long> {
     Optional<Liquor> findByProductCode(String productCode);
 
     Optional<Liquor> findByNormalizedNameAndClazzAndVolume(String normalizedName, String clazz, Integer volume);
+
+    Optional<Liquor> findByBrandAndCategoryAndAlcoholPercentAndVolumeAndClazz(
+            String brand, String category, Double alcoholPercent, Integer volume, String clazz
+    );
 }

@@ -157,12 +157,13 @@ public class EmartScraper {
 
             Liquor liquor = builder.build();
 
-            // 5. 상세 정보 추출 (브랜드, 도수, 용량) - 여기가 핵심 수정 부분
+            // 5. 상세 정보 추출 (브랜드, 도수, 용량, 클래스)
             enrichLiquorInfo(liquor);
 
             return liquor;
 
         } catch (Exception e) {
+            log.warn("상품 파싱 중 에러 발생: {}", e.getMessage());
             return null;
         }
     }
@@ -215,40 +216,23 @@ public class EmartScraper {
         // 2. 도수 추출 (우선순위: 이름 내 명시된 도수 -> 카테고리별 표준 도수)
         double alcohol = 0.0;
 
-        // 정규식으로 이름에서 도수 찾기 (예: "13.5%", "17도")
         Pattern abvPattern = Pattern.compile("(\\d+(?:\\.\\d+)?)\\s*(%|도)");
         Matcher abvMatcher = abvPattern.matcher(name);
 
         if (abvMatcher.find()) {
             alcohol = Double.parseDouble(abvMatcher.group(1));
         } else {
-            // 이름에 도수가 없으면 카테고리별 기본값 할당
             switch (liquor.getCategory()) {
-                case "Whisky":
-                case "Rum":
-                case "Vodka":
-                case "Gin":
-                case "Tequila":
-                case "Brandy":
-                    alcohol = 40.0;
-                    break;
-                case "Red Wine":
-                case "White Wine":
-                case "Rose Wine":
-                case "Wine":
-                case "Wine Set":
-                    alcohol = 13.5; // 와인 평균
-                    break;
-                case "Sparkling Wine":
-                case "Champagne":
-                    alcohol = 12.0;
-                    break;
+                case "Whisky": case "Rum": case "Vodka": case "Gin": case "Tequila": case "Brandy":
+                    alcohol = 40.0; break;
+                case "Red Wine": case "White Wine": case "Rose Wine": case "Wine": case "Wine Set":
+                    alcohol = 13.5; break;
+                case "Sparkling Wine": case "Champagne":
+                    alcohol = 12.0; break;
                 case "Sake":
-                    alcohol = 15.0;
-                    break;
+                    alcohol = 15.0; break;
                 case "Liqueur":
-                    alcohol = 20.0;
-                    break;
+                    alcohol = 20.0; break;
                 default:
                     alcohol = 0.0;
             }
@@ -266,19 +250,93 @@ public class EmartScraper {
             if (volMatcher.find()) {
                 volume = Integer.parseInt(volMatcher.group(1));
             } else {
-                // 이름에 용량이 없으면 카테고리별 기본값 할당
                 if (liquor.getCategory().contains("Wine") || liquor.getCategory().equals("Champagne")) {
-                    volume = 750; // 와인 표준
+                    volume = 750;
                 } else if (liquor.getCategory().equals("Sake")) {
-                    volume = 720; // 사케 표준
+                    volume = 720;
                 } else if (liquor.getCategory().equals("Whisky") || liquor.getCategory().equals("Vodka")) {
-                    volume = 700; // 위스키 표준
+                    volume = 700;
                 } else {
-                    volume = 750; // 기타
+                    volume = 750;
                 }
             }
         }
         liquor.setVolume(volume);
+
+        // 4. Clazz (등급/종류/숙성연도) 추출 및 세팅 - 추가된 부분
+        String clazz = extractClazz(name, liquor.getCategory());
+        liquor.setClazz(clazz);
+    }
+
+    private String extractClazz(String name, String category) {
+        String upperName = name.toUpperCase();
+        // 띄어쓰기를 모두 제거한 문자열 (변형된 띄어쓰기 및 외래어 검색용)
+        String noSpaceName = name.replace(" ", "");
+
+        // 1. 연산(숙성 년도) 최우선 추출 (예: 12년, 15년산, 18 Y.O 등 -> 숫자만 추출)
+        // 위스키, 브랜디 등에서 가장 중요한 지표이므로 제일 먼저 검사합니다.
+        Pattern yearPattern = Pattern.compile("(\\d+)\\s*(년|Y\\.O|YO|years)");
+        Matcher m = yearPattern.matcher(upperName);
+        if (m.find()) {
+            return m.group(1); // "12년" -> "12" 반환
+        }
+
+        // 2. 위스키 라벨 및 캐스크/종류
+        if ("Whisky".equals(category)) {
+            // 유명 라벨/시리즈 (조니워커, 와일드터키 등)
+            if (noSpaceName.contains("블루라벨")) return "블루라벨";
+            if (noSpaceName.contains("블랙라벨")) return "블랙라벨";
+            if (noSpaceName.contains("더블블랙")) return "더블블랙";
+            if (noSpaceName.contains("그린라벨")) return "그린라벨";
+            if (noSpaceName.contains("레드라벨")) return "레드라벨";
+            if (noSpaceName.contains("골드라벨") || noSpaceName.contains("골드리저브")) return "골드라벨";
+            if (noSpaceName.contains("블론드")) return "블론드";
+            if (noSpaceName.contains("블랙루비")) return "블랙루비";
+            if (noSpaceName.contains("레어브리드")) return "레어브리드";
+
+            // 캐스크(통) 특징
+            if (noSpaceName.contains("더블캐스크")) return "더블캐스크";
+            if (noSpaceName.contains("쉐리") || noSpaceName.contains("셰리")) return "쉐리캐스크";
+
+            // 위스키 기본 종류
+            if (noSpaceName.contains("싱글몰트")) return "싱글몰트";
+            if (noSpaceName.contains("블렌디드몰트")) return "블렌디드 몰트";
+            if (noSpaceName.contains("블렌디드")) return "블렌디드";
+            if (noSpaceName.contains("버번")) return "버번";
+            if (noSpaceName.contains("라이")) return "라이";
+        }
+
+        // 3. 꼬냑/브랜디 등급
+        if ("Brandy".equals(category)) {
+            if (upperName.contains("XO") || upperName.contains("X.O")) return "XO";
+            if (upperName.contains("VSOP") || upperName.contains("V.S.O.P")) return "VSOP";
+            if (upperName.contains("VS") || upperName.contains("V.S")) return "VS";
+        }
+
+        // 4. 와인 품종 통일 및 등급 추출
+        if (category.contains("Wine") || category.equals("Champagne")) {
+
+            // 4-1. 대표 포도 품종 맵핑 (다양한 표기법을 하나로 통일)
+            if (noSpaceName.matches(".*(까베르네소비뇽|까버네쇼비뇽|카버네소비뇽|카베르네소비뇽|카버넷쇼비뇽|까베네소비뇽).*")) return "까베르네 소비뇽";
+            if (noSpaceName.matches(".*(소비뇽블랑|쇼비뇽블랑).*")) return "소비뇽 블랑";
+            if (noSpaceName.matches(".*(샤도네이|샤르도네|샤도네).*")) return "샤도네이";
+            if (noSpaceName.matches(".*(메를로|멜롯|멜로).*")) return "메를로";
+            if (noSpaceName.matches(".*(피노누아|피노누와).*")) return "피노누아";
+            if (noSpaceName.matches(".*(쉬라즈|시라|쉬라).*")) return "쉬라즈";
+            if (noSpaceName.matches(".*(말벡).*")) return "말벡";
+            if (noSpaceName.matches(".*(모스카토|모스까또).*")) return "모스카토";
+            if (noSpaceName.matches(".*(까르미네르|카르미네르).*")) return "까르미네르";
+            if (noSpaceName.matches(".*(진판델).*")) return "진판델";
+
+            // 4-2. 와인 등급 및 특수 키워드
+            if (noSpaceName.contains("그란레세르바") || noSpaceName.contains("그랑리저브")) return "그란 레세르바";
+            if (noSpaceName.contains("리제르바") || noSpaceName.contains("레세르바") || noSpaceName.contains("리저브") || upperName.contains("RESERVA")) return "리제르바";
+            if (noSpaceName.contains("그랑크뤼") || upperName.contains("GRANDCRU")) return "그랑크뤼";
+            if (noSpaceName.contains("싱글빈야드")) return "싱글빈야드";
+            if (upperName.contains("DOCG")) return "DOCG";
+        }
+
+        return "None";
     }
 
     private WebDriver createWebDriver() {

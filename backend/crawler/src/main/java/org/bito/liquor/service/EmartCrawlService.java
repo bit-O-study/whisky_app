@@ -3,7 +3,9 @@ package org.bito.liquor.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bito.liquor.common.model.Liquor;
+import org.bito.liquor.common.model.LiquorInfo;
 import org.bito.liquor.common.model.LiquorPrice;
+import org.bito.liquor.common.repository.LiquorInfoRepository;
 import org.bito.liquor.common.repository.LiquorRepository;
 import org.bito.liquor.common.repository.LiquorPriceRepository;
 import org.bito.liquor.scraper.EmartScraper;
@@ -22,7 +24,7 @@ public class EmartCrawlService {
     private final LiquorRepository liquorRepository;
     private final LiquorPriceRepository liquorPriceRepository;
     private final EmartScraper emartScraper;
-
+    private final LiquorInfoRepository liquorInfoRepository;
     @Transactional
     public List<LiquorPrice> scrapeLiquors() {
         log.info("이마트 양주 크롤링 시작");
@@ -34,6 +36,9 @@ public class EmartCrawlService {
 
         for (Liquor scraped : scrapedLiquors) {
             normalizeLiquor(scraped, NORMALIZED_SOURCE);
+
+//            LiquorInfo info = getOrSaveLiquorInfo(scraped);
+//            scraped.setLiquorInfo(info);
 
             Liquor liquor = upsertLiquor(scraped);
             boolean existed = liquorPriceRepository.findByLiquorIdAndSource(liquor.getId(), NORMALIZED_SOURCE).isPresent();
@@ -49,6 +54,25 @@ public class EmartCrawlService {
         log.info("이마트 크롤링 완료 - 신규: {}개, 업데이트: {}개", newCount, updateCount);
 
         return liquorPriceRepository.findAllOrderByUpdatedAtDesc();
+    }
+
+    private LiquorInfo getOrSaveLiquorInfo(Liquor scraped) {
+        return liquorInfoRepository.findByBrandAndCategoryAndAlcoholPercentAndVolumeMlAndClazz(
+                scraped.getBrand(),
+                scraped.getCategory(),
+                scraped.getAlcoholPercent(),
+                scraped.getVolume(),
+                scraped.getClazz()
+        ).orElseGet(() -> {
+            LiquorInfo newInfo = LiquorInfo.builder()
+                    .brand(scraped.getBrand())
+                    .category(scraped.getCategory())
+                    .alcoholPercent(scraped.getAlcoholPercent())
+                    .volumeMl(scraped.getVolume())
+                    .clazz(scraped.getClazz())
+                    .build();
+            return liquorInfoRepository.save(newInfo);
+        });
     }
 
     private void normalizeLiquor(Liquor liquor, String source) {
@@ -139,6 +163,8 @@ public class EmartCrawlService {
                 .replaceAll("\\s+", " ")
                 .trim();
     }
+
+
 
     private String normalizeText(String value) {
         return value == null ? "" : value.trim();
