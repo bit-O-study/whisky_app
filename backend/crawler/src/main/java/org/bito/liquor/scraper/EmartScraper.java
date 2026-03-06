@@ -84,6 +84,7 @@ public class EmartScraper {
                 for (WebElement item : items) {
                     try {
                         Liquor liquor = extractItem(item);
+                        System.out.println("liquor==>"+liquor);
                         if (liquor != null) {
                             liquors.add(liquor);
                         }
@@ -107,14 +108,16 @@ public class EmartScraper {
 
     private Liquor extractItem(WebElement el) {
         try {
+            System.out.println(el);
             // 1. 이름 추출
             String name = "";
             try {
                 name = el.findElement(By.cssSelector(".css-1mrk1dy")).getText().trim();
             } catch (Exception e) {
+                log.warn("상품 이름 추출 실패, 스킵합니다.");
                 return null;
             }
-
+            System.out.println(name);
             // 카테고리 감지
             String category = detectCategory(name);
 
@@ -127,6 +130,7 @@ public class EmartScraper {
             try {
                 String priceTxt = el.findElement(By.cssSelector(".css-1oiygnj")).getText();
                 int price = Integer.parseInt(priceTxt.replaceAll("[^0-9]", ""));
+                System.out.println(price);
                 builder.currentPrice(price);
                 builder.originalPrice(price);
             } catch (Exception e) {
@@ -135,7 +139,14 @@ public class EmartScraper {
 
             // 3. 링크 및 코드 추출
             try {
-                String href = el.findElement(By.cssSelector("a.css-1umjy1n")).getAttribute("href");
+                // 특정 클래스명 대신, 상품 요소(el) 내의 첫 번째 <a> 태그를 찾도록 변경
+                WebElement linkElement = el.findElement(By.tagName("a"));
+                String href = linkElement.getAttribute("href");
+
+                if (href == null || href.isEmpty()) {
+                    throw new RuntimeException("href 속성을 찾을 수 없습니다.");
+                }
+
                 builder.productUrl(href);
 
                 String itemId = "";
@@ -145,7 +156,10 @@ public class EmartScraper {
                     itemId = "EMART_" + Math.abs(name.hashCode());
                 }
                 builder.productCode(itemId);
+
             } catch (Exception e) {
+                // 단순 "에러"가 아니라 정확히 왜 실패했는지 로그를 남깁니다.
+                System.out.println("링크 추출 에러 - 상품명: " + name + " | 사유: " + e.getMessage());
                 return null;
             }
 
@@ -156,7 +170,7 @@ public class EmartScraper {
             } catch (Exception ignored) {}
 
             Liquor liquor = builder.build();
-
+            System.out.println(liquor);
             // 5. 상세 정보 추출 (브랜드, 도수, 용량, 클래스)
             enrichLiquorInfo(liquor);
 
