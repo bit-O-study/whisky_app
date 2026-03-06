@@ -3,7 +3,9 @@ package org.bito.liquor.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bito.liquor.common.model.Liquor;
+import org.bito.liquor.common.model.LiquorInfo;
 import org.bito.liquor.common.model.LiquorPrice;
+import org.bito.liquor.common.repository.LiquorInfoRepository;
 import org.bito.liquor.common.repository.LiquorRepository;
 import org.bito.liquor.common.repository.LiquorPriceRepository;
 import org.bito.liquor.scraper.LotteonScraper;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -21,6 +24,7 @@ public class LotteonCrawlService {
 
     private final LiquorRepository liquorRepository;
     private final LiquorPriceRepository liquorPriceRepository;
+    private final LiquorInfoRepository liquorInfoRepository;
     private final LotteonScraper lotteonScraper;
 
     @Transactional
@@ -31,10 +35,19 @@ public class LotteonCrawlService {
 
         int newCount = 0;
         int updateCount = 0;
+        int skipCount = 0;
 
         for (Liquor scraped : scrapedLiquors) {
             normalizeLiquor(scraped, NORMALIZED_SOURCE);
 
+            Optional<LiquorInfo> infoOpt = findLiquorInfo(scraped);
+
+            if (infoOpt.isEmpty()) {
+                skipCount++;
+                continue;
+            }
+
+            scraped.setLiquorInfo(infoOpt.get());
             Liquor liquor = upsertLiquor(scraped);
             boolean existed = liquorPriceRepository.findByLiquorIdAndSource(liquor.getId(), NORMALIZED_SOURCE).isPresent();
             upsertLiquorPrice(liquor, scraped);
@@ -51,6 +64,15 @@ public class LotteonCrawlService {
         return liquorPriceRepository.findAllOrderByUpdatedAtDesc();
     }
 
+    private Optional<LiquorInfo> findLiquorInfo(Liquor scraped) {
+        return liquorInfoRepository.findByBrandAndCategoryAndAlcoholPercentAndVolumeMlAndClazz(
+                scraped.getBrand(),
+                scraped.getCategory(),
+                scraped.getAlcoholPercent(),
+                scraped.getVolume(),
+                scraped.getClazz()
+        );
+    }
     private void normalizeLiquor(Liquor liquor, String source) {
         liquor.setSource(source);
         liquor.setNormalizedName(buildNormalizedName(liquor));
@@ -101,6 +123,7 @@ public class LotteonCrawlService {
         liquor.setProductName(scraped.getFullname() == null ? scraped.getName() : scraped.getFullname());
         liquor.setProductUrl(scraped.getProductUrl());
         liquor.setImageUrl(scraped.getImageUrl());
+        liquor.setLiquorInfo(scraped.getLiquorInfo());
 
         return liquorRepository.save(liquor);
     }

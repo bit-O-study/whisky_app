@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -33,13 +34,21 @@ public class EmartCrawlService {
 
         int newCount = 0;
         int updateCount = 0;
+        int skipCount = 0;
 
         for (Liquor scraped : scrapedLiquors) {
             normalizeLiquor(scraped, NORMALIZED_SOURCE);
 
 //            LiquorInfo info = getOrSaveLiquorInfo(scraped);
 //            scraped.setLiquorInfo(info);
+            Optional<LiquorInfo> infoOpt = findLiquorInfo(scraped);
 
+            if (infoOpt.isEmpty()) {
+                skipCount++;
+                continue;
+            }
+
+            scraped.setLiquorInfo(infoOpt.get());
             Liquor liquor = upsertLiquor(scraped);
             boolean existed = liquorPriceRepository.findByLiquorIdAndSource(liquor.getId(), NORMALIZED_SOURCE).isPresent();
             upsertLiquorPrice(liquor, scraped);
@@ -54,6 +63,16 @@ public class EmartCrawlService {
         log.info("이마트 크롤링 완료 - 신규: {}개, 업데이트: {}개", newCount, updateCount);
 
         return liquorPriceRepository.findAllOrderByUpdatedAtDesc();
+    }
+
+    private Optional<LiquorInfo> findLiquorInfo(Liquor scraped) {
+        return liquorInfoRepository.findByBrandAndCategoryAndAlcoholPercentAndVolumeMlAndClazz(
+                scraped.getBrand(),
+                scraped.getCategory(),
+                scraped.getAlcoholPercent(),
+                scraped.getVolume(),
+                scraped.getClazz()
+        );
     }
 
     private LiquorInfo getOrSaveLiquorInfo(Liquor scraped) {
