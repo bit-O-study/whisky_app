@@ -26,6 +26,7 @@ public class EmartCrawlService {
     private final LiquorPriceRepository liquorPriceRepository;
     private final EmartScraper emartScraper;
     private final LiquorInfoRepository liquorInfoRepository;
+
     @Transactional
     public List<LiquorPrice> scrapeLiquors() {
         log.info("이마트 양주 크롤링 시작");
@@ -39,8 +40,6 @@ public class EmartCrawlService {
         for (Liquor scraped : scrapedLiquors) {
             normalizeLiquor(scraped, NORMALIZED_SOURCE);
 
-//            LiquorInfo info = getOrSaveLiquorInfo(scraped);
-//            scraped.setLiquorInfo(info);
             Optional<LiquorInfo> infoOpt = findLiquorInfo(scraped);
 
             if (infoOpt.isEmpty()) {
@@ -60,19 +59,37 @@ public class EmartCrawlService {
             }
         }
 
-        log.info("이마트 크롤링 완료 - 신규: {}개, 업데이트: {}개", newCount, updateCount);
+        log.info("이마트 크롤링 완료 - 신규: {}개, 업데이트: {}개, 스킵(Info없음): {}개", newCount, updateCount, skipCount);
 
         return liquorPriceRepository.findAllOrderByUpdatedAtDesc();
     }
 
     private Optional<LiquorInfo> findLiquorInfo(Liquor scraped) {
-        return liquorInfoRepository.findByBrandAndCategoryAndAlcoholPercentAndVolumeMlAndClazz(
+        List<LiquorInfo> candidates = liquorInfoRepository.findByBrandAndCategoryAndVolumeMl(
                 scraped.getBrand(),
                 scraped.getCategory(),
-                scraped.getAlcoholPercent(),
-                scraped.getVolume(),
-                scraped.getClazz()
+                scraped.getVolume()
         );
+
+        if (candidates.isEmpty()) {
+            return Optional.empty();
+        }
+
+        String scrapedClazz = scraped.getClazz() != null ? scraped.getClazz().replace(" ", "") : "";
+
+        for (LiquorInfo info : candidates) {
+            if (info.getClazz() == null || info.getClazz().equals("None")) {
+                continue;
+            }
+
+            String dbClazz = info.getClazz().replace(" ", "");
+
+            if (dbClazz.contains(scrapedClazz) || scrapedClazz.contains(dbClazz)) {
+                return Optional.of(info);
+            }
+        }
+
+        return Optional.empty();
     }
 
     private LiquorInfo getOrSaveLiquorInfo(Liquor scraped) {
@@ -182,8 +199,6 @@ public class EmartCrawlService {
                 .replaceAll("\\s+", " ")
                 .trim();
     }
-
-
 
     private String normalizeText(String value) {
         return value == null ? "" : value.trim();
