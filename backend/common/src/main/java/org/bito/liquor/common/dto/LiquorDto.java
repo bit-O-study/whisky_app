@@ -53,54 +53,57 @@ public class LiquorDto {
                 .build();
     }
 
-    public static LiquorDto from(Whisky whisky) {
-        return from(whisky, null);
+    public static LiquorDto from(Liquor liquor) {
+        return from(liquor, null);
     }
-
-    public static LiquorDto from(Whisky whisky, LiquorPrice matchedPrice) {
-        String productName = whisky.getProductName() == null || whisky.getProductName().isBlank()
-                ? whisky.getNormalizedName()
-                : whisky.getProductName();
+    public static LiquorDto from(Liquor liquor, LiquorPrice matchedPrice) {
+        String productName = liquor.getProductName() == null || liquor.getProductName().isBlank()
+                ? liquor.getNormalizedName()
+                : liquor.getProductName();
 
         Liquor matchedLiquor = matchedPrice == null ? null : matchedPrice.getLiquor();
 
-        String brand = whisky.getBrand() != null && !whisky.getBrand().isBlank()
-                ? whisky.getBrand()
+        String brand = liquor.getBrand() != null && !liquor.getBrand().isBlank()
+                ? liquor.getBrand()
                 : (matchedLiquor == null ? "Unknown" : matchedLiquor.getBrand());
 
-        String category = whisky.getCategory() != null && !whisky.getCategory().isBlank()
-                ? whisky.getCategory()
-                : (matchedLiquor == null ? "Whisky" : matchedLiquor.getCategory());
+        // 기본값을 "Whisky"에서 "Unknown"(또는 매칭된 주류의 카테고리)으로 변경
+        String category = liquor.getCategory() != null && !liquor.getCategory().isBlank()
+                ? liquor.getCategory()
+                : (matchedLiquor == null ? "Unknown" : matchedLiquor.getCategory());
 
-        Integer volume = matchedLiquor == null || matchedLiquor.getVolume() == null ? 700 : matchedLiquor.getVolume();
-        Double alcoholPercent = whisky.getAlcoholPercent() != null
-                ? whisky.getAlcoholPercent()
+        Integer volume = matchedLiquor == null || matchedLiquor.getVolume() == null
+                ? (liquor.getVolume() == null ? 700 : liquor.getVolume())
+                : matchedLiquor.getVolume();
+
+        Double alcoholPercent = liquor.getAlcoholPercent() != null
+                ? liquor.getAlcoholPercent()
                 : (matchedLiquor == null ? null : matchedLiquor.getAlcoholPercent());
 
         return LiquorDto.builder()
-                .id(whisky.getId())
-                .productCode(whisky.getProductCode() == null ? whisky.getSeedKey() : whisky.getProductCode())
+                .id(liquor.getId())
+                .productCode(liquor.getProductCode()) // SeedKey 대신 일관되게 ProductCode 사용
                 .name(productName)
                 .brand(brand)
                 .category(category)
                 .volume(volume)
                 .alcoholPercent(alcoholPercent)
-                .country(matchedLiquor == null ? "Unknown" : matchedLiquor.getCountry())
+                .country(matchedLiquor == null ? liquor.getCountry() : matchedLiquor.getCountry())
                 .currentPrice(matchedPrice == null || matchedPrice.getCurrentPrice() == null ? 0 : matchedPrice.getCurrentPrice())
                 .originalPrice(matchedPrice == null || matchedPrice.getOriginalPrice() == null ? 0 : matchedPrice.getOriginalPrice())
                 .discountPercent(matchedPrice == null ? 0 : matchedPrice.getDiscountPercent())
-                .imageUrl(resolveImageUrl(whisky, matchedLiquor))
-                .productUrl(matchedLiquor == null || matchedLiquor.getProductUrl() == null ? "" : matchedLiquor.getProductUrl())
-                .source(matchedPrice == null || matchedPrice.getSource() == null ? "WHISKY_DB" : matchedPrice.getSource())
+                .imageUrl(resolveImageUrl(liquor, matchedLiquor)) // ※ 주의: resolveImageUrl 메서드의 파라미터 타입도 Liquor로 변경 필요!
+                .productUrl(matchedLiquor == null || matchedLiquor.getProductUrl() == null ? liquor.getProductUrl() : matchedLiquor.getProductUrl())
+                .source(matchedPrice == null || matchedPrice.getSource() == null ? "LIQUOR_DB" : matchedPrice.getSource()) // WHISKY_DB -> LIQUOR_DB
                 .fullname(productName)
-                .clazz(whisky.getClazz() == null && matchedLiquor != null ? matchedLiquor.getClazz() : whisky.getClazz())
-                .updatedAt(matchedPrice == null ? whisky.getUpdatedAt() : matchedPrice.getCrawledAt())
+                .clazz(liquor.getClazz() == null && matchedLiquor != null ? matchedLiquor.getClazz() : liquor.getClazz())
+                .updatedAt(matchedPrice == null ? liquor.getUpdatedAt() : matchedPrice.getCrawledAt())
                 .build();
     }
 
-    private static String resolveImageUrl(Whisky whisky, Liquor matchedLiquor) {
-        if (whisky.getImageUrl() != null && !whisky.getImageUrl().isBlank()) {
-            return whisky.getImageUrl();
+    private static String resolveImageUrl(Liquor liquor, Liquor matchedLiquor) {
+        if (liquor.getImageUrl() != null && !liquor.getImageUrl().isBlank()) {
+            return liquor.getImageUrl();
         }
         if (matchedLiquor != null && matchedLiquor.getImageUrl() != null) {
             return matchedLiquor.getImageUrl();

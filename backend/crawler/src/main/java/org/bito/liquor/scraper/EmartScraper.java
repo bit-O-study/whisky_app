@@ -26,7 +26,7 @@ public class EmartScraper {
 
     private final LiquorInfoRepository liquorInfoRepository;
 
-    private static final String SEARCH_URL_TEMPLATE = "https://emart.ssg.com/search.ssg?query=%s&ctgLv=2&ctgId=6000213466";
+    private static final String SEARCH_URL_TEMPLATE = "https://emart.ssg.com/search.ssg?query=%s";
     private static final String SOURCE = "EMART";
 
     private static final List<String> KNOWN_BRANDS = Arrays.asList(
@@ -59,7 +59,7 @@ public class EmartScraper {
 
             for (String keyword : targetKeywords) {
                 try {
-                    String encodedKeyword = URLEncoder.encode(keyword, StandardCharsets.UTF_8);
+                    String encodedKeyword = URLEncoder.encode(keyword, StandardCharsets.UTF_8).replace("+", "%20");
                     String searchUrl = String.format(SEARCH_URL_TEMPLATE, encodedKeyword);
                     log.info("이마트 키워드 검색 중: '{}' | URL: {}", keyword, searchUrl);
 
