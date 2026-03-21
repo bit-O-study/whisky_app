@@ -8,9 +8,11 @@ import org.bito.liquor.common.dto.FlavorVectorRequestDto;
 import org.bito.liquor.common.dto.LiquorDto;
 import org.bito.liquor.common.dto.WhiskyRecommendationItemDto;
 import org.bito.liquor.common.dto.WhiskyRecommendationResponseDto;
+import org.bito.liquor.common.model.Liquor;
 import org.bito.liquor.common.model.LiquorPrice;
 import org.bito.liquor.common.model.Whisky;
 import org.bito.liquor.common.repository.LiquorPriceRepository;
+import org.bito.liquor.common.repository.LiquorRepository;
 import org.bito.liquor.common.repository.WhiskyRepository;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +32,7 @@ public class WhiskyRecommendationService {
 
     private final LiquorPriceRepository liquorPriceRepository;
     private final WhiskyRepository whiskyRepository;
+    private final LiquorRepository liquorRepository;
 
     public WhiskyRecommendationResponseDto recommend(FlavorVectorRequestDto request) {
         double[] userVector = normalizeVector(new double[]{
@@ -42,10 +45,10 @@ public class WhiskyRecommendationService {
         });
 
         PriceLookup priceLookup = buildPriceLookup(liquorPriceRepository.findAllOrderByUpdatedAtDesc());
-        List<Whisky> whiskies = whiskyRepository.findAll();
+        List<Liquor> whiskies = liquorRepository.findAll();
         List<ScoredWhisky> scored = new ArrayList<>();
 
-        for (Whisky whisky : whiskies) {
+        for (Liquor whisky : whiskies) {
             LiquorPrice matchedPrice = priceLookup.findMatch(whisky);
             double[] whiskyVector = normalizeVector(buildWhiskyVector(whisky));
             double similarity = cosineSimilarity(userVector, whiskyVector);
@@ -109,7 +112,7 @@ public class WhiskyRecommendationService {
         return candidatePrice < existingPrice;
     }
 
-    private double[] buildWhiskyVector(Whisky whisky) {
+    private double[] buildWhiskyVector(Liquor whisky) {
         double[] raw = new double[]{
                 sanitize(whisky.getSweet()),
                 sanitize(whisky.getSmoky()),
@@ -134,7 +137,7 @@ public class WhiskyRecommendationService {
         return inferProfile(whisky);
     }
 
-    private double[] inferProfile(Whisky whisky) {
+    private double[] inferProfile(Liquor whisky) {
         double sweet = 0.22;
         double smoky = 0.14;
         double fruity = 0.18;
@@ -209,7 +212,7 @@ public class WhiskyRecommendationService {
         return typeMap.getOrDefault(key(first, second), title(first) + " " + title(second) + " Explorer");
     }
 
-    private String buildReason(Whisky whisky, double[] userVector) {
+    private String buildReason(Liquor whisky, double[] userVector) {
         List<Integer> rank = List.of(0, 1, 2, 3, 4, 5).stream()
                 .sorted((a, b) -> Double.compare(userVector[b], userVector[a]))
                 .toList();
@@ -314,7 +317,7 @@ public class WhiskyRecommendationService {
     @Getter
     @AllArgsConstructor
     private static class ScoredWhisky {
-        private Whisky whisky;
+        private Liquor whisky;
         private LiquorPrice matchedPrice;
         private double similarity;
         private String reason;
@@ -326,7 +329,7 @@ public class WhiskyRecommendationService {
         private Map<String, LiquorPrice> byProductCode;
         private Map<String, LiquorPrice> byNormalizedName;
 
-        private LiquorPrice findMatch(Whisky whisky) {
+        private LiquorPrice findMatch(Liquor whisky) {
             String code = lowerSafe(whisky.getProductCode());
             if (!code.isBlank()) {
                 LiquorPrice byCode = byProductCode.get(code);

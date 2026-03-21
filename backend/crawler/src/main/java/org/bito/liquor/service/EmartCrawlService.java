@@ -3,7 +3,9 @@ package org.bito.liquor.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bito.liquor.common.model.Liquor;
+import org.bito.liquor.common.model.LiquorInfo;
 import org.bito.liquor.common.model.LiquorPrice;
+import org.bito.liquor.common.repository.LiquorInfoRepository;
 import org.bito.liquor.common.repository.LiquorRepository;
 import org.bito.liquor.common.repository.LiquorPriceRepository;
 import org.bito.liquor.scraper.EmartScraper;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -22,6 +25,7 @@ public class EmartCrawlService {
     private final LiquorRepository liquorRepository;
     private final LiquorPriceRepository liquorPriceRepository;
     private final EmartScraper emartScraper;
+    private final LiquorInfoRepository liquorInfoRepository;
 
     @Transactional
     public List<LiquorPrice> scrapeLiquors() {
@@ -31,10 +35,19 @@ public class EmartCrawlService {
 
         int newCount = 0;
         int updateCount = 0;
+        int skipCount = 0;
 
         for (Liquor scraped : scrapedLiquors) {
             normalizeLiquor(scraped, NORMALIZED_SOURCE);
 
+            Optional<LiquorInfo> infoOpt = findLiquorInfo(scraped);
+
+            if (infoOpt.isEmpty()) {
+                skipCount++;
+                continue;
+            }
+
+            scraped.setLiquorInfo(infoOpt.get());
             Liquor liquor = upsertLiquor(scraped);
             boolean existed = liquorPriceRepository.findByLiquorIdAndSource(liquor.getId(), NORMALIZED_SOURCE).isPresent();
             upsertLiquorPrice(liquor, scraped);
@@ -46,9 +59,56 @@ public class EmartCrawlService {
             }
         }
 
-        log.info("이마트 크롤링 완료 - 신규: {}개, 업데이트: {}개", newCount, updateCount);
+        log.info("이마트 크롤링 완료 - 신규: {}개, 업데이트: {}개, 스킵(Info없음): {}개", newCount, updateCount, skipCount);
 
         return liquorPriceRepository.findAllOrderByUpdatedAtDesc();
+    }
+
+    private Optional<LiquorInfo> findLiquorInfo(Liquor scraped) {
+        List<LiquorInfo> candidates = liquorInfoRepository.findByBrandAndCategoryAndVolumeMl(
+                scraped.getBrand(),
+                scraped.getCategory(),
+                scraped.getVolume()
+        );
+
+        if (candidates.isEmpty()) {
+            return Optional.empty();
+        }
+
+        String scrapedClazz = scraped.getClazz() != null ? scraped.getClazz().replace(" ", "") : "";
+
+        for (LiquorInfo info : candidates) {
+            if (info.getClazz() == null || info.getClazz().equals("None")) {
+                continue;
+            }
+
+            String dbClazz = info.getClazz().replace(" ", "");
+
+            if (dbClazz.contains(scrapedClazz) || scrapedClazz.contains(dbClazz)) {
+                return Optional.of(info);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    private LiquorInfo getOrSaveLiquorInfo(Liquor scraped) {
+        return liquorInfoRepository.findByBrandAndCategoryAndAlcoholPercentAndVolumeMlAndClazz(
+                scraped.getBrand(),
+                scraped.getCategory(),
+                scraped.getAlcoholPercent(),
+                scraped.getVolume(),
+                scraped.getClazz()
+        ).orElseGet(() -> {
+            LiquorInfo newInfo = LiquorInfo.builder()
+                    .brand(scraped.getBrand())
+                    .category(scraped.getCategory())
+                    .alcoholPercent(scraped.getAlcoholPercent())
+                    .volumeMl(scraped.getVolume())
+                    .clazz(scraped.getClazz())
+                    .build();
+            return liquorInfoRepository.save(newInfo);
+        });
     }
 
     private void normalizeLiquor(Liquor liquor, String source) {

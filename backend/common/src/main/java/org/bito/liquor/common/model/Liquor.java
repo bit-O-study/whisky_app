@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Table(name = "liquor")
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -49,6 +50,10 @@ public class Liquor {
 
     @Column(name = "image_url", length = 1000)
     private String imageUrl;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "liquor_info_id")
+    private LiquorInfo liquorInfo;
 
     private Double sweet;
 

@@ -1,7 +1,9 @@
 package org.bito.liquor.scraper;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bito.liquor.common.model.Liquor;
+import org.bito.liquor.common.repository.LiquorInfoRepository;
 import org.json.JSONObject;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -20,38 +22,65 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class LotteonScraper {
 
+    private final LiquorInfoRepository liquorInfoRepository;
     private static final String SEARCH_URL_TEMPLATE = "https://www.lotteon.com/search/search/search.ecn?render=search&platform=pc&q=%s";
     private static final String SOURCE = "LOTTEON";
     private static final int MIN_MATCH_SCORE = 30;
 
-    private static final List<String> TARGET_KEYWORDS = Arrays.asList(
-            "산토리 가쿠빈",
-            "그란츠 트리플 우드",
-            "맥캘란 12 더블 캐스크",
-            "발베니 12 더블우드",
-            "시바스 리갈 12년",
-            "조니워커 블랙 라벨",
-            "글렌드로낙 12년",
-            "벨즈",
-            "와일드 터키 101",
-            "짐 빔 화이트 라벨",
-            "제임슨",
-            "조니워커 블론드",
-            "맥캘란 15년",
-            "조니워커 골드 라벨",
-            "아드벡 10년",
-            "글렌피딕 12년",
-            "글렌리벳 12년",
-            "버팔로 트레이스",
-            "라가불린 16년",
-            "로얄 살루트 21년"
-    );
+//    private static final List<String> TARGET_KEYWORDS = Arrays.asList(
+//            "산토리 가쿠빈",
+//            "그란츠 트리플 우드",
+//            "맥캘란 12 더블 캐스크",
+//            "발베니 12 더블우드",
+//            "시바스 리갈 12년",
+//            "조니워커 블랙 라벨",
+//            "글렌드로낙 12년",
+//            "벨즈",
+//            "와일드 터키 101",
+//            "짐 빔 화이트 라벨",
+//            "제임슨",
+//            "조니워커 블론드",
+//            "맥캘란 15년",
+//            "조니워커 골드 라벨",
+//            "아드벡 10년",
+//            "글렌피딕 12년",
+//            "글렌리벳 12년",
+//            "버팔로 트레이스",
+//            "라가불린 16년",
+//            "로얄 살루트 21년"
+//    );
+    private List<String> generateDynamicKeywords() {
+        return liquorInfoRepository.findAll().stream()
+                .map(info -> {
+                    StringBuilder keywordBuilder = new StringBuilder();
 
+                    if (info.getBrand() != null && !info.getBrand().isBlank()) {
+                        keywordBuilder.append(info.getBrand()).append(" ");
+                    }
+
+                    if (info.getClazz() != null
+                            && !info.getClazz().equalsIgnoreCase("none")
+                            && !info.getClazz().isBlank()) {
+                        keywordBuilder.append(info.getClazz()).append(" ");
+                    }
+
+                    if (info.getVolumeMl() != null) {
+                        keywordBuilder.append(info.getVolumeMl());
+                    }
+
+                    return keywordBuilder.toString().trim();
+                })
+                .filter(keyword -> !keyword.isEmpty())
+                .distinct()
+                .collect(Collectors.toList());
+    }
     public List<Liquor> scrapeLiquors() {
         List<Liquor> liquors = new ArrayList<>();
         WebDriver driver = null;
@@ -59,7 +88,10 @@ public class LotteonScraper {
         try {
             driver = createWebDriver();
 
-            for (String keyword : TARGET_KEYWORDS) {
+            List<String> targetKeywords = generateDynamicKeywords();
+            log.info("총 {}개의 동적 검색 키워드를 생성했습니다.", targetKeywords.size());
+
+            for (String keyword : targetKeywords) {
                 try {
                     String encodedKeyword = URLEncoder.encode(keyword, StandardCharsets.UTF_8);
                     String searchUrl = String.format(SEARCH_URL_TEMPLATE, encodedKeyword);
@@ -88,7 +120,19 @@ public class LotteonScraper {
                         liquors.add(liquor);
                         log.info("'{}' → 상품 수집 성공: {} - {}원", keyword, liquor.getName(), liquor.getCurrentPrice());
                     } else {
-                        log.warn("'{}' → 검색 결과 없음", keyword);
+                        log.warn("'{}' → 검색 결과 없음 (DOM 파싱 실패 또는 매칭 점수 미달)", keyword);
+
+                        try {
+                            String fileName = "lotteon_debug_" + keyword.replaceAll("\\s+", "_") + ".html";
+                            java.nio.file.Files.writeString(
+                                    java.nio.file.Paths.get(fileName),
+                                    pageSource,
+                                    java.nio.charset.StandardCharsets.UTF_8
+                            );
+                            log.info(" 디버깅용 HTML 저장 완료: {}", fileName);
+                        } catch (Exception ex) {
+                            log.error("HTML 파일 저장 실패", ex);
+                        }
                     }
 
                     Thread.sleep((long) (Math.random() * 1500) + 1500);
@@ -166,7 +210,10 @@ public class LotteonScraper {
     private Liquor parseBestFromDOM(WebDriver driver, String keyword) {
         Liquor best = null;
         int bestScore = Integer.MIN_VALUE;
+        // ⭐️ 롯데온의 새로운 HTML 구조(c-product-card) 반영
         String[] selectors = {
+                ".c-product-card",          // 최신 롯데온 상품 카드
+                ".c-product-list__item",    // 최신 롯데온 리스트
                 "li[data-index]",
                 ".srchProductItem",
                 "[class*='productItem']",
@@ -186,6 +233,7 @@ public class LotteonScraper {
                         best = liquor;
                     }
                 }
+                break;
             }
         }
         return bestScore >= MIN_MATCH_SCORE ? best : null;
@@ -193,23 +241,35 @@ public class LotteonScraper {
 
     private Liquor extractFromElement(WebElement element) {
         Liquor.LiquorBuilder builder = Liquor.builder().source(SOURCE);
-        String name;
+        String name = "";
 
         try {
-            WebElement nameEl = element.findElement(By.cssSelector("[class*='name'], [class*='title'], .prd-name"));
+            // 새로운 타이틀 클래스명(.c-product-title__title) 추가
+            WebElement nameEl = element.findElement(By.cssSelector(".c-product-title__title, [class*='name'], [class*='title'], .prd-name"));
             name = nameEl.getText().trim();
             builder.name(name);
         } catch (Exception e) {
+            log.warn("상품명 파싱 실패 (HTML 구조 변경 또는 요소 없음)");
             return null;
         }
 
         try {
-            WebElement priceEl = element.findElement(By.cssSelector("[class*='price'], .prd-price"));
+            // 롯데온은 정상가/할인율/최종가가 뭉쳐있어 '최종가'만 정확히 타겟팅해야 480억 원짜리 위스키가 안 나옵니다.
+            WebElement priceEl;
+            try {
+                priceEl = element.findElement(By.cssSelector(".c-product-price__final, [class*='price__final']"));
+            } catch (Exception e) {
+                // 최종가 태그가 없을 경우를 대비한 옛날 방식 폴백
+                priceEl = element.findElement(By.cssSelector("[class*='price'], .prd-price"));
+            }
+
             String priceText = priceEl.getText().replaceAll("[^0-9]", "");
             if (!priceText.isEmpty()) {
                 builder.currentPrice(Integer.parseInt(priceText));
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            log.warn("가격 파싱 실패: {}", name);
+        }
 
         try {
             WebElement imgEl = element.findElement(By.cssSelector("img"));
