@@ -18,10 +18,12 @@ bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 
-### Frontend (Node/Vite) ###
+### Frontend (Node/Vite/Next.js) ###
 node_modules/
 dist/
 dist-ssr/
+frontend/.next/
+*.tsbuildinfo
 frontend/playwright-report/
 frontend/test-results/
 *.local
