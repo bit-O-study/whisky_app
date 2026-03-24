@@ -20,3 +20,5 @@
 - 2026-03-24 17:07: `memory/supabase-data-model.md`에 조회 규격, 크롤러 적재 경로, 읽기/쓰기 모델을 정리하고 Phase 1/2 진행 상태를 갱신.
 - 2026-03-24 17:09: Spring 조회 API를 병행 운영 없이 즉시 제거하기로 결정하고 `LiquorController`, `LiquorQueryService`, `LiquorPageResponseDto`를 삭제.
 - 2026-03-24 17:09: 기본 이미지는 현재 Supabase Storage 공개 경로 fallback을 유지하고 별도 이미지 정책 변경은 하지 않기로 문서에 반영.
+- 2026-03-24 17:12: 루트 `README.md`를 Next.js + Supabase + crawler 적재 구조 기준으로 갱신하고, 환경변수/로컬 실행/크롤러 운영 메모를 최신화.
+- 2026-03-24 17:12: `implementation-plan.md`의 Phase 5에서 크롤러 운영 문서와 전환 이후 실행 문서 갱신 항목을 완료 처리.

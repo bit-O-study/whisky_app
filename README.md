@@ -1,16 +1,16 @@
 # bitO-liquor
 
-롯데온/이마트 주류 데이터를 수집하고 조회 API를 제공하는 모노레포입니다.
+롯데온/이마트 주류 데이터를 수집하고 Next.js + Supabase 기반 카탈로그를 제공하는 모노레포입니다.
 
 ## 프로젝트 구성
 
 - `backend/`: Java 21 + Spring Boot 멀티모듈
-- `frontend/`: React 19 + TypeScript + Vite (백엔드 API 연동 UI)
+- `frontend/`: Next.js App Router + React 19 + TypeScript
 
 백엔드 모듈:
 - `backend/common`: 공통 엔티티, DTO, Repository
-- `backend/api`: 조회/검색 API 서버 (`:8080`)
-- `backend/crawler`: 크롤링 실행 서버 (`:8081`)
+- `backend/api`: 보조 관리/업로드 성격의 Spring 애플리케이션 (`:8080`)
+- `backend/crawler`: 크롤링 및 적재 애플리케이션 (`:8081`)
 
 ## 기술 스택
 
@@ -19,7 +19,7 @@
 - Gradle 멀티모듈
 - PostgreSQL (Supabase)
 - Selenium WebDriver + Jsoup
-- React 19 + TypeScript + Vite + Tailwind CSS v4
+- Next.js + React 19 + TypeScript + Tailwind CSS v4
 
 ## 빠른 시작
 
@@ -27,9 +27,11 @@
 
 ```bash
 cd backend
-./gradlew :api:bootRun
 ./gradlew :crawler:bootRun
 ```
+
+조회 카탈로그는 Spring API가 아니라 Next.js에서 Supabase를 직접 조회합니다.
+`backend/api`는 현재 핵심 조회 경로가 아니며, 필요 시에만 별도 실행합니다.
 
 ### 2. 프론트엔드 실행
 
@@ -39,26 +41,34 @@ npm install
 npm run dev
 ```
 
-기본 API 주소는 `http://localhost:8080`이며, 필요하면 `frontend/.env`에 아래를 설정해 변경할 수 있습니다.
+기본 개발 서버 주소는 `http://localhost:3000`입니다.
 
 ```bash
-VITE_API_BASE_URL=http://localhost:8080
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+# 또는 서버 전용 조회/적재용 키
+SUPABASE_SERVICE_ROLE_KEY=...
 ```
 
 ## 환경 설정
 
-백엔드는 DB 연결 정보가 필요합니다.
+백엔드와 크롤러는 Supabase Postgres 연결 정보가 필요합니다.
 
-- API: `backend/api/src/main/resources/application-local.properties.example`
-- Crawler: `backend/crawler/src/main/resources/application-local.properties.example`
+- `DB_URL`
+- `DB_USERNAME`
+- `DB_PASSWORD`
 
-각 파일을 `application-local.properties`로 복사한 뒤 값을 채워 사용하세요.
+추가로 `backend/api`의 이미지 업로드 기능을 쓸 경우 아래도 필요합니다.
 
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
-spring.datasource.username=your_local_db_user
-spring.datasource.password=your_local_db_password
-```
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_KEY`
+- `SUPABASE_STORAGE_BUCKET`
+
+프론트는 Next.js 서버에서 Supabase를 조회하므로 아래 중 하나를 사용합니다.
+
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_SERVICE_KEY`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
 ## 주요 명령어
 
@@ -67,8 +77,8 @@ spring.datasource.password=your_local_db_password
 ```bash
 ./gradlew build
 ./gradlew test
-./gradlew :api:bootRun
 ./gradlew :crawler:bootRun
+./gradlew :api:bootRun
 ```
 
 프론트엔드 (`frontend/`):
@@ -77,20 +87,13 @@ spring.datasource.password=your_local_db_password
 npm run dev
 npm run build
 npm run lint
-npm run preview
+npm run start
 npm run test:e2e
 ```
 
-## API 엔드포인트
+## 실행 메모
 
-조회 API (`:8080`):
-
-```bash
-curl http://localhost:8080/api/liquors
-curl "http://localhost:8080/api/liquors/search?q=조니워커"
-```
-
-크롤링 API (`:8081`):
+크롤링 엔드포인트 (`:8081`):
 
 ```bash
 curl -X POST http://localhost:8081/api/crawl/lotteon
@@ -99,10 +102,12 @@ curl -X POST http://localhost:8081/api/crawl/emart
 
 ## 데이터 모델 메모
 
-- 현재 핵심 상품 테이블은 `public.liquors`입니다.
+- 현재 카탈로그 핵심 테이블 초안은 `public.liquor`, `public.liquor_price`, `public.liquor_info`입니다.
+- 스키마 초안은 `docs/issues/001.nextjs-supabase-migration/memory/supabase-schema-draft.sql`에 정리되어 있습니다.
 
 ## 주의사항
 
 - Selenium 사용을 위해 로컬 Chrome 설치가 필요합니다.
 - 사이트 구조 변경 시 크롤러 파서 수정이 필요합니다.
-- 테스트 실행 시 DB 설정이 없으면 `contextLoads`가 실패할 수 있습니다.
+- `backend/crawler`는 `spring.jpa.hibernate.ddl-auto=validate`이므로 대상 DB에 스키마가 먼저 있어야 실행됩니다.
+- 기본 이미지는 현재 Supabase Storage 공개 경로 fallback을 유지합니다.
