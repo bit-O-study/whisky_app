@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { fetchLiquors } from "../api/liquorApi";
-import type { Liquor } from "../types/liquor";
-import { groupLiquors } from "../utils/groupLiquors";
 import LiquorGrid from "./LiquorGrid";
+import type { GroupedLiquor, Liquor } from "../types/liquor";
+import { groupLiquors } from "../utils/groupLiquors";
 
 export default function CatalogPageClient() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -15,6 +15,7 @@ export default function CatalogPageClient() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -51,10 +52,20 @@ export default function CatalogPageClient() {
         if (!controller.signal.aborted) {
           setLiquors((previous) => (liquorPage === 0 ? data.items : [...previous, ...data.items]));
           setHasNextLiquorPage(data.hasNext);
+          setError(null);
         }
-      } catch {
+      } catch (loadError) {
         if (!controller.signal.aborted) {
-          setError("데이터를 불러오지 못했습니다. Supabase 및 Next API 상태를 확인해주세요.");
+          console.error("Failed to load catalog page", {
+            liquorPage,
+            searchQuery: debouncedSearchQuery,
+            loadError,
+          });
+          setError(
+            liquorPage === 0
+              ? "데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요."
+              : "추가 목록을 불러오지 못했습니다. 다시 시도해주세요.",
+          );
           if (liquorPage === 0) {
             setLiquors([]);
           }
@@ -74,7 +85,7 @@ export default function CatalogPageClient() {
     return () => {
       controller.abort();
     };
-  }, [debouncedSearchQuery, liquorPage]);
+  }, [debouncedSearchQuery, liquorPage, reloadToken]);
 
   useEffect(() => {
     const target = loadMoreRef.current;
@@ -103,16 +114,21 @@ export default function CatalogPageClient() {
     };
   }, [error, hasNextLiquorPage, loading, loadingMore]);
 
-  const groupedLiquors = useMemo(() => groupLiquors(liquors), [liquors]);
-  const vendorCount = useMemo(
-    () => new Set(liquors.map((liquor) => liquor.source)).size,
-    [liquors],
-  );
-  const isSearching = debouncedSearchQuery.trim().length > 0;
-
+  const groupedLiquors: GroupedLiquor[] = groupLiquors(liquors);
   function handleLogoClick() {
     setSearchQuery("");
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  }
+
+  function handleRetry() {
+    setError(null);
+    if (liquorPage === 0) {
+      setReloadToken((current) => current + 1);
+      return;
+    }
+
+    setLoadingMore(true);
+    setReloadToken((current) => current + 1);
   }
 
   return (
@@ -127,12 +143,7 @@ export default function CatalogPageClient() {
             <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#1f2937,#7c2d12)] text-xl text-white shadow-[0_14px_28px_rgba(17,24,39,0.22)]">
               🥃
             </span>
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.36em] text-amber-700">
-                Jururuk
-              </p>
-              <h1 className="text-xl font-bold text-stone-950">Whisky Catalog</h1>
-            </div>
+            <span className="text-xl font-bold text-stone-950">Jururuk</span>
           </button>
 
           <div className="relative w-full sm:max-w-md">
@@ -173,63 +184,6 @@ export default function CatalogPageClient() {
       </header>
 
       <section className="mx-auto max-w-7xl px-4 pt-8">
-        <div className="catalog-hero relative overflow-hidden rounded-[2rem] border border-amber-100/80 px-6 py-7 shadow-[0_24px_80px_rgba(15,23,42,0.08)] sm:px-8 sm:py-9">
-          <div className="absolute inset-y-0 right-0 hidden w-72 bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.18),transparent_68%)] lg:block" />
-          <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.7fr)] lg:items-end">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-800">
-                Curated Price Radar
-              </p>
-              <h2 className="mt-3 max-w-3xl text-3xl font-black leading-tight text-stone-950 sm:text-4xl">
-                판매처별 가격과 핵심 정보를 한 번에 비교하는 위스키 카탈로그
-              </h2>
-              <p className="mt-4 max-w-2xl text-sm leading-6 text-stone-600 sm:text-base">
-                익숙했던 카탈로그 흐름을 기준으로 검색, 목록 탐색, 최저가 비교 경험을 다시 정리했습니다.
-                브랜드와 제품명을 검색하면 현재 목록 안에서 바로 걸러 볼 수 있습니다.
-              </p>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-              <div className="catalog-metric">
-                <span className="catalog-metric-label">현재 표시</span>
-                <strong className="catalog-metric-value">{groupedLiquors.length}</strong>
-                <p className="catalog-metric-copy">중복 판매처를 묶은 카탈로그 기준</p>
-              </div>
-              <div className="catalog-metric">
-                <span className="catalog-metric-label">판매처</span>
-                <strong className="catalog-metric-value">{vendorCount || "-"}</strong>
-                <p className="catalog-metric-copy">동일 상품의 가격 비교 가능</p>
-              </div>
-              <div className="catalog-metric">
-                <span className="catalog-metric-label">탐색 방식</span>
-                <strong className="catalog-metric-value text-2xl">Search</strong>
-                <p className="catalog-metric-copy">스크롤로 다음 페이지 자동 로드</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 flex flex-col gap-4 rounded-[1.75rem] border border-white/70 bg-white/70 px-5 py-5 shadow-[0_20px_50px_rgba(148,163,184,0.12)] backdrop-blur-sm sm:flex-row sm:items-end sm:justify-between sm:px-6">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-stone-500">
-              {isSearching ? "Search Result" : "Catalog Overview"}
-            </p>
-            <h3 className="mt-2 text-2xl font-bold text-stone-950">
-              {isSearching ? "검색 결과를 바로 비교해보세요" : "지금 판매 중인 위스키를 둘러보세요"}
-            </h3>
-            <p className="mt-2 text-sm leading-6 text-stone-600">
-              {isSearching
-                ? `"${debouncedSearchQuery}" 기준으로 필터링된 결과를 가격순으로 비교합니다.`
-                : "카드에서 최저가를 먼저 확인하고, 마우스를 올리면 판매처별 가격을 볼 수 있습니다."}
-            </p>
-          </div>
-          <div className="flex gap-2 text-xs text-stone-500 sm:justify-end">
-            <span className="rounded-full border border-stone-200 bg-white px-3 py-1.5">검색</span>
-            <span className="rounded-full border border-stone-200 bg-white px-3 py-1.5">최저가 비교</span>
-            <span className="rounded-full border border-stone-200 bg-white px-3 py-1.5">무한 스크롤</span>
-          </div>
-        </div>
-
         <LiquorGrid
           searchQuery={debouncedSearchQuery}
           liquors={groupedLiquors}
@@ -237,6 +191,7 @@ export default function CatalogPageClient() {
           loadingMore={loadingMore}
           hasNext={hasNextLiquorPage}
           error={error}
+          onRetry={handleRetry}
           loadMoreRef={loadMoreRef}
         />
       </section>

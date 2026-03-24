@@ -9,10 +9,20 @@ interface LiquorGridProps {
   loadingMore: boolean;
   hasNext: boolean;
   error: string | null;
+  onRetry: () => void;
   loadMoreRef: RefObject<HTMLDivElement | null>;
 }
 
-export default function LiquorGrid({ searchQuery, liquors, loading, loadingMore, hasNext, error, loadMoreRef }: LiquorGridProps) {
+export default function LiquorGrid({
+  searchQuery,
+  liquors,
+  loading,
+  loadingMore,
+  hasNext,
+  error,
+  onRetry,
+  loadMoreRef,
+}: LiquorGridProps) {
   if (loading) {
     return (
       <div className="rounded-[1.75rem] border border-white/70 bg-white/65 py-20 text-center text-stone-500 shadow-[0_18px_45px_rgba(148,163,184,0.12)]">
@@ -22,11 +32,18 @@ export default function LiquorGrid({ searchQuery, liquors, loading, loadingMore,
     );
   }
 
-  if (error) {
+  if (error && liquors.length === 0) {
     return (
       <div className="rounded-[1.75rem] border border-red-100 bg-white/75 py-20 text-center text-red-500 shadow-[0_18px_45px_rgba(248,113,113,0.08)]">
         <p className="text-sm font-semibold uppercase tracking-[0.3em] text-red-400">Catalog Error</p>
         <p className="mt-3 text-lg font-medium">{error}</p>
+        <button
+          type="button"
+          onClick={onRetry}
+          className="mt-5 rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
+        >
+          다시 시도
+        </button>
       </div>
     );
   }
@@ -50,6 +67,18 @@ export default function LiquorGrid({ searchQuery, liquors, loading, loadingMore,
 
   return (
     <>
+      {error && liquors.length > 0 && (
+        <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-red-100 bg-white/80 px-4 py-3 text-sm text-red-500 shadow-[0_12px_30px_rgba(248,113,113,0.08)]">
+          <p>{error}</p>
+          <button
+            type="button"
+            onClick={onRetry}
+            className="shrink-0 rounded-lg bg-red-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-600"
+          >
+            다시 시도
+          </button>
+        </div>
+      )}
       {searchQuery && (
         <div className="mb-5 flex items-center justify-between rounded-2xl border border-amber-100/80 bg-white/72 px-4 py-3 text-sm text-stone-500 shadow-[0_12px_30px_rgba(148,163,184,0.10)]">
           <p>

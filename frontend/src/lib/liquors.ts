@@ -108,7 +108,21 @@ export async function fetchLiquorPage({ keyword, page, size }: FetchLiquorPagePa
     );
   }
 
-  const { data: liquors, error: liquorError, count } = await query;
+  const {
+    data: liquors,
+    error: liquorError,
+    count,
+    status: liquorStatus,
+  } = await query;
+
+  if (liquorStatus === 416) {
+    return {
+      items: [],
+      page: safePage,
+      size: safeSize,
+      hasNext: false,
+    };
+  }
 
   if (liquorError) {
     throw liquorError;

@@ -10,9 +10,31 @@ function formatPrice(price: number) {
   return normalized.toLocaleString("ko-KR") + "원";
 }
 
+function formatMetaValue(value: string, fallback: string) {
+  return value && value !== "Unknown" ? value : fallback;
+}
+
+function formatSpecLine(liquor: GroupedLiquor) {
+  const parts: string[] = [];
+
+  if (liquor.country && liquor.country !== "Unknown") {
+    parts.push(liquor.country);
+  }
+  if (liquor.alcohol_percent > 0) {
+    parts.push(`${liquor.alcohol_percent}%`);
+  }
+  if (liquor.volume > 0) {
+    parts.push(`${liquor.volume}ml`);
+  }
+
+  return parts.length > 0 ? parts.join(" · ") : "상세 정보 준비 중";
+}
+
 export default function LiquorCard({ liquor }: { liquor: GroupedLiquor }) {
   const sortedVendors = liquor.vendors.slice().sort((a, b) => a.current_price - b.current_price);
   const bestVendor = sortedVendors[0];
+  const lowestPriceLabel = liquor.lowest_price > 0 ? formatPrice(liquor.lowest_price) : "가격 확인 중";
+  const specLine = formatSpecLine(liquor);
 
   return (
     <article className="group relative overflow-hidden rounded-[1.75rem] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,251,235,0.86))] shadow-[0_24px_60px_rgba(15,23,42,0.10)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_34px_90px_rgba(15,23,42,0.16)]">
@@ -46,14 +68,14 @@ export default function LiquorCard({ liquor }: { liquor: GroupedLiquor }) {
           {liquor.name}
           </h3>
           <p className="mt-2 text-sm text-stone-500">
-          {liquor.country} · {liquor.alcohol_percent}% · {liquor.volume}ml
+          {specLine}
           </p>
         </div>
 
         <div className="rounded-2xl bg-[linear-gradient(135deg,rgba(255,247,237,0.95),rgba(255,255,255,0.95))] p-4 ring-1 ring-amber-100/80">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700">Lowest Price</p>
           <div className="mt-2 flex items-end justify-between gap-3">
-            <p className="text-2xl font-black text-amber-600">{formatPrice(liquor.lowest_price)}</p>
+            <p className="text-2xl font-black text-amber-600">{lowestPriceLabel}</p>
             {bestVendor && <p className="text-xs font-medium text-stone-500">{bestVendor.source} 기준</p>}
           </div>
         </div>
@@ -61,12 +83,15 @@ export default function LiquorCard({ liquor }: { liquor: GroupedLiquor }) {
         <div className="grid grid-cols-2 gap-2 text-xs text-stone-500">
           <div className="rounded-xl bg-white/80 px-3 py-2 ring-1 ring-stone-200/70">
             <span className="block text-[10px] uppercase tracking-[0.18em] text-stone-400">Origin</span>
-            <strong className="mt-1 block text-sm text-stone-800">{liquor.country}</strong>
+            <strong className="mt-1 block text-sm text-stone-800">
+              {formatMetaValue(liquor.country, "정보 준비 중")}
+            </strong>
           </div>
           <div className="rounded-xl bg-white/80 px-3 py-2 ring-1 ring-stone-200/70">
             <span className="block text-[10px] uppercase tracking-[0.18em] text-stone-400">ABV / Vol</span>
             <strong className="mt-1 block text-sm text-stone-800">
-              {liquor.alcohol_percent}% · {liquor.volume}ml
+              {liquor.alcohol_percent > 0 ? `${liquor.alcohol_percent}%` : "도수 확인 중"}
+              {liquor.volume > 0 ? ` · ${liquor.volume}ml` : ""}
             </strong>
           </div>
         </div>
@@ -95,12 +120,12 @@ export default function LiquorCard({ liquor }: { liquor: GroupedLiquor }) {
                     )}
                     <span
                       className={`text-sm font-bold ${
-                        v.current_price === liquor.lowest_price
+                        v.current_price === liquor.lowest_price && liquor.lowest_price > 0
                           ? "text-amber-400"
                           : "text-white"
                       }`}
                     >
-                      {formatPrice(v.current_price)}
+                      {v.current_price > 0 ? formatPrice(v.current_price) : "가격 확인 중"}
                     </span>
                   </span>
                 </a>

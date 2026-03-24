@@ -2,17 +2,23 @@ import type { Liquor } from "../types/liquor";
 
 interface LiquorApiResponse {
   id: number;
-  productCode: string;
+  productCode?: string;
+  product_code?: string;
   name: string;
   brand: string;
   category: string;
   volume: number;
-  alcoholPercent: number;
+  alcoholPercent?: number;
+  alcohol_percent?: number;
   country: string;
-  currentPrice: number;
-  originalPrice: number;
-  imageUrl: string;
-  productUrl: string;
+  currentPrice?: number;
+  current_price?: number;
+  originalPrice?: number;
+  original_price?: number;
+  imageUrl?: string;
+  image_url?: string;
+  productUrl?: string;
+  product_url?: string;
   source: string;
 }
 
@@ -33,22 +39,38 @@ export interface LiquorPage {
 }
 
 function toFrontendLiquor(item: LiquorApiResponse): Liquor {
-  const currentPrice = typeof item.currentPrice === "number" ? item.currentPrice : 0;
-  const originalPrice = typeof item.originalPrice === "number" ? item.originalPrice : currentPrice;
+  const currentPrice =
+    typeof item.currentPrice === "number"
+      ? item.currentPrice
+      : typeof item.current_price === "number"
+        ? item.current_price
+        : 0;
+  const originalPrice =
+    typeof item.originalPrice === "number"
+      ? item.originalPrice
+      : typeof item.original_price === "number"
+        ? item.original_price
+        : currentPrice;
+  const alcoholPercent =
+    typeof item.alcoholPercent === "number"
+      ? item.alcoholPercent
+      : typeof item.alcohol_percent === "number"
+        ? item.alcohol_percent
+        : 0;
 
   return {
     id: typeof item.id === "number" ? item.id : 0,
-    product_code: item.productCode ?? "",
+    product_code: item.productCode ?? item.product_code ?? "",
     name: item.name ?? "Unknown",
     brand: item.brand ?? "Unknown",
     category: item.category ?? "Whisky",
     volume: typeof item.volume === "number" ? item.volume : 700,
-    alcohol_percent: typeof item.alcoholPercent === "number" ? item.alcoholPercent : 0,
+    alcohol_percent: alcoholPercent,
     country: item.country ?? "Unknown",
     current_price: currentPrice,
     original_price: originalPrice,
-    image_url: item.imageUrl ?? "",
-    product_url: item.productUrl ?? "",
+    image_url: item.imageUrl ?? item.image_url ?? "",
+    product_url: item.productUrl ?? item.product_url ?? "",
     source: item.source ?? "WHISKY_DB",
   };
 }

@@ -18,6 +18,18 @@ npm run dev
 - `GET /api/liquors`
 - `GET /api/liquors/search?q=...`
 
+현재 구현 기준으로 Supabase 조회 자체는 서버에서만 실행됩니다.
+다만 카탈로그 화면은 `use client` 컴포넌트가 내부 API(`/api/liquors`, `/api/liquors/search`)를 호출하는 구조이므로, "모든 API 호출이 서버 컴포넌트 내부에서만 실행된다"는 의미의 완전한 서버사이드 호출 구조는 아닙니다.
+
+## Next API 작업 체크리스트
+
+- 외부 API, Supabase, 서비스 키가 필요한 호출은 반드시 Route Handler, Server Component, Server Action 같은 서버 경계 안에 둡니다.
+- `use client` 파일에서는 비밀값이 필요한 SDK나 `server-only` 모듈을 직접 import하지 않습니다.
+- 클라이언트에서 호출이 필요하면 외부 서비스가 아니라 내부 API 또는 Server Action만 호출하는지 확인합니다.
+- 새 `fetch`를 추가할 때는 호출 위치가 `use client`인지 먼저 확인하고, 클라이언트 코드라면 비밀값 노출 가능성이 없는지 점검합니다.
+- 응답 매핑, 권한 검증, 에러 정규화가 필요하면 클라이언트가 아니라 서버 경계에서 처리합니다.
+- 작업 마무리 전 `rg -n '"use client"|fetch\\(' frontend/app frontend/src`로 클라이언트 호출 지점을 다시 확인합니다.
+
 로컬 환경 변수 예시:
 
 ```bash
