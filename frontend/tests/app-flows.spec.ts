@@ -48,19 +48,6 @@ const baseLiquorList = [
   },
 ];
 
-const firstChoiceLabels = [
-  "꿀, 캐러멜처럼 달콤한 향",
-  "초콜릿, 카라멜 디저트",
-  "불멍과 훈연 요리",
-  "부드럽고 달콤하게 오래",
-  "강렬할수록 좋다",
-  "바닐라, 토피",
-  "묵직하고 점성 있는 질감",
-  "향의 개성",
-  "달콤해서 입문하기 좋다",
-  "따뜻하고 달달한 밤",
-];
-
 function buildCatalogItems(count: number) {
   return Array.from({ length: count }, (_, index) => ({
     id: index + 1,
@@ -85,29 +72,9 @@ interface MockLiquorApiOptions {
 
 async function mockLiquorApis(
   page: Page,
-  recommendations: unknown[],
   catalogItems = baseLiquorList,
   options?: MockLiquorApiOptions
 ) {
-  await page.route("**/api/liquors/recommendations", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        typeName: "Flavor Explorer",
-        flavorVector: {
-          sweet: 31.2,
-          smoky: 18.8,
-          fruity: 14.5,
-          spicy: 12.3,
-          woody: 13.7,
-          body: 9.5,
-        },
-        recommendations,
-      }),
-    });
-  });
-
   await page.route("**/api/liquors/search**", async (route) => {
     const url = new URL(route.request().url());
     const keyword = url.searchParams.get("q") ?? "";
@@ -153,20 +120,11 @@ async function mockLiquorApis(
   });
 }
 
-async function goToResultPage(page: Page) {
-  await page.getByRole("button", { name: "나의 위스키 취향 찾기" }).click();
-
-  for (let index = 0; index < firstChoiceLabels.length; index += 1) {
-    await page.getByRole("button", { name: firstChoiceLabels[index] }).click();
-    await page.getByRole("button", { name: index === firstChoiceLabels.length - 1 ? "결과 보기" : "다음" }).click();
-  }
-}
-
 test("catalog search shows filtered result count", async ({ page }) => {
-  await mockLiquorApis(page, []);
+  await mockLiquorApis(page);
   await page.goto("/");
 
-  await expect(page.getByRole("heading", { name: "Jururuk" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Whisky Catalog" })).toBeVisible();
   await expect(page.getByText("Talisker 10")).toBeVisible();
 
   const searchBox = page.getByPlaceholder("위스키 이름, 브랜드로 검색...");
@@ -181,7 +139,7 @@ test("catalog loads next page on scroll", async ({ page }) => {
   const largeCatalog = buildCatalogItems(30);
   const requestedCatalogPages: number[] = [];
 
-  await mockLiquorApis(page, [], largeCatalog, {
+  await mockLiquorApis(page, largeCatalog, {
     onCatalogPageRequested: (catalogPage) => requestedCatalogPages.push(catalogPage),
   });
   await page.goto("/");
@@ -199,45 +157,4 @@ test("catalog loads next page on scroll", async ({ page }) => {
   await expect(page.getByText("Bottle 30")).toBeVisible();
   expect(requestedCatalogPages).toContain(0);
   expect(requestedCatalogPages).toContain(1);
-});
-
-test("quiz completion shows server recommendation results", async ({ page }) => {
-  await mockLiquorApis(page, [
-    {
-      liquor: {
-        id: 99,
-        productCode: "MAC-12-REC",
-        name: "Macallan 12 Year Old",
-        brand: "Macallan",
-        category: "Single Malt",
-        volume: 700,
-        alcoholPercent: 40,
-        country: "Scotland",
-        currentPrice: 88000,
-        originalPrice: 98000,
-        imageUrl: "https://example.com/macallan-12-rec.jpg",
-        productUrl: "https://example.com/macallan-12-rec",
-        source: "LOTTEON",
-      },
-      similarity: 0.87,
-      reason: "달콤함과 오크 노트를 좋아하는 성향에 잘 맞는 선택입니다.",
-    },
-  ]);
-
-  await page.goto("/");
-  await goToResultPage(page);
-
-  await expect(page.getByText("당신에게 맞는 위스키 Top 5")).toBeVisible();
-  await expect(page.getByText("Macallan 12 Year Old")).toBeVisible();
-  await expect(page.getByRole("button", { name: "테스트 다시 하기" })).toBeVisible();
-});
-
-test("quiz falls back to local recommendations when API returns empty list", async ({ page }) => {
-  await mockLiquorApis(page, []);
-  await page.goto("/");
-  await goToResultPage(page);
-
-  await expect(page.getByText("Flavor Explorer")).toBeVisible();
-  await expect(page.getByText("선호하신").first()).toBeVisible();
-  await expect(page.locator("article")).toHaveCount(2);
 });

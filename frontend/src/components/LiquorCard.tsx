@@ -1,4 +1,4 @@
-import { useState } from "react";
+import Image from "next/image";
 import type { GroupedLiquor } from "../types/liquor";
 
 function normalizePrice(value: number) {
@@ -11,19 +11,16 @@ function formatPrice(price: number) {
 }
 
 export default function LiquorCard({ liquor }: { liquor: GroupedLiquor }) {
-  const [hovered, setHovered] = useState(false);
-
   return (
-    <div
-      className="relative bg-white rounded-2xl shadow-md overflow-hidden transition-transform hover:scale-[1.02] hover:shadow-xl"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <div className="aspect-[3/4] overflow-hidden bg-gray-100">
-        <img
+    <div className="group relative overflow-hidden rounded-2xl bg-white shadow-md transition-transform hover:scale-[1.02] hover:shadow-xl">
+      <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
+        <Image
           src={liquor.image_url || "https://jeqvxzkvumkiraclauvo.supabase.co/storage/v1/object/public/whisky-images/default_whisky.webp"}
           alt={liquor.name}
-          className="w-full h-full object-cover"
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
+          className="h-full w-full object-cover"
+          unoptimized
         />
       </div>
       <div className="p-4">
@@ -42,46 +39,43 @@ export default function LiquorCard({ liquor }: { liquor: GroupedLiquor }) {
         </p>
       </div>
 
-      {/* 호버 오버레이 */}
-      {hovered && (
-        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col justify-end p-4 transition-opacity">
-          <h4 className="text-white font-bold text-sm mb-3">판매처별 가격</h4>
-          <ul className="space-y-2">
-            {liquor.vendors
-              .sort((a, b) => a.current_price - b.current_price)
-              .map((v) => (
-                <li key={v.source}>
-                  <a
-                    href={v.product_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between bg-white/10 hover:bg-white/20 rounded-lg px-3 py-2 transition-colors"
-                  >
-                    <span className="text-white text-sm font-medium">
-                      {v.source}
-                    </span>
-                    <span className="flex items-center gap-2">
-                      {v.original_price > v.current_price && (
-                        <span className="text-gray-400 text-xs line-through">
-                          {formatPrice(v.original_price)}
-                        </span>
-                      )}
-                      <span
-                        className={`font-bold text-sm ${
-                          v.current_price === liquor.lowest_price
-                            ? "text-amber-400"
-                            : "text-white"
-                        }`}
-                      >
-                        {formatPrice(v.current_price)}
+      <div className="absolute inset-0 flex flex-col justify-end bg-black/70 p-4 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
+        <h4 className="mb-3 text-sm font-bold text-white">판매처별 가격</h4>
+        <ul className="space-y-2">
+          {liquor.vendors
+            .sort((a, b) => a.current_price - b.current_price)
+            .map((v) => (
+              <li key={v.source}>
+                <a
+                  href={v.product_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between rounded-lg bg-white/10 px-3 py-2 transition-colors hover:bg-white/20"
+                >
+                  <span className="text-sm font-medium text-white">
+                    {v.source}
+                  </span>
+                  <span className="flex items-center gap-2">
+                    {v.original_price > v.current_price && (
+                      <span className="text-xs text-gray-400 line-through">
+                        {formatPrice(v.original_price)}
                       </span>
+                    )}
+                    <span
+                      className={`text-sm font-bold ${
+                        v.current_price === liquor.lowest_price
+                          ? "text-amber-400"
+                          : "text-white"
+                      }`}
+                    >
+                      {formatPrice(v.current_price)}
                     </span>
-                  </a>
-                </li>
-              ))}
-          </ul>
-        </div>
-      )}
+                  </span>
+                </a>
+              </li>
+            ))}
+        </ul>
+      </div>
     </div>
   );
 }

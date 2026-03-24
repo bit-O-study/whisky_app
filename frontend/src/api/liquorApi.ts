@@ -32,8 +32,6 @@ export interface LiquorPage {
   hasNext: boolean;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
-
 function toFrontendLiquor(item: LiquorApiResponse): Liquor {
   const currentPrice = typeof item.currentPrice === "number" ? item.currentPrice : 0;
   const originalPrice = typeof item.originalPrice === "number" ? item.originalPrice : currentPrice;
@@ -69,7 +67,7 @@ export async function fetchLiquors({ searchQuery, page = 0, size = 24, signal }:
     ? `/api/liquors/search?q=${encodeURIComponent(trimmed)}&${pagingQuery}`
     : `/api/liquors?${pagingQuery}`;
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, { signal });
+  const response = await fetch(endpoint, { signal });
   if (!response.ok) {
     throw new Error(`주류 목록 조회 실패: ${response.status}`);
   }

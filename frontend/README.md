@@ -1,6 +1,6 @@
 # frontend
 
-React 19 + TypeScript + Vite 기반 주류 가격 조회 프론트엔드입니다.
+Next.js App Router + TypeScript 기반 주류 가격 조회 프론트엔드입니다.
 
 ## 실행
 
@@ -9,21 +9,22 @@ npm install
 npm run dev
 ```
 
-기본 개발 서버 주소: `http://localhost:5173`
+기본 개발 서버 주소: `http://localhost:3000`
 
-## 백엔드 연동
+## Supabase 연동
 
-프론트는 아래 API를 사용합니다.
+프론트는 Next.js 내부 API를 통해 Supabase를 조회합니다.
 
 - `GET /api/liquors`
 - `GET /api/liquors/search?q=...`
 
-기본 API Base URL: `http://localhost:8080`
-
-다른 주소를 쓰려면 `frontend/.env`에 설정하세요.
+로컬 환경 변수 예시:
 
 ```bash
-VITE_API_BASE_URL=http://localhost:8080
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+# 또는 서버 전용 키 사용
+SUPABASE_SERVICE_ROLE_KEY=...
 ```
 
 ## 스크립트
@@ -31,8 +32,8 @@ VITE_API_BASE_URL=http://localhost:8080
 ```bash
 npm run dev
 npm run build
+npm run start
 npm run lint
-npm run preview
 npm run test:e2e
 npm run test:e2e:headed
 npm run test:e2e:ui
