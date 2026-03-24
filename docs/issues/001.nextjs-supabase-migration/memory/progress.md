@@ -6,3 +6,12 @@
 - 2026-03-24 16:43: 구현 계획에 TDD 원칙과 phase별 테스트 선행 방식을 명시.
 - 2026-03-24 16:43: `implementation-plan.md`에 체크리스트 상태 규칙(`[ ]`, `[-]`, `[x]`)을 추가하고 phase별 작업을 체크 가능 형태로 정리.
 - 2026-03-24 16:43: phase 제목에도 상태 체크를 붙여 상위 진행률을 한눈에 볼 수 있게 정리.
+- 2026-03-24 16:49: 프론트 전환 범위를 Next.js 실제 전환으로 확정.
+- 2026-03-24 16:49: 추천 기능은 이전하지 않고 제거하는 방향으로 요구사항과 구현 계획을 수정.
+- 2026-03-24 16:49: 현재 구조 점검 결과 프론트는 `frontend/src/api/*.ts`를 통해 Spring `backend/api`에 직접 의존하고 있으며, Next.js/Supabase 데이터 접근 계층은 아직 없음을 확인.
+- 2026-03-24 16:56: `frontend`를 Vite 진입점에서 Next.js App Router 구조(`app/`, `app/api/`)로 전환하고 `package.json`, `tsconfig.json`, `playwright.config.ts`, `eslint.config.js`를 Next 기준으로 갱신.
+- 2026-03-24 16:56: `frontend/src/components/CatalogPageClient.tsx`를 추가해 목록/검색 핵심 흐름만 유지하는 카탈로그 화면으로 재구성하고 추천 관련 UI/상태/컴포넌트를 제거.
+- 2026-03-24 16:56: `frontend/app/api/liquors/**`와 `frontend/src/lib/liquors.ts`를 추가해 Next 내부 API가 Supabase `liquor`, `liquor_price` 테이블을 직접 조회하도록 구현.
+- 2026-03-24 16:56: Playwright 테스트를 추천 제거 이후 시나리오로 정리하고 `npm run lint`, `npm run build`, `npm run test:e2e`를 통과.
+- 2026-03-24 16:56: `backend/api`에서 `/api/liquors/recommendations` 엔드포인트와 `WhiskyRecommendationService`를 제거하고, 추천 전용 DTO를 정리.
+- 2026-03-24 16:56: `backend/crawler`는 중간 적재 계층 없이 JPA Repository를 통해 Supabase가 연결된 Postgres 테이블에 직접 적재하는 방향으로 결정하고 문서에 반영.
