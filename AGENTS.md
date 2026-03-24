@@ -42,7 +42,7 @@ Java는 스페이스 4칸 들여쓰기를 사용하고, Spring 패키지명은 `
 백엔드 테스트는 `backend/*/src/test/java`에 두며, 일반적으로 JUnit Platform 기반 `@SpringBootTest`를 사용합니다. 테스트 클래스명은 `ApiApplicationTests`처럼 `*Tests` 패턴을 따릅니다. 프론트 기본 검증은 `npm run lint`와 `npm run build`이며, UI 흐름이나 API 연동 동작이 바뀌면 `npm run test:e2e`도 실행하세요.
 
 ## 커밋 및 Pull Request 가이드
-커밋 메시지는 `feat: ...`, `fix: ...`, `refactor: ...` 같은 Conventional Commits 형식을 따릅니다. 커밋은 `api`, `crawler`, `frontend`처럼 변경 영역별로 작게 유지하세요. PR에는 동작 변경 요약, 실행한 검증 명령, 관련 이슈 링크가 있으면 포함하고, 프론트 시각 변경이 있다면 스크린샷이나 GIF를 첨부하세요.
+커밋 메시지는 `feat: ...`, `fix: ...`, `refactor: ...` 같은 Conventional Commits 형식을 따르며, 제목과 설명은 한국어로 작성합니다. 커밋은 `api`, `crawler`, `frontend`처럼 변경 영역별로 작게 유지하세요. PR에는 동작 변경 요약, 실행한 검증 명령, 관련 이슈 링크가 있으면 포함하고, 프론트 시각 변경이 있다면 스크린샷이나 GIF를 첨부하세요.
 
 ## 보안 및 설정 메모
 비밀값은 절대 커밋하지 마세요. 백엔드 DB 설정은 `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` 환경변수를 사용합니다. 프론트와 백엔드 연동을 바꿀 때는 로컬 CORS와 API URL 동작을 확인하고, 크롤러 작업 전에는 Chrome/Selenium 호환성을 점검하세요.
