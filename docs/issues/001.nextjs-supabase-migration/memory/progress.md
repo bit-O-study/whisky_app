@@ -15,3 +15,8 @@
 - 2026-03-24 16:56: Playwright 테스트를 추천 제거 이후 시나리오로 정리하고 `npm run lint`, `npm run build`, `npm run test:e2e`를 통과.
 - 2026-03-24 16:56: `backend/api`에서 `/api/liquors/recommendations` 엔드포인트와 `WhiskyRecommendationService`를 제거하고, 추천 전용 DTO를 정리.
 - 2026-03-24 16:56: `backend/crawler`는 중간 적재 계층 없이 JPA Repository를 통해 Supabase가 연결된 Postgres 테이블에 직접 적재하는 방향으로 결정하고 문서에 반영.
+- 2026-03-24 17:07: 현재 연결된 Supabase MCP 프로젝트가 저장소와 다른 프로젝트(`guestbook_entries`, `comments`, `profiles`)임을 확인하고, 실제 원격 변경 대신 로컬 스키마 초안 작성 방식으로 전환.
+- 2026-03-24 17:07: `memory/supabase-schema-draft.sql`에 `liquor`, `liquor_price`, `liquor_info` 테이블, 인덱스, 트리거, `liquor_catalog_latest_price` 뷰 초안을 작성.
+- 2026-03-24 17:07: `memory/supabase-data-model.md`에 조회 규격, 크롤러 적재 경로, 읽기/쓰기 모델을 정리하고 Phase 1/2 진행 상태를 갱신.
+- 2026-03-24 17:09: Spring 조회 API를 병행 운영 없이 즉시 제거하기로 결정하고 `LiquorController`, `LiquorQueryService`, `LiquorPageResponseDto`를 삭제.
+- 2026-03-24 17:09: 기본 이미지는 현재 Supabase Storage 공개 경로 fallback을 유지하고 별도 이미지 정책 변경은 하지 않기로 문서에 반영.
