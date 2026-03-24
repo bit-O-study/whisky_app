@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Data;
 import org.bito.liquor.common.model.Liquor;
 import org.bito.liquor.common.model.LiquorPrice;
-import org.bito.liquor.common.model.Whisky;
 
 import java.time.LocalDateTime;
 

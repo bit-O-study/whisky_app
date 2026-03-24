@@ -5,10 +5,8 @@ import org.bito.liquor.common.dto.LiquorDto;
 import org.bito.liquor.common.dto.LiquorPageResponseDto;
 import org.bito.liquor.common.model.Liquor;
 import org.bito.liquor.common.model.LiquorPrice;
-import org.bito.liquor.common.model.Whisky;
 import org.bito.liquor.common.repository.LiquorPriceRepository;
 import org.bito.liquor.common.repository.LiquorRepository;
-import org.bito.liquor.common.repository.WhiskyRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,21 +21,14 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class LiquorQueryService {
 
-    private final WhiskyRepository whiskyRepository;
     private final LiquorRepository liquorRepository;
     private final LiquorPriceRepository liquorPriceRepository;
 
-//    public LiquorPageResponseDto getAllLiquors(int page, int size) {
-//        Pageable pageable = PageRequest.of(page, size);
-//        Page<Whisky> whiskies = whiskyRepository.findAllByOrderByUpdatedAtDesc(pageable);
-//        return toPagedDto(whiskies, page, size);
-//    }
-// 1. 전체 조회 (페이징)
-public LiquorPageResponseDto getAllLiquors(int page, int size) {
-    Pageable pageable = PageRequest.of(page, size);
-    Page<Liquor> liquors = liquorRepository.findAllByOrderByUpdatedAtDesc(pageable);
-    return toPagedDto(liquors, page, size);
-}
+    public LiquorPageResponseDto getAllLiquors(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Liquor> liquors = liquorRepository.findAllByOrderByUpdatedAtDesc(pageable);
+        return toPagedDto(liquors, page, size);
+    }
 
     // 2. 키워드 검색 (페이징)
     public LiquorPageResponseDto searchLiquors(String keyword, int page, int size) {
