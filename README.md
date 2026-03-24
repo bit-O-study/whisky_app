@@ -32,6 +32,7 @@ cd backend
 
 조회 카탈로그는 Spring API가 아니라 Next.js에서 Supabase를 직접 조회합니다.
 `backend/api`는 현재 핵심 조회 경로가 아니며, 필요 시에만 별도 실행합니다.
+`backend/.env`가 있으면 `:crawler:bootRun`, `:api:bootRun` 실행 시 자동으로 로드됩니다.
 
 ### 2. 프론트엔드 실행
 
@@ -45,10 +46,11 @@ npm run dev
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-# 또는 서버 전용 조회/적재용 키
 SUPABASE_SERVICE_ROLE_KEY=...
 ```
+
+`NEXT_PUBLIC_*`에는 공개 가능한 anon 또는 publishable 키만 넣어야 합니다.
+`sb_secret_...` 형태의 키는 브라우저 노출 변수에 넣지 않고 서버 전용 변수(`SUPABASE_SERVICE_ROLE_KEY` 또는 `SUPABASE_SERVICE_KEY`)로만 사용합니다.
 
 ## 환경 설정
 
@@ -57,6 +59,8 @@ SUPABASE_SERVICE_ROLE_KEY=...
 - `DB_URL`
 - `DB_USERNAME`
 - `DB_PASSWORD`
+
+로컬 개발 시에는 `backend/.env`에 두면 `bootRun` 계열 명령에서 자동으로 반영됩니다.
 
 추가로 `backend/api`의 이미지 업로드 기능을 쓸 경우 아래도 필요합니다.
 
@@ -69,6 +73,14 @@ SUPABASE_SERVICE_ROLE_KEY=...
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `SUPABASE_SERVICE_KEY`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+로컬 개발 시에는 `frontend/.env.local`을 사용합니다.
+
+## MCP 메모
+
+- 저장소 로컬 MCP 설정은 `.mcp.json`을 사용합니다.
+- Supabase MCP는 `bitO` 프로젝트 ref `jeqvxzkvumkiraclauvo` 기준으로 고정해 사용합니다.
+- Supabase MCP personal access token은 파일에 직접 넣지 않고 셸 환경변수 `SUPABASE_ACCESS_TOKEN`으로 주입합니다.
 
 ## 주요 명령어
 

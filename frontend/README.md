@@ -22,10 +22,11 @@ npm run dev
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-# 또는 서버 전용 키 사용
 SUPABASE_SERVICE_ROLE_KEY=...
 ```
+
+`NEXT_PUBLIC_*`에는 공개 가능한 anon/publishable 키만 넣어야 합니다.
+`sb_secret_...` 형태의 키는 브라우저에 노출되면 안 되므로 서버 전용 변수로만 사용합니다.
 
 ## 스크립트
 

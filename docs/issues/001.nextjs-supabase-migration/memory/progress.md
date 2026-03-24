@@ -23,3 +23,16 @@
 - 2026-03-24 17:12: 루트 `README.md`를 Next.js + Supabase + crawler 적재 구조 기준으로 갱신하고, 환경변수/로컬 실행/크롤러 운영 메모를 최신화.
 - 2026-03-24 17:12: `implementation-plan.md`의 Phase 5에서 크롤러 운영 문서와 전환 이후 실행 문서 갱신 항목을 완료 처리.
 - 2026-03-24 17:13: 조회 API 제거 전 계약 안전망 테스트 분리는 이번 이슈 범위 밖의 후속 안정화 작업으로 이관하고, Phase 5를 완료 처리.
+- 2026-03-24 17:20: 로컬 Supabase 연결 점검 결과 원격 Postgres와 `liquor`, `liquor_price` 테이블은 정상 응답함을 확인했고, 실행 실패 원인을 로컬 환경변수 누락으로 정리했다.
+- 2026-03-24 17:20: `frontend/.env.local`, `backend/.env` 로컬 환경 파일을 추가해 Supabase URL, Postgres 접속 문자열, 버킷 이름 기본값을 즉시 주입할 수 있게 정리했다.
+- 2026-03-24 17:24: 실제 연결에 우선 필요한 값만 남기기 위해 로컬 env 파일에서 service role/storage 관련 선택 항목을 제거했다.
+- 2026-03-24 22:14: `frontend` 의존성을 재설치해 `next` 실행 파일 누락 상태를 해소했고, `npm run build`가 `.env.local`을 읽어 성공하는 것을 확인했다.
+- 2026-03-24 22:14: `backend/build.gradle`에 `.env` 로더를 추가해 `:api:bootRun`, `:crawler:bootRun` 실행 시 `backend/.env`의 DB 접속 정보를 자동 주입하도록 정리했다.
+- 2026-03-24 22:15: `./gradlew :crawler:bootRun`으로 Supabase Postgres 연결과 JPA 초기화를 검증했고, `curl http://localhost:3000/api/liquors?page=0&size=2`로 Next.js 내부 API의 Supabase 조회 응답을 확인했다.
+- 2026-03-24 22:15: 루트 `README.md`에 `backend/.env`, `frontend/.env.local` 사용 방식과 `NEXT_PUBLIC_*`에 비밀 키를 두지 말아야 한다는 주의사항을 반영했다.
+- 2026-03-24 22:18: `frontend/src/lib/supabase.ts`를 `server-only` 모듈로 고정하고 `NEXT_PUBLIC_SUPABASE_ANON_KEY` fallback을 제거해 서버 전용 Supabase 키만 사용하도록 정리했다.
+- 2026-03-24 22:18: `frontend/.env.local`에서 `sb_secret_...` 값을 `NEXT_PUBLIC_SUPABASE_ANON_KEY`에서 제거하고 `SUPABASE_SERVICE_ROLE_KEY`로 옮겼다.
+- 2026-03-24 22:18: `frontend/README.md`, 루트 `README.md`에 secret 키를 `NEXT_PUBLIC_*`에 두지 않는 규칙을 명시했다.
+- 2026-03-24 22:22: 로컬 `.mcp.json`의 Supabase MCP 설정에서 personal access token 평문 값을 제거하고, `SUPABASE_ACCESS_TOKEN` 환경변수를 사용하도록 정리했다.
+- 2026-03-24 22:22: Supabase MCP 시작 옵션에 `--project-ref jeqvxzkvumkiraclauvo`를 추가해 `bitO` 프로젝트 기준으로 고정했다.
+- 2026-03-24 22:22: 루트 `README.md`에 로컬 MCP 사용 규칙과 `bitO` 프로젝트 ref를 문서화했다.
