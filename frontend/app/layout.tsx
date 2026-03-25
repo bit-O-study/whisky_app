@@ -4,14 +4,14 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://bit-o-liquor.vercel.app"),
-  title: "Jururuk",
-  description: "주류 목록과 최저가를 탐색하는 사이트",
+  title: "Jururuk | 주류 가격 비교 사이트",
+  description: "Jururuk에서 위스키, 와인 등 주류 가격과 최저가를 검색하고 비교해보세요.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Jururuk",
-    description: "주류 목록과 최저가를 탐색하는 사이트",
+    title: "Jururuk | 주류 가격 비교 사이트",
+    description: "Jururuk에서 위스키, 와인 등 주류 가격과 최저가를 검색하고 비교해보세요.",
     url: "/",
     siteName: "Jururuk",
     locale: "ko_KR",
@@ -19,8 +19,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Jururuk",
-    description: "주류 목록과 최저가를 탐색하는 사이트",
+    title: "Jururuk | 주류 가격 비교 사이트",
+    description: "Jururuk에서 위스키, 와인 등 주류 가격과 최저가를 검색하고 비교해보세요.",
   },
   robots: {
     index: true,

@@ -39,3 +39,4 @@
 - 2026-03-25 00:00: `frontend/app/layout.tsx`에 Google Search Console 소유권 확인용 `google-site-verification` 메타데이터를 추가해 Vercel 배포 URL 기준 `URL 접두어 속성` 인증이 가능하도록 했다.
 - 2026-03-25 00:10: `frontend/app/layout.tsx`에 `metadataBase`, canonical, Open Graph, Twitter, robots 메타데이터를 추가하고 설명 문구를 사이트 기준으로 정리했다.
 - 2026-03-25 00:10: `frontend/app/robots.ts`, `frontend/app/sitemap.ts`를 추가해 `bit-o-liquor.vercel.app` 기준 크롤링 허용과 기본 사이트맵을 노출하도록 설정했다.
+- 2026-03-25 00:20: 홈 메타데이터 문구를 `Jururuk | 주류 가격 비교 사이트`와 `위스키, 와인, 최저가 검색/비교` 중심으로 조정해 브랜드명과 주요 검색어가 함께 노출되도록 정리했다.
