@@ -37,3 +37,5 @@
 - 2026-03-24 22:22: Supabase MCP 시작 옵션에 `--project-ref jeqvxzkvumkiraclauvo`를 추가해 `bitO` 프로젝트 기준으로 고정했다.
 - 2026-03-24 22:22: 루트 `README.md`에 로컬 MCP 사용 규칙과 `bitO` 프로젝트 ref를 문서화했다.
 - 2026-03-25 00:00: `frontend/app/layout.tsx`에 Google Search Console 소유권 확인용 `google-site-verification` 메타데이터를 추가해 Vercel 배포 URL 기준 `URL 접두어 속성` 인증이 가능하도록 했다.
+- 2026-03-25 00:10: `frontend/app/layout.tsx`에 `metadataBase`, canonical, Open Graph, Twitter, robots 메타데이터를 추가하고 설명 문구를 사이트 기준으로 정리했다.
+- 2026-03-25 00:10: `frontend/app/robots.ts`, `frontend/app/sitemap.ts`를 추가해 `bit-o-liquor.vercel.app` 기준 크롤링 허용과 기본 사이트맵을 노출하도록 설정했다.
