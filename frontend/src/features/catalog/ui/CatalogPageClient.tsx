@@ -1,17 +1,23 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { fetchLiquors, type LiquorPage } from "../api/liquorApi";
+import type { Liquor } from "../../../entities/liquor/model/liquor";
+import { fetchCatalogPage } from "../api/catalog-client";
+import {
+  getCatalogLoadErrorMessage,
+  groupCatalogLiquors,
+  mergeCatalogPageItems,
+  shouldSkipInitialCatalogRequest,
+  type CatalogPage,
+} from "../model/catalog";
 import LiquorGrid from "./LiquorGrid";
-import type { GroupedLiquor, Liquor } from "../types/liquor";
-import { groupLiquors } from "../utils/groupLiquors";
 
 interface CatalogPageClientProps {
   initialError?: string | null;
-  initialPage?: LiquorPage;
+  initialPage?: CatalogPage;
 }
 
-const EMPTY_LIQUOR_PAGE: LiquorPage = {
+const EMPTY_CATALOG_PAGE: CatalogPage = {
   items: [],
   page: 0,
   size: 24,
@@ -20,8 +26,9 @@ const EMPTY_LIQUOR_PAGE: LiquorPage = {
 
 export default function CatalogPageClient({
   initialError = null,
-  initialPage = EMPTY_LIQUOR_PAGE,
+  initialPage = EMPTY_CATALOG_PAGE,
 }: CatalogPageClientProps) {
+  const initialItemCount = initialPage.items.length;
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [liquors, setLiquors] = useState<Liquor[]>(initialPage.items);
@@ -51,9 +58,14 @@ export default function CatalogPageClient({
 
     if (
       shouldSkipInitialRequestRef.current &&
-      debouncedSearchQuery === "" &&
-      liquorPage === initialPage.page &&
-      reloadToken === 0
+      shouldSkipInitialCatalogRequest({
+        hasInitialItems: initialItemCount > 0,
+        hasInitialError: Boolean(initialError),
+        query: debouncedSearchQuery,
+        page: liquorPage,
+        initialPage: initialPage.page,
+        reloadToken,
+      })
     ) {
       shouldSkipInitialRequestRef.current = false;
       return () => {
@@ -70,7 +82,7 @@ export default function CatalogPageClient({
         }
         setError(null);
 
-        const data = await fetchLiquors({
+        const data = await fetchCatalogPage({
           searchQuery: debouncedSearchQuery,
           page: liquorPage,
           size: 24,
@@ -78,7 +90,7 @@ export default function CatalogPageClient({
         });
 
         if (!controller.signal.aborted) {
-          setLiquors((previous) => (liquorPage === 0 ? data.items : [...previous, ...data.items]));
+          setLiquors((previous) => mergeCatalogPageItems(previous, data, liquorPage));
           setHasNextLiquorPage(data.hasNext);
           setError(null);
         }
@@ -89,11 +101,7 @@ export default function CatalogPageClient({
             searchQuery: debouncedSearchQuery,
             loadError,
           });
-          setError(
-            liquorPage === 0
-              ? "데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요."
-              : "추가 목록을 불러오지 못했습니다. 다시 시도해주세요.",
-          );
+          setError(getCatalogLoadErrorMessage(liquorPage));
           if (liquorPage === 0) {
             setLiquors([]);
           }
@@ -113,7 +121,7 @@ export default function CatalogPageClient({
     return () => {
       controller.abort();
     };
-  }, [debouncedSearchQuery, initialPage.page, liquorPage, reloadToken]);
+  }, [debouncedSearchQuery, initialError, initialItemCount, initialPage.page, liquorPage, reloadToken]);
 
   useEffect(() => {
     const target = loadMoreRef.current;
@@ -142,7 +150,7 @@ export default function CatalogPageClient({
     };
   }, [error, hasNextLiquorPage, loading, loadingMore]);
 
-  const groupedLiquors: GroupedLiquor[] = groupLiquors(liquors);
+  const groupedLiquors = groupCatalogLiquors(liquors);
   function handleLogoClick() {
     setSearchQuery("");
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });

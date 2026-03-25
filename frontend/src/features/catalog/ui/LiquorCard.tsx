@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { GroupedLiquor } from "../types/liquor";
+import type { CatalogCardItem } from "../model/catalog";
 
 function normalizePrice(value: number) {
   return Number.isFinite(value) && value > 0 ? value : 0;
@@ -14,7 +14,7 @@ function formatMetaValue(value: string, fallback: string) {
   return value && value !== "Unknown" ? value : fallback;
 }
 
-function formatSpecLine(liquor: GroupedLiquor) {
+function formatSpecLine(liquor: CatalogCardItem) {
   const parts: string[] = [];
 
   if (liquor.country && liquor.country !== "Unknown") {
@@ -31,7 +31,7 @@ function formatSpecLine(liquor: GroupedLiquor) {
 }
 
 interface LiquorCardProps {
-  liquor: GroupedLiquor;
+  liquor: CatalogCardItem;
   prioritizeImage?: boolean;
 }
 
