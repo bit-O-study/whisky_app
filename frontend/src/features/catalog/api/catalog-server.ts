@@ -38,6 +38,12 @@ interface LiquorCatalogLatestPriceRow extends LiquorRow {
   crawled_at: string | null;
 }
 
+interface LiquorPriceLike {
+  source: string | null;
+  current_price: number | null;
+  original_price: number | null;
+}
+
 type CatalogSearchMode = "none" | "short" | "trigram";
 
 interface CatalogSearchPlan {
@@ -140,7 +146,7 @@ function normalizeText(value: string | null | undefined, fallback = "") {
   return typeof value === "string" ? value : fallback;
 }
 
-function mapLiquorRow(row: LiquorRow, price: LiquorPriceRow | null): Liquor {
+function mapLiquorRow(row: LiquorRow, price: LiquorPriceLike | null): Liquor {
   return {
     id: row.id,
     product_code: normalizeText(row.product_code),
