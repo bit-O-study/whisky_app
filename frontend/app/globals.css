@@ -2,56 +2,31 @@
 
 :root {
   color-scheme: light;
-  --catalog-bg-top: #fff7ed;
-  --catalog-bg-mid: #fffaf5;
-  --catalog-bg-bottom: #eef2f7;
+  --catalog-bg-solid: #f4efe8;
   --catalog-ink: #1c1917;
   --catalog-muted: #57534e;
   --catalog-panel: rgba(255, 255, 255, 0.78);
 }
 
 html {
-  background:
-    radial-gradient(circle at top, rgba(245, 158, 11, 0.16), transparent 28%),
-    radial-gradient(circle at 85% 18%, rgba(120, 53, 15, 0.12), transparent 22%),
-    linear-gradient(180deg, var(--catalog-bg-top) 0%, var(--catalog-bg-mid) 38%, var(--catalog-bg-bottom) 100%);
+  min-height: 100%;
+  background-color: var(--catalog-bg-solid);
   scroll-behavior: smooth;
 }
 
 body {
   min-height: 100vh;
+  margin: 0;
   color: var(--catalog-ink);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.1)),
-    transparent;
+  background-color: var(--catalog-bg-solid);
 }
 
 * {
   box-sizing: border-box;
 }
 
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
-  background-size: 32px 32px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.18), transparent 72%);
-  z-index: -1;
-}
-
 .catalog-shell {
-  background:
-    radial-gradient(circle at top left, rgba(251, 191, 36, 0.14), transparent 26%),
-    radial-gradient(circle at bottom right, rgba(148, 163, 184, 0.16), transparent 28%);
-}
-
-.catalog-hero {
-  background:
-    linear-gradient(135deg, rgba(255, 251, 235, 0.96), rgba(255, 255, 255, 0.92) 52%, rgba(250, 245, 255, 0.7) 100%);
+  background-color: var(--catalog-bg-solid);
 }
 
 .catalog-metric {
