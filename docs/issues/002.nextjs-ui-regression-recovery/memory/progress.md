@@ -38,3 +38,4 @@
 - 2026-03-24 22:48: 헤더 텍스트를 `Jururuk`만 남기도록 정리하고, 관련 Playwright 테스트를 새 접근성 이름 기준으로 갱신했다.
 - 2026-03-24 22:49: 최종 상태를 기준으로 `frontend`에서 `npm run lint`, `npm run build`, `npm run test:e2e`를 다시 수행해 모두 통과했다.
 - 2026-03-24 22:50: 이슈 문서를 최신 구현 상태로 정리했고, 중간 인계용 `docs/issues/002.nextjs-ui-regression-recovery/HANDOFF.md`는 제거했다.
+- 2026-03-25 08:55: Vercel Speed Insights 계측을 위해 `frontend/app/layout.tsx`에 `@vercel/speed-insights/next`의 `<SpeedInsights />`를 전역으로 추가했다.
