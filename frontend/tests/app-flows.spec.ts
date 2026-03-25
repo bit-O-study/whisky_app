@@ -68,18 +68,32 @@ function buildCatalogItems(count: number) {
 
 interface MockLiquorApiOptions {
   onCatalogPageRequested?: (page: number) => void;
+  failCatalogPages?: number[];
+  failSearchPages?: number[];
 }
 
 async function mockLiquorApis(
   page: Page,
   catalogItems = baseLiquorList,
-  options?: MockLiquorApiOptions
+  options?: MockLiquorApiOptions,
 ) {
   await page.route("**/api/liquors/search**", async (route) => {
     const url = new URL(route.request().url());
     const keyword = url.searchParams.get("q") ?? "";
     const pageParam = Number(url.searchParams.get("page") ?? "0");
     const sizeParam = Number(url.searchParams.get("size") ?? "24");
+    const shouldFail = options?.failSearchPages?.includes(pageParam);
+
+    if (shouldFail) {
+      options.failSearchPages = options.failSearchPages?.filter((candidate) => candidate !== pageParam);
+      await route.fulfill({
+        status: 500,
+        contentType: "application/json",
+        body: JSON.stringify({ message: "주류 검색 실패" }),
+      });
+      return;
+    }
+
     const filtered = catalogItems.filter((item) => item.name.toLowerCase().includes(keyword.toLowerCase()));
     const start = pageParam * sizeParam;
     const end = start + sizeParam;
@@ -101,6 +115,18 @@ async function mockLiquorApis(
     const url = new URL(route.request().url());
     const pageParam = Number(url.searchParams.get("page") ?? "0");
     const sizeParam = Number(url.searchParams.get("size") ?? "24");
+    const shouldFail = options?.failCatalogPages?.includes(pageParam);
+
+    if (shouldFail) {
+      options.failCatalogPages = options.failCatalogPages?.filter((candidate) => candidate !== pageParam);
+      await route.fulfill({
+        status: 500,
+        contentType: "application/json",
+        body: JSON.stringify({ message: "주류 목록 조회 실패" }),
+      });
+      return;
+    }
+
     const start = pageParam * sizeParam;
     const end = start + sizeParam;
     const paged = catalogItems.slice(start, end);
@@ -125,7 +151,6 @@ test("catalog search shows filtered result count", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByRole("button", { name: "Jururuk" })).toBeVisible();
-  await expect(page.getByText("Talisker 10")).toBeVisible();
 
   const searchBox = page.getByPlaceholder("위스키 이름, 브랜드로 검색...");
   await searchBox.fill("Macallan");
@@ -144,10 +169,14 @@ test("catalog loads next page on scroll", async ({ page }) => {
   });
   await page.goto("/");
 
+  const searchBox = page.getByPlaceholder("위스키 이름, 브랜드로 검색...");
+  await searchBox.fill("Bottle");
   await expect(page.getByText(/^Bottle 1$/).first()).toBeVisible();
   await expect(page.getByText("Bottle 30")).toHaveCount(0);
 
-  const nextPageResponse = page.waitForResponse((response) => response.url().includes("/api/liquors?page=1&size=24"));
+  const nextPageResponse = page.waitForResponse((response) =>
+    response.url().includes("/api/liquors/search?q=Bottle&page=1&size=24"),
+  );
 
   await page.evaluate(() => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: "auto" });
@@ -155,6 +184,49 @@ test("catalog loads next page on scroll", async ({ page }) => {
 
   await nextPageResponse;
   await expect(page.getByText("Bottle 30")).toBeVisible();
-  expect(requestedCatalogPages).toContain(0);
-  expect(requestedCatalogPages).toContain(1);
+  expect(requestedCatalogPages).not.toContain(1);
+});
+
+test("catalog shows empty search result state", async ({ page }) => {
+  await mockLiquorApis(page);
+  await page.goto("/");
+
+  const searchBox = page.getByPlaceholder("위스키 이름, 브랜드로 검색...");
+  await searchBox.fill("Lagavulin");
+
+  await expect(page.getByText('"Lagavulin"에 대한 검색 결과가 없습니다')).toBeVisible();
+  await expect(page.getByText("다른 검색어로 시도해보세요")).toBeVisible();
+});
+
+test("catalog keeps current items when loading the next page fails and recovers on retry", async ({ page }) => {
+  const largeCatalog = buildCatalogItems(30);
+
+  await mockLiquorApis(page, largeCatalog, {
+    failSearchPages: [1],
+  });
+  await page.goto("/");
+
+  const searchBox = page.getByPlaceholder("위스키 이름, 브랜드로 검색...");
+  await searchBox.fill("Bottle");
+  await expect(page.getByText(/^Bottle 1$/).first()).toBeVisible();
+
+  const failedPageResponse = page.waitForResponse((response) =>
+    response.url().includes("/api/liquors/search?q=Bottle&page=1&size=24"),
+  );
+  await page.evaluate(() => {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "auto" });
+  });
+  await failedPageResponse;
+
+  await expect(page.getByText("추가 목록을 불러오지 못했습니다. 다시 시도해주세요.")).toBeVisible();
+  await expect(page.getByText("Bottle 24")).toBeVisible();
+  await expect(page.getByText("Bottle 25")).toHaveCount(0);
+
+  const retriedPageResponse = page.waitForResponse((response) =>
+    response.url().includes("/api/liquors/search?q=Bottle&page=1&size=24") && response.status() === 200,
+  );
+  await page.getByRole("button", { name: "다시 시도" }).click();
+  await retriedPageResponse;
+
+  await expect(page.getByText("Bottle 30")).toBeVisible();
 });

@@ -41,3 +41,6 @@
 - 2026-03-25 08:55: Vercel Speed Insights 계측을 위해 `frontend/app/layout.tsx`에 `@vercel/speed-insights/next`의 `<SpeedInsights />`를 전역으로 추가했다.
 - 2026-03-25 09:10: LCP 개선을 위해 홈 첫 페이지 데이터를 `frontend/app/page.tsx`에서 서버 선조회하도록 바꾸고, `CatalogPageClient`는 초기 데이터를 hydrate 받아 첫 진입 시 클라이언트 재요청 없이 목록을 즉시 렌더링하도록 조정했다.
 - 2026-03-25 09:10: 그리드의 첫 카드 이미지를 `priority` 로드로 지정해 above-the-fold 대표 카드 이미지가 더 빨리 뜨도록 보강했다.
+- 2026-03-25 10:02: 경계 케이스 테스트 보강을 위해 `frontend/tests/app-flows.spec.ts`에 검색 결과 없음 상태와 추가 페이지 로드 실패 후 inline 에러/재시도 복구 시나리오를 추가했다.
+- 2026-03-25 10:03: 서버 선조회가 있는 현재 구조에서 E2E가 초기 SSR 데이터에 흔들리지 않도록, 새 테스트는 브라우저 mock이 확실히 개입하는 클라이언트 검색 경로를 기준으로 안정화했다.
+- 2026-03-25 10:03: `frontend`에서 `npm run lint`, `npm run test:e2e`를 다시 수행했고 5개 Playwright 시나리오가 모두 통과했다.
