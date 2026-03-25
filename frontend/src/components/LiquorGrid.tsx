@@ -90,8 +90,8 @@ export default function LiquorGrid({
         </div>
       )}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-        {liquors.map((l) => (
-          <LiquorCard key={l.name} liquor={l} />
+        {liquors.map((l, index) => (
+          <LiquorCard key={l.name} liquor={l} prioritizeImage={index === 0} />
         ))}
       </div>
       {hasNext && <div ref={loadMoreRef} className="h-10" aria-hidden="true" />}

@@ -39,3 +39,5 @@
 - 2026-03-24 22:49: 최종 상태를 기준으로 `frontend`에서 `npm run lint`, `npm run build`, `npm run test:e2e`를 다시 수행해 모두 통과했다.
 - 2026-03-24 22:50: 이슈 문서를 최신 구현 상태로 정리했고, 중간 인계용 `docs/issues/002.nextjs-ui-regression-recovery/HANDOFF.md`는 제거했다.
 - 2026-03-25 08:55: Vercel Speed Insights 계측을 위해 `frontend/app/layout.tsx`에 `@vercel/speed-insights/next`의 `<SpeedInsights />`를 전역으로 추가했다.
+- 2026-03-25 09:10: LCP 개선을 위해 홈 첫 페이지 데이터를 `frontend/app/page.tsx`에서 서버 선조회하도록 바꾸고, `CatalogPageClient`는 초기 데이터를 hydrate 받아 첫 진입 시 클라이언트 재요청 없이 목록을 즉시 렌더링하도록 조정했다.
+- 2026-03-25 09:10: 그리드의 첫 카드 이미지를 `priority` 로드로 지정해 above-the-fold 대표 카드 이미지가 더 빨리 뜨도록 보강했다.

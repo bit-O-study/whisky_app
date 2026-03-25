@@ -30,7 +30,12 @@ function formatSpecLine(liquor: GroupedLiquor) {
   return parts.length > 0 ? parts.join(" · ") : "상세 정보 준비 중";
 }
 
-export default function LiquorCard({ liquor }: { liquor: GroupedLiquor }) {
+interface LiquorCardProps {
+  liquor: GroupedLiquor;
+  prioritizeImage?: boolean;
+}
+
+export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCardProps) {
   const sortedVendors = liquor.vendors.slice().sort((a, b) => a.current_price - b.current_price);
   const bestVendor = sortedVendors[0];
   const lowestPriceLabel = liquor.lowest_price > 0 ? formatPrice(liquor.lowest_price) : "가격 확인 중";
@@ -55,6 +60,7 @@ export default function LiquorCard({ liquor }: { liquor: GroupedLiquor }) {
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
           className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
           unoptimized
+          priority={prioritizeImage}
         />
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-stone-950/28 via-stone-950/8 to-transparent" />
       </div>

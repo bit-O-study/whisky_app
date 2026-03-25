@@ -1,22 +1,38 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { fetchLiquors } from "../api/liquorApi";
+import { fetchLiquors, type LiquorPage } from "../api/liquorApi";
 import LiquorGrid from "./LiquorGrid";
 import type { GroupedLiquor, Liquor } from "../types/liquor";
 import { groupLiquors } from "../utils/groupLiquors";
 
-export default function CatalogPageClient() {
+interface CatalogPageClientProps {
+  initialError?: string | null;
+  initialPage?: LiquorPage;
+}
+
+const EMPTY_LIQUOR_PAGE: LiquorPage = {
+  items: [],
+  page: 0,
+  size: 24,
+  hasNext: false,
+};
+
+export default function CatalogPageClient({
+  initialError = null,
+  initialPage = EMPTY_LIQUOR_PAGE,
+}: CatalogPageClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [liquors, setLiquors] = useState<Liquor[]>([]);
-  const [liquorPage, setLiquorPage] = useState(0);
-  const [hasNextLiquorPage, setHasNextLiquorPage] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const [liquors, setLiquors] = useState<Liquor[]>(initialPage.items);
+  const [liquorPage, setLiquorPage] = useState(initialPage.page);
+  const [hasNextLiquorPage, setHasNextLiquorPage] = useState(initialPage.hasNext);
+  const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError);
   const [reloadToken, setReloadToken] = useState(0);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const shouldSkipInitialRequestRef = useRef(initialPage.items.length > 0 && !initialError);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -32,6 +48,18 @@ export default function CatalogPageClient() {
 
   useEffect(() => {
     const controller = new AbortController();
+
+    if (
+      shouldSkipInitialRequestRef.current &&
+      debouncedSearchQuery === "" &&
+      liquorPage === initialPage.page &&
+      reloadToken === 0
+    ) {
+      shouldSkipInitialRequestRef.current = false;
+      return () => {
+        controller.abort();
+      };
+    }
 
     async function load() {
       try {
@@ -85,7 +113,7 @@ export default function CatalogPageClient() {
     return () => {
       controller.abort();
     };
-  }, [debouncedSearchQuery, liquorPage, reloadToken]);
+  }, [debouncedSearchQuery, initialPage.page, liquorPage, reloadToken]);
 
   useEffect(() => {
     const target = loadMoreRef.current;
