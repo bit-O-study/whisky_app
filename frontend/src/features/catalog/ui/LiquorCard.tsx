@@ -42,7 +42,7 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
   const specLine = formatSpecLine(liquor);
 
   return (
-    <article className="group relative overflow-hidden rounded-[1.75rem] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,251,235,0.86))] shadow-[0_24px_60px_rgba(15,23,42,0.10)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_34px_90px_rgba(15,23,42,0.16)]">
+    <article className="group relative overflow-hidden rounded-[1.75rem] border border-white/75 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.10)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_34px_90px_rgba(15,23,42,0.16)]">
       <div className="absolute inset-x-5 top-5 z-10 flex items-start justify-between gap-3">
         <span className="rounded-full border border-white/80 bg-white/86 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-600 shadow-sm backdrop-blur-sm">
           {liquor.category}
@@ -78,7 +78,7 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
           </p>
         </div>
 
-        <div className="rounded-2xl bg-[linear-gradient(135deg,rgba(255,247,237,0.95),rgba(255,255,255,0.95))] p-4 ring-1 ring-amber-100/80">
+        <div className="rounded-2xl bg-stone-50 p-4 ring-1 ring-stone-200/80">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700">Lowest Price</p>
           <div className="mt-2 flex items-end justify-between gap-3">
             <p className="text-2xl font-black text-amber-600">{lowestPriceLabel}</p>

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import type { Liquor } from "../../../entities/liquor/model/liquor";
 import { fetchCatalogPage } from "../api/catalog-client";
@@ -152,7 +153,6 @@ export default function CatalogPageClient({
 
   const groupedLiquors = groupCatalogLiquors(liquors);
   function handleLogoClick() {
-    setSearchQuery("");
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   }
 
@@ -174,12 +174,20 @@ export default function CatalogPageClient({
           <button
             type="button"
             onClick={handleLogoClick}
-            className="flex items-center gap-3 text-left"
+            className="flex cursor-pointer items-center gap-3 text-left"
+            aria-label="페이지 상단으로 이동"
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#1f2937,#7c2d12)] text-xl text-white shadow-[0_14px_28px_rgba(17,24,39,0.22)]">
-              🥃
+            <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl shadow-[0_14px_28px_rgba(17,24,39,0.22)] ring-1 ring-white/70">
+              <Image
+                src="/jururuk-mark.svg"
+                alt=""
+                width={44}
+                height={44}
+                className="h-11 w-11"
+                priority
+              />
             </span>
-            <span className="text-xl font-bold text-stone-950">Jururuk</span>
+            <span className="text-xl font-bold tracking-[-0.02em] text-stone-950">Jururuk</span>
           </button>
 
           <div className="relative w-full sm:max-w-md">
