@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchLiquorPage } from "../../../../src/lib/liquors";
+import { fetchCatalogPageFromServer } from "../../../../src/features/catalog/api/catalog-server";
 
 export async function GET(request: NextRequest) {
   const keyword = request.nextUrl.searchParams.get("q") ?? "";
@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   const size = Number(request.nextUrl.searchParams.get("size") ?? "24");
 
   try {
-    const result = await fetchLiquorPage({ keyword, page, size });
+    const result = await fetchCatalogPageFromServer({ keyword, page, size });
     return NextResponse.json(result);
   } catch (error) {
     console.error("Failed to search liquors", error);

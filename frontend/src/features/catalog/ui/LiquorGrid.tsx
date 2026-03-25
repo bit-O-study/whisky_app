@@ -1,10 +1,10 @@
 import type { RefObject } from "react";
-import type { GroupedLiquor } from "../types/liquor";
+import type { CatalogCardItem } from "../model/catalog";
 import LiquorCard from "./LiquorCard";
 
 interface LiquorGridProps {
   searchQuery: string;
-  liquors: GroupedLiquor[];
+  liquors: CatalogCardItem[];
   loading: boolean;
   loadingMore: boolean;
   hasNext: boolean;

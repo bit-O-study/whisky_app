@@ -1,8 +1,8 @@
-import type { LiquorPage } from "../api/liquorApi";
-import type { Liquor } from "../types/liquor";
-import { getSupabaseClient } from "./supabase";
+import type { Liquor } from "../../../entities/liquor/model/liquor";
+import { getSupabaseClient } from "../../../lib/supabase";
+import type { CatalogPage } from "../model/catalog";
 
-interface FetchLiquorPageParams {
+interface FetchCatalogPageFromServerParams {
   keyword?: string;
   page: number;
   size: number;
@@ -84,7 +84,11 @@ function buildPriceLookup(prices: LiquorPriceRow[]) {
   return lookup;
 }
 
-export async function fetchLiquorPage({ keyword, page, size }: FetchLiquorPageParams): Promise<LiquorPage> {
+export async function fetchCatalogPageFromServer({
+  keyword,
+  page,
+  size,
+}: FetchCatalogPageFromServerParams): Promise<CatalogPage> {
   const safePage = clampPage(page);
   const safeSize = clampSize(size);
   const from = safePage * safeSize;
