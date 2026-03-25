@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
+
+const GA_MEASUREMENT_ID = "G-VKN2T2NQX1";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://bit-o-liquor.vercel.app"),
@@ -37,6 +40,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         {children}
         <SpeedInsights />
+        <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />
       </body>
     </html>
   );
