@@ -36,3 +36,4 @@
 - 2026-03-24 22:22: 로컬 `.mcp.json`의 Supabase MCP 설정에서 personal access token 평문 값을 제거하고, `SUPABASE_ACCESS_TOKEN` 환경변수를 사용하도록 정리했다.
 - 2026-03-24 22:22: Supabase MCP 시작 옵션에 `--project-ref jeqvxzkvumkiraclauvo`를 추가해 `bitO` 프로젝트 기준으로 고정했다.
 - 2026-03-24 22:22: 루트 `README.md`에 로컬 MCP 사용 규칙과 `bitO` 프로젝트 ref를 문서화했다.
+- 2026-03-25 00:00: `frontend/app/layout.tsx`에 Google Search Console 소유권 확인용 `google-site-verification` 메타데이터를 추가해 Vercel 배포 URL 기준 `URL 접두어 속성` 인증이 가능하도록 했다.
