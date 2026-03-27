@@ -31,4 +31,6 @@ public interface LiquorRepository extends JpaRepository<Liquor, Long> {
             ORDER BY l.updatedAt DESC
             """)
     Page<Liquor> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+    Optional<Liquor> findByBrandAndClazzAndVolume(String brand, String clazz, Integer volume);
 }

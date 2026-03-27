@@ -114,7 +114,6 @@ public class EmartScraper {
         return liquors;
     }
 
-    // ⭐️ DB 정보를 기반으로 키워드 조합 (브랜드 + clazz + 용량)
     private List<String> generateDynamicKeywords() {
         return liquorInfoRepository.findAll().stream()
                 .map(info -> {
@@ -127,11 +126,11 @@ public class EmartScraper {
                     if (info.getClazz() != null
                             && !info.getClazz().equalsIgnoreCase("none")
                             && !info.getClazz().isBlank()) {
-                        keywordBuilder.append(info.getClazz()).append(" ");
+                        String noSpaceClazz = info.getClazz().replace(" ", "");
+                        keywordBuilder.append(noSpaceClazz).append(" ");
                     }
 
                     if (info.getVolumeMl() != null) {
-                        // 이마트 검색 특성상 ml를 붙여주는 것이 더 정확할 수 있습니다.
                         keywordBuilder.append(info.getVolumeMl()).append("ml");
                     }
 

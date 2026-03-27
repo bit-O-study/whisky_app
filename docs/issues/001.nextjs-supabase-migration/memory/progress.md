@@ -36,3 +36,10 @@
 - 2026-03-24 22:22: 로컬 `.mcp.json`의 Supabase MCP 설정에서 personal access token 평문 값을 제거하고, `SUPABASE_ACCESS_TOKEN` 환경변수를 사용하도록 정리했다.
 - 2026-03-24 22:22: Supabase MCP 시작 옵션에 `--project-ref jeqvxzkvumkiraclauvo`를 추가해 `bitO` 프로젝트 기준으로 고정했다.
 - 2026-03-24 22:22: 루트 `README.md`에 로컬 MCP 사용 규칙과 `bitO` 프로젝트 ref를 문서화했다.
+- 2026-03-25 00:00: `frontend/app/layout.tsx`에 Google Search Console 소유권 확인용 `google-site-verification` 메타데이터를 추가해 Vercel 배포 URL 기준 `URL 접두어 속성` 인증이 가능하도록 했다.
+- 2026-03-25 00:10: `frontend/app/layout.tsx`에 `metadataBase`, canonical, Open Graph, Twitter, robots 메타데이터를 추가하고 설명 문구를 사이트 기준으로 정리했다.
+- 2026-03-25 00:10: `frontend/app/robots.ts`, `frontend/app/sitemap.ts`를 추가해 `bit-o-liquor.vercel.app` 기준 크롤링 허용과 기본 사이트맵을 노출하도록 설정했다.
+- 2026-03-25 00:20: 홈 메타데이터 문구를 `Jururuk | 주류 가격 비교 사이트`와 `위스키, 와인, 최저가 검색/비교` 중심으로 조정해 브랜드명과 주요 검색어가 함께 노출되도록 정리했다.
+- 2026-03-25 00:30: `frontend/app/layout.tsx`에 GA4 측정 ID `G-VKN2T2NQX1` 기준 `GoogleAnalytics` 스니펫을 추가해 Vercel 배포 후 바로 방문 분석이 가능하도록 정리했다.
+- 2026-03-25 00:40: `@next/third-parties/google` 모듈 해석 오류를 피하기 위해 GA4 연동 방식을 `next/script` 기반 gtag 삽입으로 교체했다.
+- 2026-03-25 00:50: `frontend/app/layout.tsx`에 `@vercel/analytics/next`의 `Analytics`를 추가해 Vercel 대시보드 기준 방문 통계도 함께 수집하도록 설정했다.

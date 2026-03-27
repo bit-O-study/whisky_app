@@ -1,0 +1,24 @@
+# Progress
+
+- 2026-03-25 15:27: Stitch에서 만든 새 디자인 레이아웃 적용 작업을 별도 범위로 관리하기 위해 `007.stitch-layout-design-update` 이슈를 생성했다.
+- 2026-03-25 15:27: 현재 메인 카탈로그 진입점이 `frontend/app/page.tsx`와 `frontend/src/features/catalog/ui/CatalogPageClient.tsx`임을 확인했고, 이번 이슈의 주 수정 범위를 해당 프론트 UI 계층으로 정리했다.
+- 2026-03-25 15:27: 기존 검색, 초기 로딩, 무한 스크롤 동작은 유지하고, Stitch 기반 레이아웃 반영과 시각 구조 업데이트를 이번 이슈 목표로 고정했다.
+- 2026-03-25 15:27: 작업 트리에 `frontend/next-env.d.ts`의 기존 수정이 이미 존재함을 확인했고, 이번 이슈 문서 생성에서는 이를 건드리지 않았다.
+- 2026-03-25 15:33: `007` 경로에 사용자가 추가한 Stitch 산출물 `DESIGN.md`, `code.html`을 확인했다.
+- 2026-03-25 15:33: `DESIGN.md`는 warm ivory 기반의 에디토리얼 톤, serif headline, glass header, no-line 규칙 등 디자인 원칙을 설명하고 있음을 확인했다.
+- 2026-03-25 15:33: `code.html`은 상단 glass header, 우측 검색창, 지표 섹션, 4열 카드 그리드, 푸터, 모바일 하단 내비게이션까지 포함한 정적 프로토타입임을 확인했다.
+- 2026-03-25 15:33: 해당 HTML은 Tailwind CDN, Google Fonts, Material Symbols, 외부 이미지 URL, 샘플 텍스트/가격 데이터를 포함하고 있어 제품 코드에는 그대로 이식하지 않고 현재 React 구조에 맞게 선택적으로 반영해야 한다고 정리했다.
+- 2026-03-25 15:47: `frontend/app/globals.css`에 warm ivory 배경, glass header, editorial type stack, panel/chip 토큰을 추가해 Stitch 시안의 분위기를 제품 코드용 스타일로 정리했다.
+- 2026-03-25 15:47: `frontend/src/features/catalog/ui/CatalogPageClient.tsx`를 재구성해 상단 glass header, 에디토리얼 hero, 상태 메트릭, 결과 요약, footer를 현재 카탈로그 상태 값 기반으로 렌더링하도록 변경했다.
+- 2026-03-25 15:47: `frontend/src/features/catalog/ui/LiquorGrid.tsx`의 로딩, 빈 결과, 부분 실패, 추가 로딩 UI를 새 톤으로 재작성했고, 검색/무한 스크롤/재시도 흐름은 유지했다.
+- 2026-03-25 15:47: `frontend/src/features/catalog/ui/LiquorCard.tsx`를 Stitch 톤의 카드 레이아웃으로 교체하고, 판매처별 가격 비교는 모바일에서도 접근 가능한 `details` 패널로 옮겼다.
+- 2026-03-25 15:47: `frontend/src/features/catalog/api/catalog-server.ts`에서 latest price view row를 `mapLiquorRow`에 전달할 때 발생하던 타입 불일치를 정리해 프론트 빌드가 통과하도록 보정했다.
+- 2026-03-25 15:47: 검증 결과 `frontend`에서 `npm run lint`, `npm run test`, `npm run build`, `npm run test:e2e`를 모두 통과했다.
+- 2026-03-25 16:00: 사용자 피드백 기준으로 첫 구현은 `DESIGN.md` 분위기를 과하게 해석해 Stitch `code.html`과 충분히 닮지 않았다고 판단했다.
+- 2026-03-25 16:00: 큰 hero와 보조 패널을 제거하고, 실제 기준을 `code.html`의 상단 bar, 우측 검색창, 얇은 메트릭 줄, 결과 요약 줄, 4열 카드 월 구조로 다시 고정했다.
+- 2026-03-25 16:00: `CatalogPageClient.tsx`, `LiquorCard.tsx`, `LiquorGrid.tsx`를 다시 정리해 현재 화면이 Stitch 프로토타입의 기본 구조와 더 가깝게 보이도록 수정했다.
+- 2026-03-25 16:00: 수정 후 `frontend`에서 `npm run lint`, `npm run test`, `npm run build`, `npm run test:e2e`를 다시 통과했고, 로컬 dev server와 headless screenshot으로 실제 렌더링도 재확인했다.
+- 2026-03-25 16:08: 추가 피드백에 따라 과하게 큰 카드 타이포와 `Entry Price` 상단 메트릭을 제거하고, 상단 보조 카드와 footer 구성을 실제 참조 이미지 쪽 리듬으로 한 번 더 조정했다.
+- 2026-03-25 16:08: 카드 제목과 가격 타이포를 줄이고 상단 메트릭을 `Luxury Index`, `Active Vendors` 형태의 작은 카드로 교체해 현재 스크린샷이 Stitch 프로토타입에 더 가깝도록 보정했다.
+- 2026-03-25 16:08: 마지막 조정 후 `frontend`에서 `npm run lint`, `npm run test`를 다시 통과했고, 실행 중인 dev server를 headless screenshot으로 재확인했다.
+- 2026-03-25 16:12: 추가 지시에 따라 `Entry Price / Active Vendors` 상단 섹터를 통째로 제거했고, 카드 제목/가격/Vendors 타이포도 한 단계 더 축소했다.

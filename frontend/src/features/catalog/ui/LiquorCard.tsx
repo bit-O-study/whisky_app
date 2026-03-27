@@ -14,20 +14,32 @@ function formatMetaValue(value: string, fallback: string) {
   return value && value !== "Unknown" ? value : fallback;
 }
 
-function formatSpecLine(liquor: CatalogCardItem) {
-  const parts: string[] = [];
-
-  if (liquor.country && liquor.country !== "Unknown") {
-    parts.push(liquor.country);
-  }
-  if (liquor.alcohol_percent > 0) {
-    parts.push(`${liquor.alcohol_percent}%`);
-  }
-  if (liquor.volume > 0) {
-    parts.push(`${liquor.volume}ml`);
+function getCardSignal(liquor: CatalogCardItem) {
+  if (liquor.vendors.length >= 10) {
+    return {
+      label: "Tracked",
+      className: "bg-[rgba(139,74,44,0.92)] text-white",
+    };
   }
 
-  return parts.length > 0 ? parts.join(" · ") : "상세 정보 준비 중";
+  if (liquor.lowest_price >= 150000) {
+    return {
+      label: "Rare",
+      className: "bg-[rgba(194,93,43,0.92)] text-white",
+    };
+  }
+
+  if (liquor.alcohol_percent >= 46) {
+    return {
+      label: "Bold",
+      className: "bg-[rgba(115,92,0,0.92)] text-white",
+    };
+  }
+
+  return {
+    label: "Listed",
+    className: "bg-[rgba(82,68,57,0.82)] text-white",
+  };
 }
 
 interface LiquorCardProps {
@@ -38,106 +50,101 @@ interface LiquorCardProps {
 export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCardProps) {
   const sortedVendors = liquor.vendors.slice().sort((a, b) => a.current_price - b.current_price);
   const bestVendor = sortedVendors[0];
-  const lowestPriceLabel = liquor.lowest_price > 0 ? formatPrice(liquor.lowest_price) : "가격 확인 중";
-  const specLine = formatSpecLine(liquor);
+  const signal = getCardSignal(liquor);
+  const metaLine = [liquor.brand, formatMetaValue(liquor.country, "Archive")]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
-    <article className="group relative overflow-hidden rounded-[1.75rem] border border-white/75 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.10)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_34px_90px_rgba(15,23,42,0.16)]">
-      <div className="absolute inset-x-5 top-5 z-10 flex items-start justify-between gap-3">
-        <span className="rounded-full border border-white/80 bg-white/86 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-600 shadow-sm backdrop-blur-sm">
-          {liquor.category}
-        </span>
-        <span className="rounded-full bg-stone-950/88 px-3 py-1 text-[11px] font-semibold text-white shadow-sm backdrop-blur-sm">
-          판매처 {sortedVendors.length}곳
-        </span>
-      </div>
-
-      <div className="relative aspect-[3/4] overflow-hidden bg-stone-100">
+    <article className="group flex h-full flex-col overflow-hidden rounded-xl bg-[rgba(255,255,255,0.84)] shadow-[0_14px_32px_rgba(28,28,23,0.05)] ring-1 ring-[color:rgba(216,195,180,0.24)]">
+      <div className="relative aspect-square overflow-hidden border-b border-[color:rgba(216,195,180,0.16)] bg-white">
         <Image
           src={liquor.image_url || "https://jeqvxzkvumkiraclauvo.supabase.co/storage/v1/object/public/whisky-images/default_whisky.webp"}
           alt={liquor.name}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
-          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+          className="h-full w-full object-contain p-4 transition-transform duration-700 group-hover:scale-[1.05]"
           unoptimized
           priority={prioritizeImage}
         />
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-stone-950/28 via-stone-950/8 to-transparent" />
+        <div className="absolute left-2 top-2">
+          <span
+            className={`rounded px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[0.18em] ${signal.className}`}
+          >
+            {signal.label}
+          </span>
+        </div>
       </div>
 
-      <div className="space-y-4 p-5">
-        <div>
-          <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-stone-500">
-          {liquor.brand} · {liquor.category}
+      <div className="flex flex-1 flex-col p-4">
+        <div className="mb-1 flex items-start justify-between gap-3">
+          <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-[color:var(--catalog-muted)]">
+            {metaLine}
           </p>
-          <h3 className="text-xl font-bold leading-tight text-stone-950">
+          <span className="text-[9px] font-bold text-[color:var(--catalog-muted)]">
+            {liquor.alcohol_percent > 0 ? `${liquor.alcohol_percent}%` : "--"}
+          </span>
+        </div>
+
+        <h3 className="catalog-editorial text-[1.15rem] font-medium italic leading-tight tracking-[-0.015em] text-[color:var(--catalog-ink)]">
           {liquor.name}
-          </h3>
-          <p className="mt-2 text-sm text-stone-500">
-          {specLine}
-          </p>
-        </div>
+        </h3>
 
-        <div className="rounded-2xl bg-stone-50 p-4 ring-1 ring-stone-200/80">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700">Lowest Price</p>
-          <div className="mt-2 flex items-end justify-between gap-3">
-            <p className="text-2xl font-black text-amber-600">{lowestPriceLabel}</p>
-            {bestVendor && <p className="text-xs font-medium text-stone-500">{bestVendor.source} 기준</p>}
+        <div className="mt-auto pt-3">
+          <div className="flex items-end justify-between gap-3 border-t border-[color:rgba(216,195,180,0.16)] pt-3">
+            <div>
+              <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-[color:var(--catalog-primary)]">
+                From
+              </p>
+              <p className="catalog-editorial mt-1 text-[1.3rem] font-medium italic leading-none text-[color:var(--catalog-primary)]">
+                {liquor.lowest_price > 0 ? formatPrice(liquor.lowest_price) : "가격 확인 중"}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-[color:var(--catalog-muted)]">
+                Vendors
+              </p>
+              <p className="mt-1 text-sm font-extrabold leading-none text-[color:var(--catalog-ink)]">
+                {sortedVendors.length}
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-2 gap-2 text-xs text-stone-500">
-          <div className="rounded-xl bg-white/80 px-3 py-2 ring-1 ring-stone-200/70">
-            <span className="block text-[10px] uppercase tracking-[0.18em] text-stone-400">Origin</span>
-            <strong className="mt-1 block text-sm text-stone-800">
-              {formatMetaValue(liquor.country, "정보 준비 중")}
-            </strong>
-          </div>
-          <div className="rounded-xl bg-white/80 px-3 py-2 ring-1 ring-stone-200/70">
-            <span className="block text-[10px] uppercase tracking-[0.18em] text-stone-400">ABV / Vol</span>
-            <strong className="mt-1 block text-sm text-stone-800">
-              {liquor.alcohol_percent > 0 ? `${liquor.alcohol_percent}%` : "도수 확인 중"}
-              {liquor.volume > 0 ? ` · ${liquor.volume}ml` : ""}
-            </strong>
-          </div>
-        </div>
-      </div>
-
-      <div className="pointer-events-none absolute inset-0 flex flex-col justify-end bg-[linear-gradient(180deg,rgba(12,10,9,0.04),rgba(12,10,9,0.82))] p-4 opacity-0 backdrop-blur-[2px] transition duration-300 group-hover:opacity-100 group-focus-within:opacity-100 md:pointer-events-auto">
-        <div className="rounded-[1.4rem] border border-white/12 bg-black/34 p-4 backdrop-blur-md">
-          <h4 className="mb-3 text-sm font-bold text-white">판매처별 가격</h4>
-          <ul className="space-y-2">
-            {sortedVendors.map((v) => (
-              <li key={v.source}>
-                <a
-                  href={v.product_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between rounded-xl bg-white/10 px-3 py-2 transition-colors hover:bg-white/20"
-                >
-                  <span className="text-sm font-medium text-white">
-                    {v.source}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    {v.original_price > v.current_price && (
-                      <span className="text-xs text-gray-400 line-through">
-                        {formatPrice(v.original_price)}
+          <details className="catalog-details mt-2">
+            <summary className="cursor-pointer text-[9px] font-bold uppercase tracking-[0.18em] text-[color:rgba(82,68,57,0.68)]">
+              Market Lines
+            </summary>
+            <ul className="mt-3 space-y-2">
+              {sortedVendors.map((vendor) => (
+                <li key={vendor.source}>
+                  <a
+                    href={vendor.product_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between gap-3 rounded-lg bg-[rgba(247,243,234,0.88)] px-3 py-2 text-sm transition hover:bg-[rgba(241,238,229,0.98)]"
+                  >
+                    <span className="font-semibold text-[color:var(--catalog-ink)]">{vendor.source}</span>
+                    <span className="flex items-center gap-2 text-right">
+                      {vendor.original_price > vendor.current_price && (
+                        <span className="text-xs text-[color:var(--catalog-soft)] line-through">
+                          {formatPrice(vendor.original_price)}
+                        </span>
+                      )}
+                      <span
+                        className={`font-semibold ${
+                          bestVendor?.source === vendor.source
+                            ? "text-[color:var(--catalog-primary)]"
+                            : "text-[color:var(--catalog-ink)]"
+                        }`}
+                      >
+                        {vendor.current_price > 0 ? formatPrice(vendor.current_price) : "가격 확인 중"}
                       </span>
-                    )}
-                    <span
-                      className={`text-sm font-bold ${
-                        v.current_price === liquor.lowest_price && liquor.lowest_price > 0
-                          ? "text-amber-400"
-                          : "text-white"
-                      }`}
-                    >
-                      {v.current_price > 0 ? formatPrice(v.current_price) : "가격 확인 중"}
                     </span>
-                  </span>
-                </a>
-              </li>
-            ))}
-          </ul>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </details>
         </div>
       </div>
     </article>

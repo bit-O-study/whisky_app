@@ -32,17 +32,14 @@ public class LotteonCrawlService {
         log.info("롯데온 양주 크롤링 시작");
 
         List<Liquor> scrapedLiquors = lotteonScraper.scrapeLiquors();
-        System.out.println(scrapedLiquors);
-        System.out.println("scrapedLiquors.size()==>"+scrapedLiquors.size());
         int newCount = 0;
         int updateCount = 0;
         int skipCount = 0;
 
         for (Liquor scraped : scrapedLiquors) {
             normalizeLiquor(scraped, NORMALIZED_SOURCE);
-            System.out.println(scraped);
             Optional<LiquorInfo> infoOpt = findLiquorInfo(scraped);
-            System.out.println(infoOpt);
+
             if (infoOpt.isEmpty()) {
                 skipCount++;
                 continue;
@@ -50,8 +47,12 @@ public class LotteonCrawlService {
 
             scraped.setLiquorInfo(infoOpt.get());
 
+            // ⭐️ Liquor 테이블 중복 방지 (기존 데이터가 있으면 덮어쓰지 않음)
             Liquor liquor = upsertLiquor(scraped);
+
             boolean existed = liquorPriceRepository.findByLiquorIdAndSource(liquor.getId(), NORMALIZED_SOURCE).isPresent();
+
+            // ⭐️ LiquorPrice에만 소스별 가격 갱신/저장
             upsertLiquorPrice(liquor, scraped);
 
             if (existed) {
@@ -71,7 +72,6 @@ public class LotteonCrawlService {
             return Optional.empty();
         }
 
-        // 1. 카테고리와 용량만으로 넓게 후보군을 가져옵니다. (Repository에 findByCategoryAndVolumeMl 추가 필요)
         List<LiquorInfo> candidates = liquorInfoRepository.findByCategoryAndVolumeMl(
                 scraped.getCategory(),
                 scraped.getVolume()
@@ -89,22 +89,16 @@ public class LotteonCrawlService {
 
             String dbBrand = info.getBrand().replace(" ", "").toLowerCase();
 
-            // 2. 브랜드 이름이 일치하는지 확인 (띄어쓰기 무시)
             if (!dbBrand.equals(scrapedBrand)) {
                 continue;
             }
 
             String dbClazz = info.getClazz() != null ? info.getClazz().replace(" ", "").toLowerCase() : "";
 
-            // 3. DB의 Clazz가 "none" 이거나 비어있는 경우 (제임슨, 벨즈, 버팔로 등)
-            // 브랜드는 일치했으므로 매칭 성공으로 간주
             if (dbClazz.equals("none") || dbClazz.isEmpty()) {
-                // 단, 스크래핑된 결과가 완전히 다른 라인업(예: 제임슨 '블랙배럴')인지 확인하려면
-                // 여기서 추가 검증을 할 수 있지만, 일단은 매칭시킵니다.
                 return Optional.of(info);
             }
 
-            // 4. 일반적인 Clazz 비교 (부분 일치 허용)
             if (dbClazz.contains(scrapedClazz) || scrapedClazz.contains(dbClazz)) {
                 return Optional.of(info);
             }
@@ -112,10 +106,12 @@ public class LotteonCrawlService {
 
         return Optional.empty();
     }
+
     private void normalizeLiquor(Liquor liquor, String source) {
         liquor.setSource(source);
         liquor.setNormalizedName(buildNormalizedName(liquor));
         liquor.setClazz(normalizeClazz(liquor.getClazz()));
+
         if (liquor.getCurrentPrice() != null && liquor.getCurrentPrice() <= 0) {
             liquor.setCurrentPrice(null);
         }
@@ -134,37 +130,37 @@ public class LotteonCrawlService {
         }
     }
 
+    // ⭐️ 이마트와 동일하게 브랜드, clazz, 용량으로 기존 마스터 데이터를 검색하여 보호
     private Liquor upsertLiquor(Liquor scraped) {
-        String productCode = normalizeText(scraped.getProductCode());
-        String normalizedName = scraped.getNormalizedName();
         String clazz = normalizeClazz(scraped.getClazz());
         Integer volume = scraped.getVolume() == null ? 0 : scraped.getVolume();
+        String brand = scraped.getBrand();
 
-        Liquor liquor = null;
-        if (!productCode.isBlank()) {
-            liquor = liquorRepository.findByProductCode(productCode).orElse(null);
+        // 1. 이미 동일한 상품(마스터 데이터)이 있는지 조회
+        Optional<Liquor> existingLiquor = liquorRepository.findByBrandAndClazzAndVolume(brand, clazz, volume);
+
+        if (existingLiquor.isPresent()) {
+            // 2. 존재한다면 롯데온의 정보로 마스터를 덮어쓰지 않고 그대로 반환
+            return existingLiquor.get();
         }
-        if (liquor == null) {
-            liquor = liquorRepository
-                    .findByNormalizedNameAndClazzAndVolume(normalizedName, clazz, volume)
-                    .orElseGet(Liquor::new);
-        }
 
-        liquor.setNormalizedName(normalizedName);
-        liquor.setName(scraped.getName());
-        liquor.setBrand(scraped.getBrand());
-        liquor.setCategory(scraped.getCategory());
-        liquor.setCountry(scraped.getCountry());
-        liquor.setAlcoholPercent(scraped.getAlcoholPercent());
-        liquor.setVolume(volume);
-        liquor.setClazz(clazz);
-        liquor.setProductCode(scraped.getProductCode());
-        liquor.setProductName(scraped.getFullname() == null ? scraped.getName() : scraped.getFullname());
-        liquor.setProductUrl(scraped.getProductUrl());
-        liquor.setImageUrl(scraped.getImageUrl());
-        liquor.setLiquorInfo(scraped.getLiquorInfo());
+        // 3. 존재하지 않는다면 새로운 Liquor(마스터) 생성
+        Liquor newLiquor = new Liquor();
+        newLiquor.setNormalizedName(scraped.getNormalizedName());
+        newLiquor.setName(scraped.getName());
+        newLiquor.setBrand(brand);
+        newLiquor.setCategory(scraped.getCategory());
+        newLiquor.setCountry(scraped.getCountry());
+        newLiquor.setAlcoholPercent(scraped.getAlcoholPercent());
+        newLiquor.setVolume(volume);
+        newLiquor.setClazz(clazz);
+        newLiquor.setProductCode(scraped.getProductCode());
+        newLiquor.setProductName(scraped.getFullname() == null ? scraped.getName() : scraped.getFullname());
+        newLiquor.setProductUrl(scraped.getProductUrl());
+        newLiquor.setImageUrl(scraped.getImageUrl());
+        newLiquor.setLiquorInfo(scraped.getLiquorInfo());
 
-        return liquorRepository.save(liquor);
+        return liquorRepository.save(newLiquor);
     }
 
     private LiquorPrice upsertLiquorPrice(Liquor liquor, Liquor scraped) {
@@ -195,10 +191,12 @@ public class LotteonCrawlService {
                 .trim();
     }
 
+    // ⭐️ 이마트와 동일하게 [대괄호] 태그 완벽 제거 로직 추가
     private String normalizeClazz(String clazz) {
         return normalizeText(clazz)
-                .replace("()", " ")
-                .replaceAll("\\s+", " ")
+                .replaceAll("\\[.*?\\]", "")
+                .replace("()", "")
+                .replace(" ", "")
                 .trim();
     }
 
