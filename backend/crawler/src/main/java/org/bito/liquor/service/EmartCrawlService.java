@@ -48,8 +48,11 @@ public class EmartCrawlService {
             }
 
             scraped.setLiquorInfo(infoOpt.get());
+
             Liquor liquor = upsertLiquor(scraped);
+
             boolean existed = liquorPriceRepository.findByLiquorIdAndSource(liquor.getId(), NORMALIZED_SOURCE).isPresent();
+
             upsertLiquorPrice(liquor, scraped);
 
             if (existed) {
@@ -65,8 +68,11 @@ public class EmartCrawlService {
     }
 
     private Optional<LiquorInfo> findLiquorInfo(Liquor scraped) {
-        List<LiquorInfo> candidates = liquorInfoRepository.findByBrandAndCategoryAndVolumeMl(
-                scraped.getBrand(),
+        if (scraped.getBrand() == null || scraped.getCategory() == null || scraped.getVolume() == null) {
+            return Optional.empty();
+        }
+
+        List<LiquorInfo> candidates = liquorInfoRepository.findByCategoryAndVolumeMl(
                 scraped.getCategory(),
                 scraped.getVolume()
         );
@@ -75,14 +81,23 @@ public class EmartCrawlService {
             return Optional.empty();
         }
 
-        String scrapedClazz = scraped.getClazz() != null ? scraped.getClazz().replace(" ", "") : "";
+        String scrapedBrand = scraped.getBrand().replace(" ", "").toLowerCase();
+        String scrapedClazz = scraped.getClazz() != null ? scraped.getClazz().replace(" ", "").toLowerCase() : "";
 
         for (LiquorInfo info : candidates) {
-            if (info.getClazz() == null || info.getClazz().equals("None")) {
+            if (info.getBrand() == null) continue;
+
+            String dbBrand = info.getBrand().replace(" ", "").toLowerCase();
+
+            if (!dbBrand.equals(scrapedBrand)) {
                 continue;
             }
 
-            String dbClazz = info.getClazz().replace(" ", "");
+            String dbClazz = info.getClazz() != null ? info.getClazz().replace(" ", "").toLowerCase() : "";
+
+            if (dbClazz.equals("none") || dbClazz.isEmpty()) {
+                return Optional.of(info);
+            }
 
             if (dbClazz.contains(scrapedClazz) || scrapedClazz.contains(dbClazz)) {
                 return Optional.of(info);
@@ -90,25 +105,6 @@ public class EmartCrawlService {
         }
 
         return Optional.empty();
-    }
-
-    private LiquorInfo getOrSaveLiquorInfo(Liquor scraped) {
-        return liquorInfoRepository.findByBrandAndCategoryAndAlcoholPercentAndVolumeMlAndClazz(
-                scraped.getBrand(),
-                scraped.getCategory(),
-                scraped.getAlcoholPercent(),
-                scraped.getVolume(),
-                scraped.getClazz()
-        ).orElseGet(() -> {
-            LiquorInfo newInfo = LiquorInfo.builder()
-                    .brand(scraped.getBrand())
-                    .category(scraped.getCategory())
-                    .alcoholPercent(scraped.getAlcoholPercent())
-                    .volumeMl(scraped.getVolume())
-                    .clazz(scraped.getClazz())
-                    .build();
-            return liquorInfoRepository.save(newInfo);
-        });
     }
 
     private void normalizeLiquor(Liquor liquor, String source) {
@@ -134,35 +130,35 @@ public class EmartCrawlService {
     }
 
     private Liquor upsertLiquor(Liquor scraped) {
-        String productCode = normalizeText(scraped.getProductCode());
-        String normalizedName = scraped.getNormalizedName();
         String clazz = normalizeClazz(scraped.getClazz());
         Integer volume = scraped.getVolume() == null ? 0 : scraped.getVolume();
+        String brand = scraped.getBrand();
 
-        Liquor liquor = null;
-        if (!productCode.isBlank()) {
-            liquor = liquorRepository.findByProductCode(productCode).orElse(null);
+        // 1. 브랜드, clazz, 용량이 같은 상품이 있는지 우선 검색
+        Optional<Liquor> existingLiquor = liquorRepository.findByBrandAndClazzAndVolume(brand, clazz, volume);
+
+        if (existingLiquor.isPresent()) {
+            // ⭐️ 이미 존재한다면, 타겟 쇼핑몰의 데이터로 기존 마스터 데이터를 덮어쓰지 않고 그대로 반환합니다.
+            return existingLiquor.get();
         }
-        if (liquor == null) {
-            liquor = liquorRepository
-                    .findByNormalizedNameAndClazzAndVolume(normalizedName, clazz, volume)
-                    .orElseGet(Liquor::new);
-        }
 
-        liquor.setNormalizedName(normalizedName);
-        liquor.setName(scraped.getName());
-        liquor.setBrand(scraped.getBrand());
-        liquor.setCategory(scraped.getCategory());
-        liquor.setCountry(scraped.getCountry());
-        liquor.setAlcoholPercent(scraped.getAlcoholPercent());
-        liquor.setVolume(volume);
-        liquor.setClazz(clazz);
-        liquor.setProductCode(scraped.getProductCode());
-        liquor.setProductName(scraped.getFullname() == null ? scraped.getName() : scraped.getFullname());
-        liquor.setProductUrl(scraped.getProductUrl());
-        liquor.setImageUrl(scraped.getImageUrl());
+        // 2. 존재하지 않는다면 새로운 Liquor(마스터) 생성
+        Liquor newLiquor = new Liquor();
+        newLiquor.setNormalizedName(scraped.getNormalizedName());
+        newLiquor.setName(scraped.getName());
+        newLiquor.setBrand(brand);
+        newLiquor.setCategory(scraped.getCategory());
+        newLiquor.setCountry(scraped.getCountry());
+        newLiquor.setAlcoholPercent(scraped.getAlcoholPercent());
+        newLiquor.setVolume(volume);
+        newLiquor.setClazz(clazz);
+        newLiquor.setProductCode(scraped.getProductCode());
+        newLiquor.setProductName(scraped.getFullname() == null ? scraped.getName() : scraped.getFullname());
+        newLiquor.setProductUrl(scraped.getProductUrl());
+        newLiquor.setImageUrl(scraped.getImageUrl());
+        newLiquor.setLiquorInfo(scraped.getLiquorInfo()); // 매칭된 Info 주입
 
-        return liquorRepository.save(liquor);
+        return liquorRepository.save(newLiquor);
     }
 
     private LiquorPrice upsertLiquorPrice(Liquor liquor, Liquor scraped) {
@@ -195,8 +191,9 @@ public class EmartCrawlService {
 
     private String normalizeClazz(String clazz) {
         return normalizeText(clazz)
-                .replace("()", " ")
-                .replaceAll("\\s+", " ")
+                .replaceAll("\\[.*?\\]", "") // ⭐️ 추가: [기획], [전용잔세트] 등 대괄호 안의 태그 완벽 제거
+                .replace("()", "")
+                .replace(" ", "")
                 .trim();
     }
 
