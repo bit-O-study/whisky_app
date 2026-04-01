@@ -56,7 +56,7 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
     .join(" · ");
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-xl bg-[rgba(255,255,255,0.84)] shadow-[0_14px_32px_rgba(28,28,23,0.05)] ring-1 ring-[color:rgba(216,195,180,0.24)]">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-xl bg-[rgba(255,255,255,0.84)] shadow-[0_14px_32px_rgba(28,28,23,0.05)] ring-1 ring-[color:rgba(216,195,180,0.24)]">
       <div className="relative aspect-square overflow-hidden border-b border-[color:rgba(216,195,180,0.16)] bg-white">
         <Image
           src={liquor.image_url || "https://jeqvxzkvumkiraclauvo.supabase.co/storage/v1/object/public/whisky-images/default_whisky.webp"}
@@ -110,9 +110,9 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
             </div>
           </div>
 
-          <details className="catalog-details mt-2">
+          <details className="catalog-details mt-2 md:hidden">
             <summary className="cursor-pointer text-[9px] font-bold uppercase tracking-[0.18em] text-[color:rgba(82,68,57,0.68)]">
-              Market Lines
+              판매처
             </summary>
             <ul className="mt-3 space-y-2">
               {sortedVendors.map((vendor) => (
@@ -145,6 +145,40 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
               ))}
             </ul>
           </details>
+        </div>
+      </div>
+
+      <div className="pointer-events-none absolute inset-0 hidden flex-col justify-end bg-[linear-gradient(180deg,rgba(28,28,23,0.02),rgba(28,28,23,0.82))] p-4 opacity-0 backdrop-blur-[2px] transition duration-300 group-hover:opacity-100 group-focus-within:opacity-100 md:flex md:pointer-events-auto">
+        <div className="rounded-[1.15rem] border border-white/16 bg-[rgba(26,20,16,0.56)] p-4 backdrop-blur-md">
+          <h4 className="mb-3 text-[11px] font-bold uppercase tracking-[0.16em] text-white/92">
+            판매처
+          </h4>
+          <ul className="space-y-2">
+            {sortedVendors.map((vendor) => (
+              <li key={vendor.source}>
+                <a
+                  href={vendor.product_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between gap-3 rounded-lg bg-white/10 px-3 py-2 text-sm transition hover:bg-white/18"
+                >
+                  <span className="font-semibold text-white">{vendor.source}</span>
+                  <span className="flex items-center gap-2 text-right">
+                    {vendor.original_price > vendor.current_price && (
+                      <span className="text-xs text-white/45 line-through">{formatPrice(vendor.original_price)}</span>
+                    )}
+                    <span
+                      className={`font-semibold ${
+                        bestVendor?.source === vendor.source ? "text-[#fed65b]" : "text-white"
+                      }`}
+                    >
+                      {vendor.current_price > 0 ? formatPrice(vendor.current_price) : "가격 확인 중"}
+                    </span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </article>

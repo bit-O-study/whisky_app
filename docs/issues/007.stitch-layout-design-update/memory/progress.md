@@ -22,3 +22,4 @@
 - 2026-03-25 16:08: 카드 제목과 가격 타이포를 줄이고 상단 메트릭을 `Luxury Index`, `Active Vendors` 형태의 작은 카드로 교체해 현재 스크린샷이 Stitch 프로토타입에 더 가깝도록 보정했다.
 - 2026-03-25 16:08: 마지막 조정 후 `frontend`에서 `npm run lint`, `npm run test`를 다시 통과했고, 실행 중인 dev server를 headless screenshot으로 재확인했다.
 - 2026-03-25 16:12: 추가 지시에 따라 `Entry Price / Active Vendors` 상단 섹터를 통째로 제거했고, 카드 제목/가격/Vendors 타이포도 한 단계 더 축소했다.
+- 2026-04-01 00:00: 사용자 피드백에 따라 카드 하단 판매처 비교를 데스크톱에서 hover/focus-within 시 카드 위에 겹쳐 보이는 오버레이 방식으로 되돌렸고, 모바일에서만 `Market Lines`를 눌러 펼치는 방식으로 유지했다.
