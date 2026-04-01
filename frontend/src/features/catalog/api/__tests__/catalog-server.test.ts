@@ -56,24 +56,6 @@ class FakeQuery<T extends { id?: number; liquor_id?: number }> {
 
 class FakeSupabaseClient {
   constructor(
-    readonly latestPriceQuery: FakeQuery<{
-      id: number;
-      normalized_name: string | null;
-      brand: string | null;
-      category: string | null;
-      volume_ml: number | null;
-      alcohol_percent: number | null;
-      country: string | null;
-      product_code: string | null;
-      product_name: string | null;
-      product_url: string | null;
-      image_url: string | null;
-      updated_at: string | null;
-      source: string | null;
-      current_price: number | null;
-      original_price: number | null;
-      crawled_at: string | null;
-    }>,
     readonly liquorQuery: FakeQuery<{
       id: number;
       normalized_name: string | null;
@@ -97,10 +79,7 @@ class FakeSupabaseClient {
     }>,
   ) {}
 
-  from(table: "liquor" | "liquor_price" | "liquor_catalog_latest_price") {
-    if (table === "liquor_catalog_latest_price") {
-      return this.latestPriceQuery;
-    }
+  from(table: "liquor" | "liquor_price") {
     if (table === "liquor") {
       return this.liquorQuery;
     }
@@ -142,8 +121,8 @@ describe("catalog server search plan", () => {
 });
 
 describe("fetchCatalogPageFromServerWithClient", () => {
-  it("uses the latest-price view when it exists and skips the price lookup query", async () => {
-    const latestPriceQuery = new FakeQuery({
+  it("builds one catalog card per liquor and aggregates latest vendor prices", async () => {
+    const liquorQuery = new FakeQuery({
       data: [
         {
           id: 1,
@@ -158,42 +137,63 @@ describe("fetchCatalogPageFromServerWithClient", () => {
           product_url: "https://example.com/mac-12",
           image_url: "https://example.com/mac-12.jpg",
           updated_at: "2026-03-25T10:00:00.000Z",
+        },
+        {
+          id: 2,
+          normalized_name: "talisker 10",
+          brand: "Talisker",
+          category: "Single Malt",
+          volume_ml: 700,
+          alcohol_percent: 45.8,
+          country: "Scotland",
+          product_code: "TAL-10",
+          product_name: "Talisker 10",
+          product_url: "https://example.com/tal-10",
+          image_url: "https://example.com/tal-10.jpg",
+          updated_at: "2026-03-25T09:00:00.000Z",
+        },
+        {
+          id: 3,
+          normalized_name: "lagavulin 16",
+          brand: "Lagavulin",
+          category: "Single Malt",
+          volume_ml: 700,
+          alcohol_percent: 43,
+          country: "Scotland",
+          product_code: "LAG-16",
+          product_name: "Lagavulin 16",
+          product_url: "https://example.com/lag-16",
+          image_url: "https://example.com/lag-16.jpg",
+          updated_at: "2026-03-25T08:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    const priceQuery = new FakeQuery({
+      data: [
+        {
+          liquor_id: 1,
           source: "LOTTEON",
           current_price: 101000,
           original_price: 125000,
           crawled_at: "2026-03-25T11:00:00.000Z",
         },
         {
-          id: 2,
-          normalized_name: "macallan rare",
-          brand: "Macallan",
-          category: "Single Malt",
-          volume_ml: 700,
-          alcohol_percent: 43,
-          country: "Scotland",
-          product_code: "MAC-RARE",
-          product_name: "Macallan Rare",
-          product_url: "https://example.com/mac-rare",
-          image_url: "https://example.com/mac-rare.jpg",
-          updated_at: "2026-03-25T09:00:00.000Z",
+          liquor_id: 1,
+          source: "LOTTEON",
+          current_price: 103000,
+          original_price: 126000,
+          crawled_at: "2026-03-25T10:00:00.000Z",
+        },
+        {
+          liquor_id: 1,
           source: "EMART",
           current_price: 98000,
           original_price: 115000,
           crawled_at: "2026-03-25T09:30:00.000Z",
         },
         {
-          id: 3,
-          normalized_name: "macallan cask",
-          brand: "Macallan",
-          category: "Single Malt",
-          volume_ml: 700,
-          alcohol_percent: 46,
-          country: "Scotland",
-          product_code: "MAC-CASK",
-          product_name: "Macallan Cask",
-          product_url: "https://example.com/mac-cask",
-          image_url: "https://example.com/mac-cask.jpg",
-          updated_at: "2026-03-25T08:00:00.000Z",
+          liquor_id: 2,
           source: "LOTTEON",
           current_price: 112000,
           original_price: 135000,
@@ -202,17 +202,9 @@ describe("fetchCatalogPageFromServerWithClient", () => {
       ],
       error: null,
     });
-    const liquorQuery = new FakeQuery({
-      data: [],
-      error: null,
-    });
-    const priceQuery = new FakeQuery({
-      data: [],
-      error: null,
-    });
 
     const page = await fetchCatalogPageFromServerWithClient(
-      new FakeSupabaseClient(latestPriceQuery, liquorQuery, priceQuery),
+      new FakeSupabaseClient(liquorQuery, priceQuery),
       { keyword: "Mac", page: 0, size: 2 },
     );
 
@@ -223,21 +215,29 @@ describe("fetchCatalogPageFromServerWithClient", () => {
     });
     expect(page.items[0]).toMatchObject({
       id: 1,
-      current_price: 101000,
-      source: "LOTTEON",
+      lowest_price: 98000,
     });
-    expect(liquorQuery.calls).toHaveLength(0);
-    expect(priceQuery.calls).toHaveLength(0);
+    expect(page.items[0]?.vendors).toEqual([
+      {
+        source: "EMART",
+        current_price: 98000,
+        original_price: 115000,
+        product_url: "https://example.com/mac-12",
+      },
+      {
+        source: "LOTTEON",
+        current_price: 101000,
+        original_price: 125000,
+        product_url: "https://example.com/mac-12",
+      },
+    ]);
+    expect(priceQuery.calls).toContainEqual({
+      method: "in",
+      args: ["liquor_id", [1, 2]],
+    });
   });
 
-  it("falls back to the price lookup query when the latest-price view does not exist", async () => {
-    const latestPriceQuery = new FakeQuery({
-      data: null,
-      error: {
-        code: "42P01",
-        message: "relation \"liquor_catalog_latest_price\" does not exist",
-      },
-    });
+  it("returns zero-price cards when a liquor has no vendor prices yet", async () => {
     const liquorQuery = new FakeQuery({
       data: [
         {
@@ -254,101 +254,8 @@ describe("fetchCatalogPageFromServerWithClient", () => {
           image_url: "https://example.com/mac-12.jpg",
           updated_at: "2026-03-25T10:00:00.000Z",
         },
-        {
-          id: 2,
-          normalized_name: "macallan rare",
-          brand: "Macallan",
-          category: "Single Malt",
-          volume_ml: 700,
-          alcohol_percent: 43,
-          country: "Scotland",
-          product_code: "MAC-RARE",
-          product_name: "Macallan Rare",
-          product_url: "https://example.com/mac-rare",
-          image_url: "https://example.com/mac-rare.jpg",
-          updated_at: "2026-03-25T09:00:00.000Z",
-        },
-        {
-          id: 3,
-          normalized_name: "macallan cask",
-          brand: "Macallan",
-          category: "Single Malt",
-          volume_ml: 700,
-          alcohol_percent: 46,
-          country: "Scotland",
-          product_code: "MAC-CASK",
-          product_name: "Macallan Cask",
-          product_url: "https://example.com/mac-cask",
-          image_url: "https://example.com/mac-cask.jpg",
-          updated_at: "2026-03-25T08:00:00.000Z",
-        },
       ],
       error: null,
-    });
-    const priceQuery = new FakeQuery({
-      data: [
-        {
-          liquor_id: 1,
-          source: "LOTTEON",
-          current_price: 110000,
-          original_price: 125000,
-          crawled_at: "2026-03-25T08:00:00.000Z",
-        },
-        {
-          liquor_id: 1,
-          source: "LOTTEON",
-          current_price: 105000,
-          original_price: 125000,
-          crawled_at: "2026-03-25T11:00:00.000Z",
-        },
-        {
-          liquor_id: 2,
-          source: "EMART",
-          current_price: 98000,
-          original_price: 115000,
-          crawled_at: "2026-03-25T09:30:00.000Z",
-        },
-      ],
-      error: null,
-    });
-
-    const page = await fetchCatalogPageFromServerWithClient(
-      new FakeSupabaseClient(latestPriceQuery, liquorQuery, priceQuery),
-      { keyword: "Ma", page: 0, size: 2 },
-    );
-
-    expect(page).toMatchObject({
-      page: 0,
-      size: 2,
-      hasNext: true,
-    });
-    expect(page.items[0]).toMatchObject({
-      id: 1,
-      current_price: 105000,
-      original_price: 125000,
-    });
-    expect(liquorQuery.calls).toContainEqual({
-      method: "range",
-      args: [0, 2],
-    });
-    expect(priceQuery.calls).toContainEqual({
-      method: "in",
-      args: ["liquor_id", [1, 2]],
-    });
-  });
-
-  it("returns an empty page on 416 without loading prices", async () => {
-    const latestPriceQuery = new FakeQuery({
-      data: null,
-      error: {
-        code: "42P01",
-        message: "relation \"liquor_catalog_latest_price\" does not exist",
-      },
-    });
-    const liquorQuery = new FakeQuery({
-      data: null,
-      error: null,
-      status: 416,
     });
     const priceQuery = new FakeQuery({
       data: [],
@@ -356,16 +263,15 @@ describe("fetchCatalogPageFromServerWithClient", () => {
     });
 
     const page = await fetchCatalogPageFromServerWithClient(
-      new FakeSupabaseClient(latestPriceQuery, liquorQuery, priceQuery),
-      { keyword: "Mac", page: 9, size: 24 },
+      new FakeSupabaseClient(liquorQuery, priceQuery),
+      { keyword: "", page: 0, size: 1 },
     );
 
-    expect(page).toEqual({
-      items: [],
-      page: 9,
-      size: 24,
-      hasNext: false,
+    expect(page.items).toHaveLength(1);
+    expect(page.items[0]).toMatchObject({
+      id: 1,
+      lowest_price: 0,
+      vendors: [],
     });
-    expect(priceQuery.calls).toHaveLength(0);
   });
 });
