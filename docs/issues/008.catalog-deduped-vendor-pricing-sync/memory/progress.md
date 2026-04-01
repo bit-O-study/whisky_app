@@ -9,3 +9,6 @@
 - 2026-04-01 00:00: `frontend/src/features/catalog/api/catalog-server.ts`를 수정해 `liquor`를 기준으로 페이지네이션하고, `liquor_price`에서 같은 `liquor_id`의 가격들을 모아 `source`별 최신가만 남긴 뒤 카드 단위 `vendors[]`와 `lowest_price`를 구성하도록 변경했다.
 - 2026-04-01 00:00: `frontend/src/features/catalog/model/catalog.ts`, `frontend/src/features/catalog/api/catalog-client.ts`, `frontend/src/features/catalog/ui/CatalogPageClient.tsx`, `frontend/src/features/catalog/ui/LiquorGrid.tsx`를 수정해 프론트의 `name` 기준 재그룹핑을 제거하고 서버 집계 모델을 직접 소비하도록 정리했다.
 - 2026-04-01 00:00: `frontend/src/features/catalog/api/__tests__/catalog-server.test.ts`, `frontend/src/features/catalog/model/__tests__/catalog.test.ts`를 새 구조 기준으로 갱신했고, `npm run lint`, `npm run test`를 통과했다.
+- 2026-04-01 17:00: `frontend`에서 `npm run build`를 추가로 확인했고, 실제 환경에서는 Next.js production build가 정상 완료됨을 확인했다.
+- 2026-04-01 17:00: Codex 샌드박스 내부의 `next build`는 Turbopack CSS 처리 중 포트 바인딩 제한으로 실패했지만, 샌드박스 밖 동일 명령은 정상 통과했다. 따라서 현재 남은 리스크는 구현 결함보다 실행 환경 제약 기록에 가깝다.
+- 2026-04-01 17:00: 이슈 `008.catalog-deduped-vendor-pricing-sync`의 구현, 테스트, 빌드 검증, 문서 갱신을 모두 마감했다.

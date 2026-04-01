@@ -1,5 +1,6 @@
+import Link from "next/link";
 import Image from "next/image";
-import type { CatalogCardItem } from "../model/catalog";
+import { getLiquorDetailHref, type CatalogCardItem } from "../model/catalog";
 
 function normalizePrice(value: number) {
   return Number.isFinite(value) && value > 0 ? value : 0;
@@ -54,6 +55,7 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
   const metaLine = [liquor.brand, formatMetaValue(liquor.country, "Archive")]
     .filter(Boolean)
     .join(" · ");
+  const detailHref = getLiquorDetailHref(liquor.id);
 
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-xl bg-[rgba(255,255,255,0.84)] shadow-[0_14px_32px_rgba(28,28,23,0.05)] ring-1 ring-[color:rgba(216,195,180,0.24)]">
@@ -117,10 +119,7 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
             <ul className="mt-3 space-y-2">
               {sortedVendors.map((vendor) => (
                 <li key={vendor.source}>
-                  <a
-                    href={vendor.product_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <div
                     className="flex items-center justify-between gap-3 rounded-lg bg-[rgba(247,243,234,0.88)] px-3 py-2 text-sm transition hover:bg-[rgba(241,238,229,0.98)]"
                   >
                     <span className="font-semibold text-[color:var(--catalog-ink)]">{vendor.source}</span>
@@ -140,27 +139,36 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
                         {vendor.current_price > 0 ? formatPrice(vendor.current_price) : "가격 확인 중"}
                       </span>
                     </span>
-                  </a>
+                  </div>
                 </li>
               ))}
             </ul>
           </details>
+
+          <Link
+            href={detailHref}
+            className="mt-3 inline-flex items-center justify-center rounded-full border border-[color:rgba(216,195,180,0.38)] bg-[rgba(247,243,234,0.82)] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[color:var(--catalog-ink)] transition hover:bg-white md:hidden"
+          >
+            상세 보기
+          </Link>
         </div>
       </div>
 
       <div className="pointer-events-none absolute inset-0 hidden flex-col justify-end bg-[linear-gradient(180deg,rgba(28,28,23,0.02),rgba(28,28,23,0.82))] p-4 opacity-0 backdrop-blur-[2px] transition duration-300 group-hover:opacity-100 group-focus-within:opacity-100 md:flex md:pointer-events-auto">
-        <div className="rounded-[1.15rem] border border-white/16 bg-[rgba(26,20,16,0.56)] p-4 backdrop-blur-md">
-          <h4 className="mb-3 text-[11px] font-bold uppercase tracking-[0.16em] text-white/92">
-            판매처
-          </h4>
+        <Link
+          href={detailHref}
+          className="absolute inset-0 z-0"
+          aria-label={`${liquor.name} 상세 페이지로 이동`}
+        />
+        <div className="relative z-10 rounded-[1.15rem] border border-white/16 bg-[rgba(26,20,16,0.56)] p-4 backdrop-blur-md">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h4 className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/92">판매처</h4>
+          </div>
           <ul className="space-y-2">
             {sortedVendors.map((vendor) => (
               <li key={vendor.source}>
-                <a
-                  href={vendor.product_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between gap-3 rounded-lg bg-white/10 px-3 py-2 text-sm transition hover:bg-white/18"
+                <div
+                  className="relative z-10 flex items-center justify-between gap-3 rounded-lg bg-white/10 px-3 py-2 text-sm transition hover:bg-white/18"
                 >
                   <span className="font-semibold text-white">{vendor.source}</span>
                   <span className="flex items-center gap-2 text-right">
@@ -175,7 +183,7 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
                       {vendor.current_price > 0 ? formatPrice(vendor.current_price) : "가격 확인 중"}
                     </span>
                   </span>
-                </a>
+                </div>
               </li>
             ))}
           </ul>

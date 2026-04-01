@@ -3,6 +3,7 @@ import {
   buildCatalogSearchFilter,
   buildCatalogSearchPlan,
   fetchCatalogPageFromServerWithClient,
+  fetchLiquorDetailFromServerWithClient,
   normalizeCatalogSearchKeyword,
 } from "../catalog-server";
 
@@ -273,5 +274,70 @@ describe("fetchCatalogPageFromServerWithClient", () => {
       lowest_price: 0,
       vendors: [],
     });
+  });
+});
+
+describe("fetchLiquorDetailFromServerWithClient", () => {
+  it("returns liquor detail data for a single liquor id", async () => {
+    const liquorQuery = new FakeQuery({
+      data: [
+        {
+          id: 7,
+          normalized_name: "hibiki harmony",
+          brand: "Hibiki",
+          category: "Blended",
+          volume_ml: 700,
+          alcohol_percent: 43,
+          country: "Japan",
+          product_code: "HIB-07",
+          product_name: "Hibiki Japanese Harmony",
+          product_url: "https://example.com/hibiki",
+          image_url: "https://example.com/hibiki.jpg",
+          updated_at: "2026-03-26T10:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    const priceQuery = new FakeQuery({
+      data: [
+        {
+          liquor_id: 7,
+          source: "LOTTEON",
+          current_price: 129000,
+          original_price: 149000,
+          crawled_at: "2026-03-26T12:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    const detail = await fetchLiquorDetailFromServerWithClient(
+      new FakeSupabaseClient(liquorQuery, priceQuery),
+      { id: 7 },
+    );
+
+    expect(detail).toMatchObject({
+      item: {
+        id: 7,
+        name: "Hibiki Japanese Harmony",
+        lowest_price: 129000,
+      },
+    });
+    expect(liquorQuery.calls).toContainEqual({
+      method: "in",
+      args: ["id", [7]],
+    });
+  });
+
+  it("returns null when the requested liquor id does not exist", async () => {
+    const liquorQuery = new FakeQuery({ data: [], error: null });
+    const priceQuery = new FakeQuery({ data: [], error: null });
+
+    const detail = await fetchLiquorDetailFromServerWithClient(
+      new FakeSupabaseClient(liquorQuery, priceQuery),
+      { id: 999 },
+    );
+
+    expect(detail).toBeNull();
   });
 });
