@@ -1,25 +1,35 @@
 # 저장소 가이드라인
 
 ## 프로젝트 구조 및 모듈 구성
-이 모노레포는 Spring Boot 백엔드와 React 프론트엔드로 구성됩니다. 백엔드 코드는 `backend/` 아래 Gradle 서브모듈로 나뉘며, `api`는 조회·검색 API(`:8080`), `crawler`는 Selenium 기반 크롤러(`:8081`), `common`은 공용 JPA 엔티티, DTO, Repository를 담당합니다. 프론트엔드 코드는 `frontend/`에 있으며, UI 컴포넌트는 `frontend/src/components`, API 어댑터는 `frontend/src/api`, 도메인 타입은 `frontend/src/types`, 정적 자산은 `frontend/public`, Playwright 테스트는 `frontend/tests`에 있습니다.
+이 모노레포는 Spring Boot 백엔드와 Next.js 프론트엔드로 구성됩니다. 백엔드 코드는 `backend/` 아래 Gradle 서브모듈로 나뉘며, `api`는 보조 관리/업로드 성격의 애플리케이션(`:8080`), `crawler`는 Selenium 기반 크롤러(`:8081`), `common`은 공용 JPA 엔티티, DTO, Repository를 담당합니다. 프론트엔드 코드는 `frontend/`에 있으며, App Router 엔트리는 `frontend/app`, 기능 코드는 `frontend/src/features`, 엔티티는 `frontend/src/entities`, 공통 모듈은 `frontend/src/shared` 또는 기존 공용 디렉터리에, 정적 자산은 `frontend/public`, Playwright 테스트는 `frontend/tests`에 있습니다.
 
-문서 작업은 `docs/issues/<issue-name>/` 기준으로 진행합니다. 각 이슈 디렉터리에는 `prd.md`를 두고, 진행 중 메모는 `memory/implementation-plan.md`, `memory/progress.md`에 정리합니다.
+문서 작업은 아티팩트 기준으로 진행합니다.
+- 제품 계약: `docs/product-specs/`
+- 설계 결정: `docs/design-docs/`, `ARCHITECTURE.md`, `docs/FRONTEND.md`, `docs/DESIGN.md`
+- 진행 중 실행 계획: `docs/exec-plans/active/<task-slug>/`
+- 완료된 실행 기록: `docs/exec-plans/completed/<task-slug>/`
+- 원자료: `docs/references/`
+- 생성 스냅샷: `docs/generated/`
 
 ## 필수 문서 확인
-이 저장소의 작업자는 항상 현재 작업 중인 이슈 문서를 먼저 조회하고, 작업 중 변경사항이 생기면 즉시 해당 문서를 수정해야 합니다.
+이 저장소의 작업자는 현재 작업과 직접 연결된 내구 문서와 실행 계획을 먼저 확인해야 합니다.
 
-현재 작업 중인 이슈가 `docs/issues/<issue-name>/` 아래에 있다면, 최소한 아래 문서를 먼저 확인합니다.
-- `docs/issues/<issue-name>/prd.md`
-- `docs/issues/<issue-name>/memory/implementation-plan.md`
-- `docs/issues/<issue-name>/memory/progress.md`
+최소 확인 순서는 아래를 기준으로 합니다.
+- 구조/데이터/성능 변경: `ARCHITECTURE.md`, 관련 `docs/design-docs/*.md`
+- 화면/기능 변경: 관련 `docs/product-specs/*.md`, 필요 시 `docs/DESIGN.md`, `docs/FRONTEND.md`
+- 진행 중 작업이 이미 있으면 `docs/exec-plans/active/<task-slug>/brief.md`
+- 이어서 `docs/exec-plans/active/<task-slug>/plan.md`
+- 이어서 `docs/exec-plans/active/<task-slug>/progress.md`
 
 ## 문서 갱신 규칙
-- 작업 시작 전 현재 PRD, 구현 계획, 진행 상태를 확인합니다.
-- 구조적 결정, 구현 방향 변경, 단계 완료가 생기면 관련 문서를 바로 갱신합니다.
-- 새 작업을 마칠 때는 최소한 `progress.md`를 최신 상태로 유지합니다.
-- 구현이 계획을 벗어나면 `implementation-plan.md`를 수정합니다.
-- 요구사항이나 범위가 바뀌면 `prd.md`를 수정합니다.
-- 아키텍처 수준 변경이 크다면 `implementation-plan.md`에 즉시 반영하고, 필요하면 별도 결정 문서를 추가합니다.
+- 작업 시작 전 관련 spec/design 문서와 active 실행 계획을 확인합니다.
+- 새 작업은 가능하면 `docs/exec-plans/active/<task-slug>/` 아래 `brief.md`, `plan.md`, `progress.md`로 시작합니다.
+- 구조적 결정, 구현 방향 변경, 단계 완료가 생기면 관련 문서를 즉시 갱신합니다.
+- 작업 중에는 최소한 해당 active 폴더의 `progress.md`를 최신 상태로 유지합니다.
+- 구현이 계획을 벗어나면 `plan.md`를 수정합니다.
+- 요구사항이나 범위가 바뀌면 관련 product spec 또는 `brief.md`를 수정합니다.
+- 아키텍처 수준 변경이 크다면 `ARCHITECTURE.md` 또는 관련 `design-docs`를 즉시 갱신합니다.
+- 작업이 끝나면 active 실행 계획을 `docs/exec-plans/completed/`로 이동하고, 장기 가치가 남는 내용만 내구 문서에 반영합니다.
 
 ## 빌드, 테스트, 개발 명령어
 백엔드 명령은 `backend/`에서 실행합니다.

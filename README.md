@@ -12,6 +12,14 @@
 - `backend/api`: 보조 관리/업로드 성격의 Spring 애플리케이션 (`:8080`)
 - `backend/crawler`: 크롤링 및 적재 애플리케이션 (`:8081`)
 
+문서 구조:
+- `ARCHITECTURE.md`: 시스템 경계와 데이터 흐름
+- `docs/product-specs/`: 사용자 기능 계약
+- `docs/design-docs/`: 구조/성능/디자인 결정
+- `docs/exec-plans/`: 진행 중/완료된 실행 계획
+- `docs/references/`: 시안, 캡처, SQL 초안 같은 원자료
+- `docs/generated/`: 생성 스냅샷
+
 ## 기술 스택
 
 - Java 21
@@ -115,7 +123,9 @@ curl -X POST http://localhost:8081/api/crawl/emart
 ## 데이터 모델 메모
 
 - 현재 카탈로그 핵심 테이블 초안은 `public.liquor`, `public.liquor_price`, `public.liquor_info`입니다.
-- 스키마 초안은 `docs/issues/001.nextjs-supabase-migration/memory/supabase-schema-draft.sql`에 정리되어 있습니다.
+- 데이터 모델 원본은 `docs/design-docs/supabase-data-model.md`에 정리되어 있습니다.
+- 스키마 초안 SQL은 `docs/references/supabase-schema-draft.sql`에 있습니다.
+- 현재 스키마 스냅샷은 `docs/generated/db-schema.md`에 정리합니다.
 
 ## 주의사항
 
