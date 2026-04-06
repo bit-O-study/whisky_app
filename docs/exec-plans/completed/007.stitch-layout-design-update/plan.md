@@ -21,7 +21,7 @@
 - [x] 현재 주요 진입점이 `frontend/app/page.tsx`, `frontend/src/features/catalog/ui/CatalogPageClient.tsx`임을 확인한다.
 
 ### 완료 기준
-- 변경 범위와 비범위가 `prd.md`에 정리되어 있어야 한다.
+- 변경 범위와 비범위가 `brief.md`에 정리되어 있어야 한다.
 
 ## [x] Phase 2. Stitch 레이아웃 적용 설계
 ### 목표
@@ -37,17 +37,17 @@
 - 구현 전에 수정 대상 컴포넌트와 시각 변경 범위가 명확해야 한다.
 
 ## 현재 산출물 해석 메모
-- Stitch 전달물은 `DESIGN.md`의 디자인 원칙 문서와 `code.html`의 정적 HTML 프로토타입으로 구성되어 있다.
-- `code.html`에는 상단 glass header, 우측 검색창, 지표 영역, 4열 상품 월, 푸터, 모바일 하단 내비게이션 구조가 들어 있다.
+- Stitch 전달물은 현재 기준 [atmospheric-sommelier.md](/home/ubuntu/code/bitO-liquor/docs/design-docs/atmospheric-sommelier.md)의 디자인 원칙 문서와 [stitch-layout-prototype.html](/home/ubuntu/code/bitO-liquor/docs/references/stitch-layout-prototype.html)의 정적 HTML 프로토타입으로 구성되어 있다.
+- `stitch-layout-prototype.html`에는 상단 glass header, 우측 검색창, 지표 영역, 4열 상품 월, 푸터, 모바일 하단 내비게이션 구조가 들어 있다.
 - 다만 해당 HTML은 `cdn.tailwindcss.com`, Google Fonts, Material Symbols, 외부 이미지 URL, 하드코딩된 샘플 문구와 샘플 가격 데이터를 포함하므로 그대로 복사해 제품 코드로 넣지 않는다.
 - 실제 구현은 현재 `CatalogPageClient` 상태 흐름과 `LiquorGrid`/`LiquorCard` 데이터 계약을 유지한 채, 레이아웃과 토큰만 선택적으로 이식하는 방식으로 진행한다.
 
 ## 구현 결과 메모
 - `frontend/app/globals.css`에 warm ivory 배경, tonal layer, glass header, editorial 타이포그래피 스택, 공통 chip/panel 토큰을 추가했다.
-- 초기 구현은 `DESIGN.md` 분위기를 과하게 해석해 hero 중심 레이아웃으로 갔고, 사용자 피드백 후 실제 기준을 `code.html` 구조로 다시 고정했다.
-- `frontend/src/features/catalog/ui/CatalogPageClient.tsx`는 최종적으로 Stitch `code.html`에 가깝게 상단 wordmark bar, 우측 검색창, 결과 요약 줄, 4열 카드 월, footer, 모바일 하단 bar 구조로 재구성했고, 사용자 피드백에 따라 상단 보조 메트릭 섹터는 제거했다.
-- `frontend/src/features/catalog/ui/LiquorGrid.tsx`의 로딩/에러/빈 상태 UI를 새 톤으로 정리했고, 카드 월 간격과 열 구성을 `code.html`에 더 가깝게 맞췄다.
-- `frontend/src/features/catalog/ui/LiquorCard.tsx`는 카드 비율, square 이미지 영역, 상단 signal tag, 하단 price/vendors row를 `code.html`에 맞게 다시 정렬했다.
+- 초기 구현은 [atmospheric-sommelier.md](/home/ubuntu/code/bitO-liquor/docs/design-docs/atmospheric-sommelier.md) 분위기를 과하게 해석해 hero 중심 레이아웃으로 갔고, 사용자 피드백 후 실제 기준을 `stitch-layout-prototype.html` 구조로 다시 고정했다.
+- `frontend/src/features/catalog/ui/CatalogPageClient.tsx`는 최종적으로 Stitch `stitch-layout-prototype.html`에 가깝게 상단 wordmark bar, 우측 검색창, 결과 요약 줄, 4열 카드 월, footer, 모바일 하단 bar 구조로 재구성했고, 사용자 피드백에 따라 상단 보조 메트릭 섹터는 제거했다.
+- `frontend/src/features/catalog/ui/LiquorGrid.tsx`의 로딩/에러/빈 상태 UI를 새 톤으로 정리했고, 카드 월 간격과 열 구성을 `stitch-layout-prototype.html`에 더 가깝게 맞췄다.
+- `frontend/src/features/catalog/ui/LiquorCard.tsx`는 카드 비율, square 이미지 영역, 상단 signal tag, 하단 price/vendors row를 `stitch-layout-prototype.html`에 맞게 다시 정렬했다.
 - 이후 사용자 피드백에 맞춰 데스크톱에서는 판매처/가격 비교가 카드 hover와 focus-within 시 하단 오버레이 레이어로 겹쳐 보이도록 복원했고, 모바일만 `details` 패널로 유지했다.
 - `frontend/src/features/catalog/api/catalog-server.ts`의 `mapLiquorRow` 타입을 실제 사용 필드 기준으로 완화해, 기존 latest price view 경로의 타입 오류로 막히던 프론트 빌드를 통과시켰다.
 

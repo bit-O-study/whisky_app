@@ -155,7 +155,7 @@ frontend/src/
 - [x] `frontend`에서 `npm run build`를 실행한다.
 - [x] `frontend`에서 `npm run test:e2e`를 실행한다.
 - [x] 최종 폴더 구조와 의존 규칙, 남은 전환 후보를 `progress.md`에 기록한다.
-- [x] 필요하면 `prd.md`의 목표/범위를 실제 구현 방향에 맞게 보정한다.
+- [x] 필요하면 `brief.md`의 목표/범위를 실제 구현 방향에 맞게 보정한다.
 
 ## 구현 결과 메모
 - `frontend/src/entities/liquor/model/liquor.ts`로 도메인 모델을 이동했다.

@@ -140,10 +140,10 @@
 - 1자/2자 검색은 `short` mode, 3자 이상은 `trigram` mode로 분류하지만 현재는 둘 다 같은 부분 문자열 검색 의미론을 유지한다.
 - 전체 개수 계산은 제거했고, 페이지네이션은 한 건 더 조회하는 `size + 1` 방식으로 바꿨다.
 - `frontend/src/features/catalog/api/__tests__/catalog-server.test.ts`를 추가해 서버측 검색 회귀를 고정했다.
-- `memory/pg_trgm_search_indexes.sql`에 `pg_trgm` extension, trigram GIN index, `updated_at` 보조 index 초안을 추가했다.
-- `memory/pg_trgm_search_benchmark.sql`에 1자/2자/3자 검색과 가격 후속 조회를 비교하는 `EXPLAIN ANALYZE` 샘플을 추가했다.
+- 현재 기준 [pg_trgm_search_indexes.sql](/home/ubuntu/code/bitO-liquor/docs/references/pg_trgm_search_indexes.sql)에 `pg_trgm` extension, trigram GIN index, `updated_at` 보조 index 초안을 추가했다.
+- 현재 기준 [pg_trgm_search_benchmark.sql](/home/ubuntu/code/bitO-liquor/docs/references/pg_trgm_search_benchmark.sql)에 1자/2자/3자 검색과 가격 후속 조회를 비교하는 `EXPLAIN ANALYZE` 샘플을 추가했다.
 - `frontend/src/features/catalog/api/catalog-server.ts`는 `liquor_catalog_latest_price` 뷰를 우선 조회하고, 뷰가 없으면 기존 `liquor + liquor_price` 이중 조회로 fallback 하도록 정리했다.
-- `memory/liquor_latest_price_read_model.sql`에 최신 가격 읽기 모델 뷰와 보조 인덱스 SQL을 추가했다.
+- 현재 기준 [liquor_latest_price_read_model.sql](/home/ubuntu/code/bitO-liquor/docs/references/liquor_latest_price_read_model.sql)에 최신 가격 읽기 모델 뷰와 보조 인덱스 SQL을 추가했다.
 
 ## 의존성 및 결정 필요 항목
 - 현재 저장소에는 DB migration 체계가 없다.

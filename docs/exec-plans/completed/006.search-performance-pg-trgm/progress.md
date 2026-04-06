@@ -1,11 +1,11 @@
 # Progress
 
-- 2026-03-25 11:20: `006.search-performance-pg-trgm` 이슈 착수를 위해 `prd.md`를 검토했다.
-- 2026-03-25 11:20: 현재 이슈 디렉터리에 `memory/implementation-plan.md`, `memory/progress.md`가 없음을 확인했다.
+- 2026-03-25 11:20: `006.search-performance-pg-trgm` 이슈 착수를 위해 `brief.md`를 검토했다.
+- 2026-03-25 11:20: 현재 작업 폴더에 `plan.md`, `progress.md`가 없음을 확인했다.
 - 2026-03-25 11:22: 코드베이스 점검 결과 현재 카탈로그 사용자 검색 경로는 Spring `backend/api`가 아니라 Next.js `frontend`의 Supabase 조회(`frontend/src/features/catalog/api/catalog-server.ts`)임을 확인했다.
 - 2026-03-25 11:22: 실제 검색 쿼리가 `liquor` 테이블의 `product_name`, `normalized_name`, `brand`에 대해 `or(... ilike ...)`와 `count: "exact"`를 함께 사용하고 있음을 확인했다.
 - 2026-03-25 11:22: 현재 검색 응답 비용 후보를 `ILIKE` 본문 검색, exact count 계산, 페이지 결과 후 `liquor_price` 후속 조회의 세 축으로 정리했다.
-- 2026-03-25 11:24: 위 구조를 바탕으로 `memory/implementation-plan.md`를 작성했고, `pg_trgm` 인덱스 적용, count 전략 재검토, 최신 가격 조회 구조 점검을 단계별 구현 계획으로 고정했다.
+- 2026-03-25 11:24: 위 구조를 바탕으로 `plan.md`를 작성했고, `pg_trgm` 인덱스 적용, count 전략 재검토, 최신 가격 조회 구조 점검을 단계별 구현 계획으로 고정했다.
 - 2026-03-25 11:24: 현재 시점에서 구현은 아직 시작하지 않았고, 다음 작업의 첫 단계는 대표 검색어 기준 실행 계획과 응답 시간을 수집해 실제 병목 우선순위를 확정하는 것이다.
 - 2026-03-25 11:32: 구현 계획 리뷰 지적을 반영해 1자/2자 검색을 별도 결정 항목으로 올리고, Playwright mock 기반 검증의 한계를 명시했다.
 - 2026-03-25 11:32: `fetchCatalogPageFromServer` 수준 서버측 검색 검증과 실 DB 실행 계획 비교를 Phase 4 필수 산출물로 추가했다.
@@ -17,10 +17,10 @@
 - 2026-03-25 14:12: `frontend/vitest.config.ts`에 `server-only` alias stub을 추가해 서버 전용 모듈이 Vitest에서 로드되도록 정리했다.
 - 2026-03-25 14:14: 검증 결과 `npm test`, `npm run lint`는 샌드박스에서 통과했고, `npm run build`는 Turbopack 포트 바인딩 제한으로 한 번 실패한 뒤 권한 상승으로 정상 통과했다.
 - 2026-03-25 14:25: 실제 Supabase MCP가 현재 저장소 DB가 아닌 다른 프로젝트를 가리키는 것을 다시 확인했고, 원격 DB 실행 계획 수집은 MCP 대신 직접 DB 접속 기준으로 진행하기로 정리했다.
-- 2026-03-25 14:26: `memory/pg_trgm_search_indexes.sql`을 추가해 `pg_trgm` extension, trigram GIN index, `updated_at desc` 보조 index를 반복 적용 가능한 SQL 파일로 남겼다.
-- 2026-03-25 14:26: `memory/pg_trgm_search_benchmark.sql`을 추가해 1자/2자/3자 검색, deep page, 가격 후속 조회의 `EXPLAIN ANALYZE` 비교 쿼리를 정리했다.
+- 2026-03-25 14:26: 현재 기준 [pg_trgm_search_indexes.sql](/home/ubuntu/code/bitO-liquor/docs/references/pg_trgm_search_indexes.sql)을 추가해 `pg_trgm` extension, trigram GIN index, `updated_at desc` 보조 index를 반복 적용 가능한 SQL 파일로 남겼다.
+- 2026-03-25 14:26: 현재 기준 [pg_trgm_search_benchmark.sql](/home/ubuntu/code/bitO-liquor/docs/references/pg_trgm_search_benchmark.sql)을 추가해 1자/2자/3자 검색, deep page, 가격 후속 조회의 `EXPLAIN ANALYZE` 비교 쿼리를 정리했다.
 - 2026-03-25 14:26: 현재 로컬에는 `psql`과 백엔드 DB 접속 문자열이 없어 실제 실행 계획 수집은 아직 못 했고, 다음 단계는 DB 접속 환경을 확보한 뒤 벤치마크 SQL을 실행하는 것이다.
 - 2026-03-25 15:01: `frontend/src/features/catalog/api/catalog-server.ts`를 갱신해 `liquor_catalog_latest_price` 뷰를 우선 조회하고, 뷰가 없으면 기존 `liquor_price` 재조회로 fallback 하도록 변경했다.
 - 2026-03-25 15:01: `frontend/src/features/catalog/api/__tests__/catalog-server.test.ts`에 뷰 사용 경로와 fallback 경로를 모두 검증하는 테스트를 추가했다.
-- 2026-03-25 15:02: `memory/liquor_latest_price_read_model.sql`을 추가해 최신 가격 읽기 모델 뷰와 `(liquor_id, crawled_at desc)` 인덱스를 이 이슈 범위의 적용물로 분리했다.
+- 2026-03-25 15:02: 현재 기준 [liquor_latest_price_read_model.sql](/home/ubuntu/code/bitO-liquor/docs/references/liquor_latest_price_read_model.sql)을 추가해 최신 가격 읽기 모델 뷰와 `(liquor_id, crawled_at desc)` 인덱스를 이 이슈 범위의 적용물로 분리했다.
 - 2026-03-25 15:02: 검증 결과 `frontend`에서 `npm test`, `npm run lint`를 통과했다.

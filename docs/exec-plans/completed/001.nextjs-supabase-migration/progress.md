@@ -1,10 +1,10 @@
 # Progress
 
-- 2026-03-24 16:43: `docs/issues/001.nextjs-supabase-migration/` 문서 구조 생성.
-- 2026-03-24 16:43: `prd.md`를 Lean PRD 형식으로 초안 작성.
-- 2026-03-24 16:43: PRD 기준으로 `implementation-plan.md`를 phase 단위 구현 계획으로 구체화.
+- 2026-03-24 16:43: 현재 기준 `docs/exec-plans/completed/001.nextjs-supabase-migration/` 아카이브의 기본 문서 구조를 생성.
+- 2026-03-24 16:43: `brief.md`를 Lean PRD 형식 초안으로 작성.
+- 2026-03-24 16:43: `brief.md` 기준으로 `plan.md`를 phase 단위 구현 계획으로 구체화.
 - 2026-03-24 16:43: 구현 계획에 TDD 원칙과 phase별 테스트 선행 방식을 명시.
-- 2026-03-24 16:43: `implementation-plan.md`에 체크리스트 상태 규칙(`[ ]`, `[-]`, `[x]`)을 추가하고 phase별 작업을 체크 가능 형태로 정리.
+- 2026-03-24 16:43: `plan.md`에 체크리스트 상태 규칙(`[ ]`, `[-]`, `[x]`)을 추가하고 phase별 작업을 체크 가능 형태로 정리.
 - 2026-03-24 16:43: phase 제목에도 상태 체크를 붙여 상위 진행률을 한눈에 볼 수 있게 정리.
 - 2026-03-24 16:49: 프론트 전환 범위를 Next.js 실제 전환으로 확정.
 - 2026-03-24 16:49: 추천 기능은 이전하지 않고 제거하는 방향으로 요구사항과 구현 계획을 수정.
@@ -16,12 +16,12 @@
 - 2026-03-24 16:56: `backend/api`에서 `/api/liquors/recommendations` 엔드포인트와 `WhiskyRecommendationService`를 제거하고, 추천 전용 DTO를 정리.
 - 2026-03-24 16:56: `backend/crawler`는 중간 적재 계층 없이 JPA Repository를 통해 Supabase가 연결된 Postgres 테이블에 직접 적재하는 방향으로 결정하고 문서에 반영.
 - 2026-03-24 17:07: 현재 연결된 Supabase MCP 프로젝트가 저장소와 다른 프로젝트(`guestbook_entries`, `comments`, `profiles`)임을 확인하고, 실제 원격 변경 대신 로컬 스키마 초안 작성 방식으로 전환.
-- 2026-03-24 17:07: `memory/supabase-schema-draft.sql`에 `liquor`, `liquor_price`, `liquor_info` 테이블, 인덱스, 트리거, `liquor_catalog_latest_price` 뷰 초안을 작성.
-- 2026-03-24 17:07: `memory/supabase-data-model.md`에 조회 규격, 크롤러 적재 경로, 읽기/쓰기 모델을 정리하고 Phase 1/2 진행 상태를 갱신.
+- 2026-03-24 17:07: 현재 기준 [supabase-schema-draft.sql](/home/ubuntu/code/bitO-liquor/docs/references/supabase-schema-draft.sql)에 `liquor`, `liquor_price`, `liquor_info` 테이블, 인덱스, 트리거, `liquor_catalog_latest_price` 뷰 초안을 작성.
+- 2026-03-24 17:07: 현재 기준 [supabase-data-model.md](/home/ubuntu/code/bitO-liquor/docs/design-docs/supabase-data-model.md)에 조회 규격, 크롤러 적재 경로, 읽기/쓰기 모델을 정리하고 Phase 1/2 진행 상태를 갱신.
 - 2026-03-24 17:09: Spring 조회 API를 병행 운영 없이 즉시 제거하기로 결정하고 `LiquorController`, `LiquorQueryService`, `LiquorPageResponseDto`를 삭제.
 - 2026-03-24 17:09: 기본 이미지는 현재 Supabase Storage 공개 경로 fallback을 유지하고 별도 이미지 정책 변경은 하지 않기로 문서에 반영.
 - 2026-03-24 17:12: 루트 `README.md`를 Next.js + Supabase + crawler 적재 구조 기준으로 갱신하고, 환경변수/로컬 실행/크롤러 운영 메모를 최신화.
-- 2026-03-24 17:12: `implementation-plan.md`의 Phase 5에서 크롤러 운영 문서와 전환 이후 실행 문서 갱신 항목을 완료 처리.
+- 2026-03-24 17:12: `plan.md`의 Phase 5에서 크롤러 운영 문서와 전환 이후 실행 문서 갱신 항목을 완료 처리.
 - 2026-03-24 17:13: 조회 API 제거 전 계약 안전망 테스트 분리는 이번 이슈 범위 밖의 후속 안정화 작업으로 이관하고, Phase 5를 완료 처리.
 - 2026-03-24 17:20: 로컬 Supabase 연결 점검 결과 원격 Postgres와 `liquor`, `liquor_price` 테이블은 정상 응답함을 확인했고, 실행 실패 원인을 로컬 환경변수 누락으로 정리했다.
 - 2026-03-24 17:20: `frontend/.env.local`, `backend/.env` 로컬 환경 파일을 추가해 Supabase URL, Postgres 접속 문자열, 버킷 이름 기본값을 즉시 주입할 수 있게 정리했다.
