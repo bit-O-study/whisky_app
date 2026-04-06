@@ -1,6 +1,7 @@
 # REPOSITORY
 
 ## 역할
+- 이 문서는 [CONSTITUTION.md](/home/ubuntu/code/bitO-liquor/CONSTITUTION.md)를 구체화하는 repo 운영 레이어다.
 - 이 문서는 `repository level harness engineering`의 진입점이다.
 - 목적은 "이 앱이 무엇인가"보다 "이 저장소를 어떻게 바꾸는가"를 규정하는 것이다.
 - 제품/기능/아키텍처 자체는 application harness 문서가 설명한다.

@@ -13,6 +13,7 @@
 - `backend/crawler`: 크롤링 및 적재 애플리케이션 (`:8081`)
 
 문서 구조:
+- `CONSTITUTION.md`: 저장소 전체를 지배하는 최상위 규범
 - `docs/REPOSITORY.md`: repository level harness engineering 진입점
 - `docs/REPO_MAP.md`: 저장소 surface와 책임 경계
 - `docs/CHANGE_POLICY.md`: 변경 종류별 문서/검증 규칙

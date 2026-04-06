@@ -4,6 +4,7 @@
 이 모노레포는 Spring Boot 백엔드와 Next.js 프론트엔드로 구성됩니다. 백엔드 코드는 `backend/` 아래 Gradle 서브모듈로 나뉘며, `api`는 보조 관리/업로드 성격의 애플리케이션(`:8080`), `crawler`는 Selenium 기반 크롤러(`:8081`), `common`은 공용 JPA 엔티티, DTO, Repository를 담당합니다. 프론트엔드 코드는 `frontend/`에 있으며, App Router 엔트리는 `frontend/app`, 기능 코드는 `frontend/src/features`, 엔티티는 `frontend/src/entities`, 공통 모듈은 목표 경계인 `frontend/src/shared` 또는 현재 남아 있는 `frontend/src/lib`에, 정적 자산은 `frontend/public`, Playwright 테스트는 `frontend/tests`에 있습니다.
 
 문서 작업은 아티팩트 기준으로 진행합니다.
+- 헌법 레이어: `CONSTITUTION.md`
 - 저장소 운영 레이어: `docs/REPOSITORY.md`, `docs/REPO_MAP.md`, `docs/CHANGE_POLICY.md`, `docs/INTERFACE_MATRIX.md`, `docs/ENVIRONMENTS.md`
 - 제품 계약: `docs/product-specs/`
 - 설계 결정: `docs/design-docs/`, `ARCHITECTURE.md`, `docs/FRONTEND.md`, `docs/DESIGN.md`
@@ -16,6 +17,7 @@
 이 저장소의 작업자는 현재 작업과 직접 연결된 내구 문서와 실행 계획을 먼저 확인해야 합니다.
 
 최소 확인 순서는 아래를 기준으로 합니다.
+- 최상위 원칙 확인: `CONSTITUTION.md`
 - 저장소 운영 규칙 변경: `docs/REPOSITORY.md`, `docs/CHANGE_POLICY.md`, `docs/PLANS.md`
 - 구조/데이터/성능 변경: `ARCHITECTURE.md`, 관련 `docs/design-docs/*.md`
 - 화면/기능 변경: 관련 `docs/product-specs/*.md`, 필요 시 `docs/DESIGN.md`, `docs/FRONTEND.md`
