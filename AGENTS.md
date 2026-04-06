@@ -1,7 +1,7 @@
 # 저장소 가이드라인
 
 ## 프로젝트 구조 및 모듈 구성
-이 모노레포는 Spring Boot 백엔드와 Next.js 프론트엔드로 구성됩니다. 백엔드 코드는 `backend/` 아래 Gradle 서브모듈로 나뉘며, `api`는 보조 관리/업로드 성격의 애플리케이션(`:8080`), `crawler`는 Selenium 기반 크롤러(`:8081`), `common`은 공용 JPA 엔티티, DTO, Repository를 담당합니다. 프론트엔드 코드는 `frontend/`에 있으며, App Router 엔트리는 `frontend/app`, 기능 코드는 `frontend/src/features`, 엔티티는 `frontend/src/entities`, 공통 모듈은 `frontend/src/shared` 또는 기존 공용 디렉터리에, 정적 자산은 `frontend/public`, Playwright 테스트는 `frontend/tests`에 있습니다.
+이 모노레포는 Spring Boot 백엔드와 Next.js 프론트엔드로 구성됩니다. 백엔드 코드는 `backend/` 아래 Gradle 서브모듈로 나뉘며, `api`는 보조 관리/업로드 성격의 애플리케이션(`:8080`), `crawler`는 Selenium 기반 크롤러(`:8081`), `common`은 공용 JPA 엔티티, DTO, Repository를 담당합니다. 프론트엔드 코드는 `frontend/`에 있으며, App Router 엔트리는 `frontend/app`, 기능 코드는 `frontend/src/features`, 엔티티는 `frontend/src/entities`, 공통 모듈은 목표 경계인 `frontend/src/shared` 또는 현재 남아 있는 `frontend/src/lib`에, 정적 자산은 `frontend/public`, Playwright 테스트는 `frontend/tests`에 있습니다.
 
 문서 작업은 아티팩트 기준으로 진행합니다.
 - 제품 계약: `docs/product-specs/`
@@ -40,16 +40,17 @@
 
 프론트엔드 명령은 `frontend/`에서 실행합니다.
 - `npm install`: 의존성을 설치합니다.
-- `npm run dev`: Vite 개발 서버를 실행합니다.
-- `npm run build`: `tsc -b`와 프로덕션 빌드를 수행합니다.
+- `npm run dev`: Next.js 개발 서버를 실행합니다.
+- `npm run build`: Next.js 프로덕션 빌드를 수행합니다.
 - `npm run lint`: ESLint를 실행합니다.
+- `npm run test`: Vitest 단위 테스트를 실행합니다.
 - `npm run test:e2e`: Playwright E2E 테스트를 실행합니다.
 
 ## 코딩 스타일 및 네이밍 규칙
 Java는 스페이스 4칸 들여쓰기를 사용하고, Spring 패키지명은 `org.bito.liquor...`처럼 소문자로 유지합니다. Java 클래스는 `UpperCamelCase`, 메서드와 필드는 `lowerCamelCase`를 사용합니다. 프론트엔드는 컴포넌트 파일명을 `PascalCase.tsx`, 함수명은 `camelCase`로 작성하고, 프론트 도메인 필드는 `snake_case`를 유지합니다. TypeScript에서는 `import type`을 우선하고 `any`는 피하며, 광범위한 포맷팅보다 기존 파일의 quote·semicolon 스타일을 따르세요.
 
 ## 테스트 가이드
-백엔드 테스트는 `backend/*/src/test/java`에 두며, 일반적으로 JUnit Platform 기반 `@SpringBootTest`를 사용합니다. 테스트 클래스명은 `ApiApplicationTests`처럼 `*Tests` 패턴을 따릅니다. 프론트 기본 검증은 `npm run lint`와 `npm run build`이며, UI 흐름이나 API 연동 동작이 바뀌면 `npm run test:e2e`도 실행하세요.
+백엔드 테스트는 `backend/*/src/test/java`에 두며, 일반적으로 JUnit Platform 기반 `@SpringBootTest`를 사용합니다. 테스트 클래스명은 `ApiApplicationTests`처럼 `*Tests` 패턴을 따릅니다. 프론트 기본 검증은 `npm run lint`, `npm run build`, `npm run test`이며, UI 흐름이나 API 연동 동작이 바뀌면 `npm run test:e2e`도 실행하세요.
 
 ## 커밋 및 Pull Request 가이드
 커밋 메시지는 `feat: ...`, `fix: ...`, `refactor: ...` 같은 Conventional Commits 형식을 따르며, 제목과 설명은 한국어로 작성합니다. 커밋은 `api`, `crawler`, `frontend`처럼 변경 영역별로 작게 유지하세요. PR에는 동작 변경 요약, 실행한 검증 명령, 관련 이슈 링크가 있으면 포함하고, 프론트 시각 변경이 있다면 스크린샷이나 GIF를 첨부하세요.

@@ -80,7 +80,9 @@ SUPABASE_SERVICE_ROLE_KEY=...
 
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `SUPABASE_SERVICE_KEY`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+현재 기본 카탈로그/상세 조회 경로에서는 서버 전용 키가 필요합니다.
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` 또는 publishable key는 향후 공개 클라이언트 연동을 추가할 때만 선택적으로 사용하며, 현재 기본 조회 경로의 필수값은 아닙니다.
 
 로컬 개발 시에는 `frontend/.env.local`을 사용합니다.
 
@@ -107,6 +109,7 @@ SUPABASE_SERVICE_ROLE_KEY=...
 npm run dev
 npm run build
 npm run lint
+npm run test
 npm run start
 npm run test:e2e
 ```

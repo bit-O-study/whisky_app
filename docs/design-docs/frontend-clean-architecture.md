@@ -17,6 +17,7 @@ frontend/src/
       model/
       ui/
   shared/
+  lib/
 ```
 
 ## 규칙
@@ -25,7 +26,9 @@ frontend/src/
 - `features`
   검색, 페이지네이션, 그룹핑, 오류 메시지, 화면 조합 규칙을 둔다.
 - `shared`
-  프레임워크/인프라 공통 모듈만 둔다.
+  목표 공용 네임스페이스로, 프레임워크/인프라 공통 모듈만 둔다.
+- `lib`
+  전환 과정에서 남아 있는 기존 공용/서버 모듈을 둔다. 새 공용 모듈의 기본 위치로 쓰지 않는다.
 - UI는 repository나 Supabase shape를 직접 알지 않는다.
 - 서버 선조회와 클라이언트 후속 조회는 같은 feature model을 공유한다.
 

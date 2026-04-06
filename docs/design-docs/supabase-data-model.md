@@ -19,7 +19,9 @@
 - 목록 기본 정렬은 `liquor.updated_at desc`다.
 - 검색 조건은 `product_name`, `normalized_name`, `brand`에 대한 대소문자 무시 부분 검색이다.
 - 가격은 `liquor_price`에서 동일 `liquor_id`의 최신 `crawled_at` 레코드를 우선 사용한다.
-- 현재 프론트 구현은 `liquor`와 `liquor_price`를 각각 조회하지만, 이후에는 `liquor_catalog_latest_price` 뷰로 단순화할 수 있다.
+- 현재 카탈로그 계약은 `liquor`와 `liquor_price`를 조합해 주류 1건당 `vendors[]`를 구성하는 방식이다.
+- `liquor_catalog_latest_price` 뷰는 주류당 최신 가격 1건만 반환하므로, 현재 멀티벤더 카탈로그의 기본 조회 모델로 사용하지 않는다.
+- 필요하다면 검색 최적화나 단일 최신가 surface 용도의 보조 읽기 모델로만 제한해 사용한다.
 
 ## 인덱스 방향
 - 목록 페이징용 `liquor.updated_at desc` 인덱스
@@ -42,4 +44,4 @@
 ## 남은 항목
 - Supabase Storage 공개 범위와 기본 이미지 정책
 - 실제 Supabase 프로젝트에 반영할 마이그레이션 파일 위치
-- 필요 시 `liquor_catalog_latest_price` 뷰 기준으로 프론트 조회 단순화
+- 멀티벤더 카탈로그 계약을 유지한 채 `liquor_catalog_latest_price` 같은 보조 읽기 모델을 어디까지 병행할지 결정
