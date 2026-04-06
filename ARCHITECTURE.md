@@ -42,6 +42,7 @@
 - 자세한 규칙은 [docs/FRONTEND.md](/home/ubuntu/code/bitO-liquor/docs/FRONTEND.md)를 따른다.
 
 ## 문서 소스 오브 트루스
+- 저장소 운영 규칙: [docs/REPOSITORY.md](/home/ubuntu/code/bitO-liquor/docs/REPOSITORY.md), [docs/CHANGE_POLICY.md](/home/ubuntu/code/bitO-liquor/docs/CHANGE_POLICY.md)
 - 제품 동작 계약: [docs/product-specs/index.md](/home/ubuntu/code/bitO-liquor/docs/product-specs/index.md)
 - 설계 결정: [docs/design-docs/index.md](/home/ubuntu/code/bitO-liquor/docs/design-docs/index.md)
 - 실행 기록: [docs/PLANS.md](/home/ubuntu/code/bitO-liquor/docs/PLANS.md)

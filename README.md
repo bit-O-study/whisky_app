@@ -13,6 +13,11 @@
 - `backend/crawler`: 크롤링 및 적재 애플리케이션 (`:8081`)
 
 문서 구조:
+- `docs/REPOSITORY.md`: repository level harness engineering 진입점
+- `docs/REPO_MAP.md`: 저장소 surface와 책임 경계
+- `docs/CHANGE_POLICY.md`: 변경 종류별 문서/검증 규칙
+- `docs/INTERFACE_MATRIX.md`: 내부 인터페이스와 허용 경계
+- `docs/ENVIRONMENTS.md`: 환경/시크릿/실행 경계
 - `ARCHITECTURE.md`: 시스템 경계와 데이터 흐름
 - `docs/product-specs/`: 사용자 기능 계약
 - `docs/design-docs/`: 구조/성능/디자인 결정
