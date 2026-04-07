@@ -1,4 +1,5 @@
 package org.bito.liquor.common.model;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,7 +18,13 @@ public class LiquorInfo {
     private Long id;
 
     private String brand;
+
     private String category;
+
+    @Column(name = "sub_category")
+    private String subCategory;
+
+    @Column(name = "alcohol_percent")
     private Double alcoholPercent;
 
     @Column(name = "volume_ml")

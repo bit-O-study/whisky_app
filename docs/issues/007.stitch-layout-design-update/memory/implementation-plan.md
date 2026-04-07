@@ -47,7 +47,8 @@
 - 초기 구현은 `DESIGN.md` 분위기를 과하게 해석해 hero 중심 레이아웃으로 갔고, 사용자 피드백 후 실제 기준을 `code.html` 구조로 다시 고정했다.
 - `frontend/src/features/catalog/ui/CatalogPageClient.tsx`는 최종적으로 Stitch `code.html`에 가깝게 상단 wordmark bar, 우측 검색창, 결과 요약 줄, 4열 카드 월, footer, 모바일 하단 bar 구조로 재구성했고, 사용자 피드백에 따라 상단 보조 메트릭 섹터는 제거했다.
 - `frontend/src/features/catalog/ui/LiquorGrid.tsx`의 로딩/에러/빈 상태 UI를 새 톤으로 정리했고, 카드 월 간격과 열 구성을 `code.html`에 더 가깝게 맞췄다.
-- `frontend/src/features/catalog/ui/LiquorCard.tsx`는 카드 비율, square 이미지 영역, 상단 signal tag, 하단 price/vendors row를 `code.html`에 맞게 다시 정렬했고, 제품 기능 유지를 위해 판매처 링크는 접이식 `details` 패널로 남겼다.
+- `frontend/src/features/catalog/ui/LiquorCard.tsx`는 카드 비율, square 이미지 영역, 상단 signal tag, 하단 price/vendors row를 `code.html`에 맞게 다시 정렬했다.
+- 이후 사용자 피드백에 맞춰 데스크톱에서는 판매처/가격 비교가 카드 hover와 focus-within 시 하단 오버레이 레이어로 겹쳐 보이도록 복원했고, 모바일만 `details` 패널로 유지했다.
 - `frontend/src/features/catalog/api/catalog-server.ts`의 `mapLiquorRow` 타입을 실제 사용 필드 기준으로 완화해, 기존 latest price view 경로의 타입 오류로 막히던 프론트 빌드를 통과시켰다.
 
 ## [x] Phase 3. 프론트엔드 디자인 구현

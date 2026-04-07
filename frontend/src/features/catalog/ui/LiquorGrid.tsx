@@ -119,7 +119,7 @@ export default function LiquorGrid({
       )}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {liquors.map((l, index) => (
-          <LiquorCard key={l.name} liquor={l} prioritizeImage={index === 0} />
+          <LiquorCard key={`${l.id}-${l.product_code || l.name}`} liquor={l} prioritizeImage={index === 0} />
         ))}
       </div>
       {hasNext && <div ref={loadMoreRef} className="h-10" aria-hidden="true" />}

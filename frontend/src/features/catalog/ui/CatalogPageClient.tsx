@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Liquor } from "../../../entities/liquor/model/liquor";
 import { fetchCatalogPage } from "../api/catalog-client";
 import {
   getCatalogLoadErrorMessage,
-  groupCatalogLiquors,
   mergeCatalogPageItems,
   shouldSkipInitialCatalogRequest,
   type CatalogPage,
+  type CatalogCardItem,
 } from "../model/catalog";
 import LiquorGrid from "./LiquorGrid";
 
@@ -35,7 +34,7 @@ export default function CatalogPageClient({
   const initialItemCount = initialPage.items.length;
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [liquors, setLiquors] = useState<Liquor[]>(initialPage.items);
+  const [liquors, setLiquors] = useState<CatalogCardItem[]>(initialPage.items);
   const [liquorPage, setLiquorPage] = useState(initialPage.page);
   const [hasNextLiquorPage, setHasNextLiquorPage] = useState(initialPage.hasNext);
   const [loading, setLoading] = useState(false);
@@ -154,10 +153,8 @@ export default function CatalogPageClient({
     };
   }, [error, hasNextLiquorPage, loading, loadingMore]);
 
-  const groupedLiquors = groupCatalogLiquors(liquors);
   const activeSearchQuery = debouncedSearchQuery.trim();
-  const visibleBottleCount = groupedLiquors.length;
-  const visibleOfferCount = liquors.length;
+  const visibleBottleCount = liquors.length;
 
   function handleLogoClick() {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
@@ -260,7 +257,7 @@ export default function CatalogPageClient({
         <div>
           <LiquorGrid
             searchQuery={activeSearchQuery}
-            liquors={groupedLiquors}
+            liquors={liquors}
             loading={loading}
             loadingMore={loadingMore}
             hasNext={hasNextLiquorPage}
@@ -274,7 +271,7 @@ export default function CatalogPageClient({
           <div className="mt-16 flex flex-col items-center gap-4">
             <div className="h-px w-32 bg-[linear-gradient(90deg,transparent,rgba(216,195,180,0.8),transparent)]" />
             <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[color:rgba(82,68,57,0.62)]">
-              End of records ({formatCount(visibleBottleCount)} / {formatCount(visibleOfferCount)})
+              End of records ({formatCount(visibleBottleCount)})
             </p>
           </div>
         )}

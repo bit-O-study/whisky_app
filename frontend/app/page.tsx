@@ -16,3 +16,5 @@ export default async function HomePage() {
 
   return <CatalogPageClient initialPage={initialPage} initialError={initialError} />;
 }
+
+

@@ -1,5 +1,3 @@
-import { mapLiquorDtoToEntity } from "../../../entities/liquor/api/liquor-mapper";
-import type { LiquorListDto, LiquorPageDto } from "../../../entities/liquor/api/liquor-dto";
 import type { CatalogPage } from "../model/catalog";
 
 interface FetchCatalogPageParams {
@@ -26,19 +24,10 @@ export async function fetchCatalogPage({
     throw new Error(`주류 목록 조회 실패: ${response.status}`);
   }
 
-  const data = (await response.json()) as LiquorPageDto | LiquorListDto;
-
-  if (Array.isArray(data)) {
-    return {
-      items: data.map(mapLiquorDtoToEntity),
-      page,
-      size: data.length,
-      hasNext: false,
-    };
-  }
+  const data = (await response.json()) as CatalogPage;
 
   return {
-    items: Array.isArray(data.items) ? data.items.map(mapLiquorDtoToEntity) : [],
+    items: Array.isArray(data.items) ? data.items : [],
     page: typeof data.page === "number" ? data.page : page,
     size: typeof data.size === "number" ? data.size : size,
     hasNext: Boolean(data.hasNext),
