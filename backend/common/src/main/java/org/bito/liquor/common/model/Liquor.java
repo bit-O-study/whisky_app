@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "liquor")
@@ -54,6 +56,10 @@ public class Liquor {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "liquor_info_id")
     private LiquorInfo liquorInfo;
+
+    @OneToMany(mappedBy = "liquor", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<LiquorUrl> urls = new ArrayList<>();
 
     private Double sweet;
 
