@@ -104,10 +104,10 @@ export function buildCatalogSearchFilter(keyword: string) {
 }
 
 export function buildCatalogSearchPlan({
-  keyword,
-  page,
-  size,
-}: FetchCatalogPageFromServerParams): CatalogSearchPlan {
+                                         keyword,
+                                         page,
+                                         size,
+                                       }: FetchCatalogPageFromServerParams): CatalogSearchPlan {
   const normalizedKeyword = normalizeCatalogSearchKeyword(keyword);
   const safePage = clampPage(page);
   const safeSize = clampSize(size);
@@ -198,17 +198,17 @@ function mapLiquorRowToCatalogItem(row: LiquorRow, vendors: CatalogCardVendor[])
 }
 
 export async function fetchCatalogPageFromServerWithClient(
-  supabase: CatalogSupabaseClient,
-  params: FetchCatalogPageFromServerParams,
+    supabase: CatalogSupabaseClient,
+    params: FetchCatalogPageFromServerParams,
 ): Promise<CatalogPage> {
   const plan = buildCatalogSearchPlan(params);
   let query = supabase
-    .from("liquor")
-    .select(
-      "id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at",
-    )
-    .order("updated_at", { ascending: false })
-    .range(plan.from, plan.to) as AwaitableQuery<LiquorRow>;
+      .from("liquor")
+      .select(
+          "id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at",
+      )
+      .order("updated_at", { ascending: false })
+      .range(plan.from, plan.to) as AwaitableQuery<LiquorRow>;
 
   if (plan.mode !== "none") {
     query = query.or(buildCatalogSearchFilter(plan.keyword));
@@ -240,10 +240,10 @@ export async function fetchCatalogPageFromServerWithClient(
 
   if (ids.length > 0) {
     const { data: priceRows, error: priceError } = await supabase
-      .from("liquor_price")
-      .select("liquor_id, source, current_price, original_price, crawled_at")
-      .in("liquor_id", ids)
-      .order("crawled_at", { ascending: false }) as QueryResponse<LiquorPriceRow>;
+        .from("liquor_price")
+        .select("liquor_id, source, current_price, original_price, crawled_at")
+        .in("liquor_id", ids)
+        .order("crawled_at", { ascending: false }) as QueryResponse<LiquorPriceRow>;
 
     if (priceError) {
       throw priceError;
@@ -264,10 +264,57 @@ export async function fetchCatalogPageFromServerWithClient(
 }
 
 export async function fetchCatalogPageFromServer(
-  params: FetchCatalogPageFromServerParams,
+    params: FetchCatalogPageFromServerParams,
 ): Promise<CatalogPage> {
   return fetchCatalogPageFromServerWithClient(
-    getSupabaseClient() as unknown as CatalogSupabaseClient,
-    params,
+      getSupabaseClient() as unknown as CatalogSupabaseClient,
+      params,
   );
+}
+
+export async function fetchLiquorDetailFromServer(id: string): Promise<CatalogCardItem> {
+  const supabase = getSupabaseClient() as unknown as CatalogSupabaseClient;
+  const liquorId = parseInt(id, 10);
+
+  type HttpError = Error & { status?: number };
+
+  if (isNaN(liquorId)) {
+    const error = new Error("Invalid Liquor ID") as HttpError;
+    error.status = 400;
+    throw error;
+  }
+
+  const { data: liquors, error: liquorError } = await supabase
+      .from("liquor")
+      .select("id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at")
+      .in("id", [liquorId]) as QueryResponse<LiquorRow>;
+
+  if (liquorError) {
+    throw liquorError;
+  }
+
+  if (!liquors || liquors.length === 0) {
+    const error = new Error(`Liquor not found: ${id}`) as HttpError;
+    error.status = 404;
+    throw error;
+  }
+
+  const liquorRow = liquors[0];
+
+  const { data: priceRows, error: priceError } = await supabase
+      .from("liquor_price")
+      .select("liquor_id, source, current_price, original_price, crawled_at")
+      .in("liquor_id", [liquorId])
+      .order("crawled_at", { ascending: false }) as QueryResponse<LiquorPriceRow>;
+
+  if (priceError) {
+    throw priceError;
+  }
+
+  const prices = (priceRows ?? []) as LiquorPriceRow[];
+
+  const vendorLookup = buildVendorLookup(prices, [liquorRow]);
+  const mappedItem = mapLiquorRowToCatalogItem(liquorRow, vendorLookup.get(liquorRow.id) ?? []);
+
+  return mappedItem;
 }
