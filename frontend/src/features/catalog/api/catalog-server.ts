@@ -1,14 +1,10 @@
 import { getSupabaseClient } from "../../../lib/supabase";
-import type { CatalogCardItem, CatalogCardVendor, CatalogPage, LiquorDetail } from "../model/catalog";
+import type { CatalogCardItem, CatalogCardVendor, CatalogPage } from "../model/catalog";
 
 interface FetchCatalogPageFromServerParams {
   keyword?: string;
   page: number;
   size: number;
-}
-
-interface FetchLiquorDetailFromServerParams {
-  id: number;
 }
 
 interface LiquorRow {
@@ -271,62 +267,6 @@ export async function fetchCatalogPageFromServer(
   params: FetchCatalogPageFromServerParams,
 ): Promise<CatalogPage> {
   return fetchCatalogPageFromServerWithClient(
-    getSupabaseClient() as unknown as CatalogSupabaseClient,
-    params,
-  );
-}
-
-export async function fetchLiquorDetailFromServerWithClient(
-  supabase: CatalogSupabaseClient,
-  params: FetchLiquorDetailFromServerParams,
-): Promise<LiquorDetail | null> {
-  const safeId = Number.isFinite(params.id) ? Math.floor(params.id) : 0;
-  if (safeId <= 0) {
-    return null;
-  }
-
-  const liquorQuery = supabase
-    .from("liquor") as AwaitableQuery<LiquorRow>;
-
-  const { data: liquorRows, error: liquorError } = await (liquorQuery
-    .select(
-      "id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at",
-    )
-    .in("id", [safeId])
-    .range(0, 0) as unknown as QueryResponse<LiquorRow>);
-
-  if (liquorError) {
-    throw liquorError;
-  }
-
-  const liquor = (liquorRows ?? [])[0];
-  if (!liquor) {
-    return null;
-  }
-
-  const priceQuery = supabase
-    .from("liquor_price") as AwaitableQuery<LiquorPriceRow>;
-
-  const { data: priceRows, error: priceError } = await (priceQuery
-    .select("liquor_id, source, current_price, original_price, crawled_at")
-    .in("liquor_id", [liquor.id])
-    .order("crawled_at", { ascending: false }) as unknown as QueryResponse<LiquorPriceRow>);
-
-  if (priceError) {
-    throw priceError;
-  }
-
-  const vendorLookup = buildVendorLookup((priceRows ?? []) as LiquorPriceRow[], [liquor]);
-
-  return {
-    item: mapLiquorRowToCatalogItem(liquor, vendorLookup.get(liquor.id) ?? []),
-  };
-}
-
-export async function fetchLiquorDetailFromServer(
-  params: FetchLiquorDetailFromServerParams,
-): Promise<LiquorDetail | null> {
-  return fetchLiquorDetailFromServerWithClient(
     getSupabaseClient() as unknown as CatalogSupabaseClient,
     params,
   );

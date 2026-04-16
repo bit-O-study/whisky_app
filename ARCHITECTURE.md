@@ -8,7 +8,7 @@
 
 ## 시스템 경계
 - `frontend/`
-  Next.js App Router 기반 UI, 서버 컴포넌트, 내부 API route, 카탈로그/상세 화면
+  Next.js App Router 기반 UI, 서버 컴포넌트, 내부 API route, 카탈로그 화면
 - `backend/crawler/`
   Selenium + JPA 기반 수집/적재 경로
 - `backend/common/`
@@ -23,12 +23,7 @@
 1. 브라우저가 `frontend/`에 요청한다.
 2. Next.js 서버 계층이 Supabase를 조회한다.
 3. 서버는 화면 친화적인 카탈로그 모델로 정리해 UI에 전달한다.
-4. 클라이언트는 검색, 무한 스크롤, 오버레이 상호작용만 처리한다.
-
-### 상세 조회
-1. 브라우저가 `frontend/app/liquors/[id]`에 요청한다.
-2. Next.js 서버 계층이 단일 주류와 판매처 가격을 조회한다.
-3. 상세 화면은 상품 메타데이터와 판매처별 가격을 렌더링한다.
+4. 클라이언트는 검색, 무한 스크롤, 판매처 비교 상호작용만 처리한다.
 
 ### 적재
 1. `backend/crawler`가 외부 쇼핑몰을 크롤링한다.

@@ -79,3 +79,4 @@ backend/crawler/src/main/resources/application-local.properties
 *.sln
 *.sw?
 nul
+.omx/

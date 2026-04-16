@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   getCatalogLoadErrorMessage,
-  getLiquorDetailHref,
   mergeCatalogPageItems,
   shouldSkipInitialCatalogRequest,
   type CatalogCardItem,
@@ -75,9 +74,5 @@ describe("catalog model", () => {
   it("returns page-sensitive error messages", () => {
     expect(getCatalogLoadErrorMessage(0)).toBe("데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
     expect(getCatalogLoadErrorMessage(1)).toBe("추가 목록을 불러오지 못했습니다. 다시 시도해주세요.");
-  });
-
-  it("builds liquor detail hrefs with the liquor id", () => {
-    expect(getLiquorDetailHref(123)).toBe("/liquors/123");
   });
 });

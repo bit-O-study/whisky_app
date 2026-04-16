@@ -3,66 +3,72 @@ import { expect, test, type Page } from "@playwright/test";
 const baseLiquorList = [
   {
     id: 1,
-    productCode: "MAC-12-LOTTEON",
+    product_code: "MAC-12",
     name: "Macallan 12",
     brand: "Macallan",
     category: "Single Malt",
     volume: 700,
-    alcoholPercent: 40,
+    alcohol_percent: 40,
     country: "Scotland",
-    currentPrice: 98000,
-    originalPrice: 110000,
-    imageUrl: "https://example.com/macallan-12.jpg",
-    productUrl: "https://example.com/macallan-12-lotteon",
-    source: "LOTTEON",
+    image_url: "https://example.com/macallan-12.jpg",
+    lowest_price: 94000,
+    vendors: [
+      {
+        source: "EMART",
+        current_price: 94000,
+        original_price: 109000,
+        product_url: "https://example.com/macallan-12-emart",
+      },
+      {
+        source: "LOTTEON",
+        current_price: 98000,
+        original_price: 110000,
+        product_url: "https://example.com/macallan-12-lotteon",
+      },
+    ],
   },
   {
     id: 2,
-    productCode: "MAC-12-EMART",
-    name: "Macallan 12",
-    brand: "Macallan",
-    category: "Single Malt",
-    volume: 700,
-    alcoholPercent: 40,
-    country: "Scotland",
-    currentPrice: 94000,
-    originalPrice: 109000,
-    imageUrl: "https://example.com/macallan-12.jpg",
-    productUrl: "https://example.com/macallan-12-emart",
-    source: "EMART",
-  },
-  {
-    id: 3,
-    productCode: "TAL-10-LOTTEON",
+    product_code: "TAL-10",
     name: "Talisker 10",
     brand: "Talisker",
     category: "Single Malt",
     volume: 700,
-    alcoholPercent: 45.8,
+    alcohol_percent: 45.8,
     country: "Scotland",
-    currentPrice: 72000,
-    originalPrice: 79000,
-    imageUrl: "https://example.com/talisker-10.jpg",
-    productUrl: "https://example.com/talisker-10-lotteon",
-    source: "LOTTEON",
+    image_url: "https://example.com/talisker-10.jpg",
+    lowest_price: 72000,
+    vendors: [
+      {
+        source: "LOTTEON",
+        current_price: 72000,
+        original_price: 79000,
+        product_url: "https://example.com/talisker-10-lotteon",
+      },
+    ],
   },
 ];
 
 function buildCatalogItems(count: number) {
   return Array.from({ length: count }, (_, index) => ({
     id: index + 1,
-    productCode: `WHISKY-${index + 1}`,
+    product_code: `WHISKY-${index + 1}`,
     name: `Bottle ${index + 1}`,
     brand: `Brand ${Math.floor(index / 5) + 1}`,
     category: "Single Malt",
     volume: 700,
-    alcoholPercent: 40,
+    alcohol_percent: 40,
     country: "Scotland",
-    currentPrice: 50000 + index * 1000,
-    originalPrice: 60000 + index * 1000,
-    imageUrl: "https://example.com/whisky.jpg",
-    productUrl: `https://example.com/whisky-${index + 1}`,
-    source: "LOTTEON",
+    image_url: "https://example.com/whisky.jpg",
+    lowest_price: 50000 + index * 1000,
+    vendors: [
+      {
+        source: "LOTTEON",
+        current_price: 50000 + index * 1000,
+        original_price: 60000 + index * 1000,
+        product_url: `https://example.com/whisky-${index + 1}`,
+      },
+    ],
   }));
 }
 
@@ -158,6 +164,7 @@ test("catalog search shows filtered result count", async ({ page }) => {
   await expect(page.getByText('"Macallan" 검색 결과:')).toBeVisible();
   await expect(page.getByText("Macallan 12")).toBeVisible();
   await expect(page.getByText("Talisker 10")).toHaveCount(0);
+  await expect(page.getByText("상세 보기")).toHaveCount(0);
 });
 
 test("catalog loads next page on scroll", async ({ page }) => {

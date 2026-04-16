@@ -26,10 +26,6 @@ export interface CatalogPage {
   hasNext: boolean;
 }
 
-export interface LiquorDetail {
-  item: CatalogCardItem;
-}
-
 interface CatalogRequestSkipParams {
   hasInitialItems: boolean;
   hasInitialError: boolean;
@@ -57,8 +53,4 @@ export function getCatalogLoadErrorMessage(page: number) {
   return page === 0
     ? "데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요."
     : "추가 목록을 불러오지 못했습니다. 다시 시도해주세요.";
-}
-
-export function getLiquorDetailHref(id: number) {
-  return `/liquors/${id}`;
 }

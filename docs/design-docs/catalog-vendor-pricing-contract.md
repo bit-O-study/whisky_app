@@ -13,8 +13,7 @@
 ## 구현 원칙
 - 서버 계층에서 집계해 내려주고, 프론트는 이를 직접 소비한다.
 - 프론트의 임시 재그룹핑 로직은 두지 않는다.
-- 상세 페이지도 같은 가격 집계 원칙을 사용한다.
+- 판매처 링크는 카드와 오버레이에서 같은 가격 집계 결과를 사용한다.
 
 ## 관련 문서
-- [009 liquor detail spec](/home/ubuntu/code/bitO-liquor/docs/product-specs/liquor-detail-page.md)
 - [008 archive brief](/home/ubuntu/code/bitO-liquor/docs/exec-plans/completed/008.catalog-deduped-vendor-pricing-sync/brief.md)

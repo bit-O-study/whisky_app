@@ -32,7 +32,7 @@
 
 ## Boundary Expectations
 - 브라우저는 외부 데이터 저장소를 직접 다루지 않는다.
-- Next.js 서버 계층이 카탈로그/상세 읽기 모델을 구성한다.
+- Next.js 서버 계층이 카탈로그 읽기 모델을 구성한다.
 - crawler는 DB 쓰기를 담당한다.
 - application harness 문서는 `docs/design-docs/`, `docs/product-specs/`, `ARCHITECTURE.md`에 둔다.
 - repo 운영 규칙은 `docs/REPOSITORY.md`와 그 하위 문서에 둔다.
