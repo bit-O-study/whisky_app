@@ -120,6 +120,13 @@ npm run start
 npm run test:e2e
 ```
 
+저장소 하네스 검증 (`repo root`):
+
+```bash
+bash scripts/verify-repo.sh
+# 필수 문서/exec plan 구조/Markdown 내부 링크 검증
+```
+
 ## 실행 메모
 
 크롤링 엔드포인트 (`:8081`):

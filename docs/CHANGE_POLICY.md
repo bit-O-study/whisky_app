@@ -54,7 +54,7 @@
 - 함께 갱신할 문서
   repo harness 문서, 필요 시 `README.md`
 - 최소 검증
-  링크 존재 확인, 문서 lint, 변경 규칙에 대한 self-review
+  `bash scripts/verify-repo.sh`, 변경 규칙에 대한 self-review
 
 ## Promotion Rule
 - 작업 중 판단과 단계별 로그는 `docs/exec-plans/active/<slug>/`에 둔다.

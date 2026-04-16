@@ -11,6 +11,8 @@
 - 변경 종류별 문서/검증 규칙: [CHANGE_POLICY.md](/home/ubuntu/code/bitO-liquor/docs/CHANGE_POLICY.md)
 - 내부 인터페이스와 허용 경계: [INTERFACE_MATRIX.md](/home/ubuntu/code/bitO-liquor/docs/INTERFACE_MATRIX.md)
 - 환경/시크릿/실행 경계: [ENVIRONMENTS.md](/home/ubuntu/code/bitO-liquor/docs/ENVIRONMENTS.md)
+- 저장소 하네스 자동 검증: `scripts/verify-repo.sh`, `.github/workflows/repo-harness.yml`
+  - 필수 문서, exec plan 구조, Markdown 내부 링크를 함께 검사한다.
 
 ## Application Harness
 - 시스템 경계와 데이터 흐름: [ARCHITECTURE.md](/home/ubuntu/code/bitO-liquor/ARCHITECTURE.md)
@@ -22,3 +24,4 @@
 - repo harness는 작업 순서와 품질 게이트를 규정한다.
 - application harness는 현재 bitO-liquor의 동작과 설계를 규정한다.
 - 실제 변경 시에는 repo harness를 먼저 확인하고, 이어서 관련 application harness 문서를 갱신한다.
+- 저장소 규칙 변경이나 exec plan 변경이 있으면 `bash scripts/verify-repo.sh`로 필수 문서/계획 구조를 검증한다.

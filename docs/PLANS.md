@@ -4,6 +4,8 @@
 - 진행 중 작업은 `docs/exec-plans/active/<slug>/`에 둔다.
 - 완료된 작업은 `docs/exec-plans/completed/<slug>/`로 옮긴다.
 - 각 작업 폴더의 기본 파일은 `brief.md`, `plan.md`, `progress.md`다.
+- 작업 폴더 slug는 `NNN.task-name` 형식의 고유한 3자리 접두사를 사용한다.
+- 저장소 운영 규칙이나 exec plan 구조를 건드렸다면 `bash scripts/verify-repo.sh`를 실행한다.
 - 장기 가치가 남는 내용만 `product-specs/`, `design-docs/`, 루트 문서로 승격한다.
 
 ## 폴더 의미
