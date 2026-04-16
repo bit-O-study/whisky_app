@@ -156,7 +156,7 @@ test("catalog search shows filtered result count", async ({ page }) => {
   await mockLiquorApis(page);
   await page.goto("/");
 
-  await expect(page.getByRole("button", { name: "Jururuk" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "위스키다모아" })).toBeVisible();
 
   const searchBox = page.getByPlaceholder("위스키 이름, 브랜드로 검색...");
   await searchBox.fill("Macallan");

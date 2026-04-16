@@ -179,10 +179,10 @@ export default function CatalogPageClient({
             type="button"
             onClick={handleLogoClick}
             className="catalog-editorial text-left text-[2.2rem] font-medium italic leading-none tracking-[-0.04em] text-[color:var(--catalog-ink)]"
-            aria-label="Jururuk"
+            aria-label="위스키다모아"
             title="페이지 상단으로 이동"
           >
-            Jururuk
+            위스키다모아
           </button>
 
           <div className="w-full lg:max-w-xs">
@@ -279,7 +279,7 @@ export default function CatalogPageClient({
         <footer className="mt-16 bg-[rgba(241,238,229,0.78)] px-5 py-10 ring-1 ring-[color:rgba(216,195,180,0.28)] sm:px-8">
           <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
             <div className="max-w-sm space-y-5">
-              <p className="catalog-editorial text-3xl font-medium italic text-[color:var(--catalog-ink)]">Jururuk</p>
+              <p className="catalog-editorial text-3xl font-medium italic text-[color:var(--catalog-ink)]">위스키다모아</p>
               <p className="text-sm leading-6 text-[color:var(--catalog-muted)]">
                 The global authority for spirits valuation and historical provenance data. Empowering collectors with transparency since 2018.
               </p>
@@ -298,7 +298,7 @@ export default function CatalogPageClient({
           </div>
           <div className="mt-10 border-t border-[color:rgba(216,195,180,0.18)] pt-6">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[color:rgba(82,68,57,0.62)]">
-              © 2024 Jururuk Digital Connoisseur. Professional market data for informational purposes.
+              © 2024 위스키다모아 Digital Connoisseur. Professional market data for informational purposes.
             </p>
           </div>
         </footer>
