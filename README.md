@@ -1,4 +1,4 @@
-# bitO-liquor
+# 위스키다모아
 
 롯데온/이마트 주류 데이터를 수집하고 Next.js + Supabase 기반 카탈로그를 제공하는 모노레포입니다.
 
@@ -11,6 +11,20 @@
 - `backend/common`: 공통 엔티티, DTO, Repository
 - `backend/api`: 보조 관리/업로드 성격의 Spring 애플리케이션 (`:8080`)
 - `backend/crawler`: 크롤링 및 적재 애플리케이션 (`:8081`)
+
+문서 구조:
+- `CONSTITUTION.md`: 저장소 전체를 지배하는 최상위 규범
+- `docs/REPOSITORY.md`: repository level harness engineering 진입점
+- `docs/REPO_MAP.md`: 저장소 surface와 책임 경계
+- `docs/CHANGE_POLICY.md`: 변경 종류별 문서/검증 규칙
+- `docs/INTERFACE_MATRIX.md`: 내부 인터페이스와 허용 경계
+- `docs/ENVIRONMENTS.md`: 환경/시크릿/실행 경계
+- `ARCHITECTURE.md`: 시스템 경계와 데이터 흐름
+- `docs/product-specs/`: 사용자 기능 계약
+- `docs/design-docs/`: 구조/성능/디자인 결정
+- `docs/exec-plans/`: 진행 중/완료된 실행 계획
+- `docs/references/`: 시안, 캡처, SQL 초안 같은 원자료
+- `docs/generated/`: 생성 스냅샷
 
 ## 기술 스택
 
@@ -72,7 +86,9 @@ SUPABASE_SERVICE_ROLE_KEY=...
 
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `SUPABASE_SERVICE_KEY`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+현재 기본 카탈로그 조회 경로에서는 서버 전용 키가 필요합니다.
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` 또는 publishable key는 향후 공개 클라이언트 연동을 추가할 때만 선택적으로 사용하며, 현재 기본 조회 경로의 필수값은 아닙니다.
 
 로컬 개발 시에는 `frontend/.env.local`을 사용합니다.
 
@@ -99,8 +115,16 @@ SUPABASE_SERVICE_ROLE_KEY=...
 npm run dev
 npm run build
 npm run lint
+npm run test
 npm run start
 npm run test:e2e
+```
+
+저장소 하네스 검증 (`repo root`):
+
+```bash
+bash scripts/verify-repo.sh
+# 필수 문서/exec plan 구조/Markdown 내부 링크 검증
 ```
 
 ## 실행 메모
@@ -115,7 +139,9 @@ curl -X POST http://localhost:8081/api/crawl/emart
 ## 데이터 모델 메모
 
 - 현재 카탈로그 핵심 테이블 초안은 `public.liquor`, `public.liquor_price`, `public.liquor_info`입니다.
-- 스키마 초안은 `docs/issues/001.nextjs-supabase-migration/memory/supabase-schema-draft.sql`에 정리되어 있습니다.
+- 데이터 모델 원본은 `docs/design-docs/supabase-data-model.md`에 정리되어 있습니다.
+- 스키마 초안 SQL은 `docs/references/supabase-schema-draft.sql`에 있습니다.
+- 현재 스키마 스냅샷은 `docs/generated/db-schema.md`에 정리합니다.
 
 ## 주의사항
 

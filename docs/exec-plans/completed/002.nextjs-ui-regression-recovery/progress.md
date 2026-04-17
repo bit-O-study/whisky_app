@@ -1,0 +1,46 @@
+# Progress
+
+- 2026-03-24 17:13: `001.nextjs-supabase-migration` 후속 안정화 이슈로 UI 회귀 복구 작업을 분리했다.
+- 2026-03-24 17:13: `HANDOFF.md` 기준으로 이번 이슈의 핵심 목표를 "Next.js 구조를 유지한 채 기존 카탈로그 UI를 복구"로 확정했다.
+- 2026-03-24 17:13: 현재 구조가 `CatalogPageClient -> LiquorGrid -> LiquorCard`이며 기능은 정상이나 UI/UX 회귀가 남아 있음을 문서화했다.
+- 2026-03-24 17:13: `brief.md`를 작성해 목표, 비목표, 성공 기준, 범위를 정리했다.
+- 2026-03-24 17:13: `plan.md`를 작성해 기존 `App.tsx` 분석, 카탈로그 구조 복구, 카드/스타일 복구, 검증 단계로 구현 계획을 정리했다.
+- 2026-03-24 17:13: 현재 시점에서 구현은 아직 시작하지 않았고, 다음 작업의 첫 단계는 Git 히스토리에서 삭제된 `frontend/src/App.tsx`를 복원 기준으로 확인하는 것이다.
+- 2026-03-24 17:15: `HANDOFF.md`의 내용을 이슈 표준 문서 구조로 모두 이관한 뒤 중복 방지를 위해 `HANDOFF.md`를 제거했다.
+- 2026-03-24 17:24: `4a45afa`의 `frontend/src/App.tsx`를 기준 UI로 확인했고, sticky 헤더, 검색창 배치, 상단 소개 섹션, 카드 정보 밀도, hover 가격 오버레이를 핵심 복구 대상으로 확정했다.
+- 2026-03-24 17:24: 추천 테스트/결과/CTA 흐름은 현재 제품 방향에서 제외 대상으로 고정했고, 문서의 Phase 1 세부 항목을 모두 완료 처리했다.
+- 2026-03-24 17:30: `CatalogPageClient.tsx`에서 sticky 헤더, 로고 버튼, 검색창 클리어 버튼, 상단 소개 히어로, 검색/기본 상태 요약 패널을 복구해 현재 Next.js 홈 화면의 정보 구조를 기존 카탈로그 인상에 가깝게 조정했다.
+- 2026-03-24 17:31: `LiquorGrid.tsx`, `LiquorCard.tsx`, `app/globals.css`에서 카드 배지, 최저가 강조, 판매처 수 표시, hover 가격 오버레이, 전역 배경/섹션 톤을 보강해 기존 카탈로그의 시각적 밀도와 depth를 회복했다.
+- 2026-03-24 17:34: `frontend`에서 `npm run lint`, `npm run build`, `npm run test:e2e`를 모두 통과했다.
+- 2026-03-24 17:34: Playwright 실행 중 앱 기본 API 호출은 Supabase 환경변수 부재로 서버 로그 에러를 남겼지만, 테스트는 각 케이스에서 `/api/liquors*`를 mock 처리해 정상 통과했다.
+- 2026-03-24 17:41: 로컬 브라우저 확인 과정에서 Tailwind 유틸리티가 번들에 포함되지 않아 레이아웃이 깨지는 문제를 확인했고, 원인이 `@tailwindcss/postcss` 기반 PostCSS 설정 누락임을 확인했다.
+- 2026-03-24 17:42: `frontend/postcss.config.mjs`를 추가하고 `@tailwindcss/postcss`, `postcss` dev dependency를 반영해 Next.js에서 Tailwind 유틸리티가 정상 생성되도록 복구했다.
+- 2026-03-24 17:44: 설정 반영 후 `npm run lint`, `npm run build`, `npm run test:e2e`를 다시 수행해 모두 통과했고, 로컬 개발 서버에서 홈 화면 캡처로 스타일 적용 상태를 직접 확인했다.
+- 2026-03-24 17:49: 이후 다시 볼 수 있도록 별도 `HANDOFF.md`를 작성했고, 왜 전환 과정에서 UI 구조가 달라졌는지와 현재 상태/다음 확인 포인트를 한 파일에 정리했다.
+- 2026-03-24 22:23: `.env.local`을 사용해 실데이터 기준 홈 화면을 다시 확인했고, 카드에 `0원`, `0%`, `Unknown`이 노출되는 문제가 단순 데이터 품질이 아니라 `frontend/src/api/liquorApi.ts`가 내부 API의 `snake_case` 응답을 `camelCase`로만 읽는 어댑터 버그 때문임을 확인했다.
+- 2026-03-24 22:26: `frontend/src/api/liquorApi.ts`를 수정해 `snake_case`와 `camelCase` 응답을 모두 수용하도록 보강했고, `frontend/src/components/LiquorCard.tsx`에서 누락 메타데이터를 `정보 준비 중`, `도수 확인 중`, `가격 확인 중`으로 표시해 실데이터 카드 인상을 안정화했다.
+- 2026-03-24 22:27: `frontend/eslint.config.js`에 `playwright-report`, `test-results` ignore를 추가해 산출물 디렉터리 유무에 따라 `npm run lint`가 흔들리던 검증 환경 문제를 정리했다.
+- 2026-03-24 22:28: 수정 후 `frontend`에서 `npm run lint`, `npm run build`, `npm run test:e2e`를 다시 모두 통과했다.
+- 2026-03-24 22:29: 실데이터 기준 브라우저 재확인 결과 첫 카드가 `37,900원`으로 정상 표기되고 불명확한 값은 placeholder 문구로 완화됐으며, 검증 스크린샷을 현재 기준 [catalog-realdata-check.png](/home/ubuntu/code/bitO-liquor/docs/references/catalog-realdata-check.png)에 저장했다.
+- 2026-03-24 22:34: 기준 화면을 다시 대조한 결과, 현재 상단의 큰 히어로/메트릭 패널은 기존 `App.tsx`에 없던 요소임을 확인했다.
+- 2026-03-24 22:35: `frontend/src/components/CatalogPageClient.tsx`에서 추가로 넣었던 대형 상단 소개/요약 패널을 제거하고, 예전 흐름에 맞게 헤더 다음에 바로 카탈로그 섹션이 이어지도록 조정했다.
+- 2026-03-24 22:27: 카탈로그 로드 실패가 자주 크게 보이는 원인 중 하나로, 초기 로드 실패와 추가 페이지 로드 실패를 같은 전체 에러 화면으로 처리하고 있음을 확인했다.
+- 2026-03-24 22:28: `frontend/src/components/CatalogPageClient.tsx`, `frontend/src/components/LiquorGrid.tsx`를 수정해 이미 표시 중인 목록은 유지하면서 inline 에러와 `다시 시도` 버튼으로 복구할 수 있게 조정했다.
+- 2026-03-24 22:29: 실패 시 콘솔에 page/search context를 남기도록 보강했고, 수정 후 `npm run lint`, `npm run build`, `npm run test:e2e`를 다시 모두 통과했다.
+- 2026-03-24 22:29: 실제 재현 결과 `/api/liquors?page=1&size=24`가 500을 반환했고, 원인은 데이터 끝을 넘는 Supabase `range` 요청이 `416 Range Not Satisfiable`를 반환하는데 이를 일반 서버 오류로 처리하고 있던 점이었다.
+- 2026-03-24 22:30: `frontend/src/lib/liquors.ts`에서 Supabase query status가 `416`일 때 빈 페이지(`items: []`, `hasNext: false`)를 정상 응답으로 처리하도록 수정했다.
+- 2026-03-24 22:31: 수정 후 `/api/liquors?page=1&size=24`가 `200`과 빈 목록을 반환하는 것을 확인했고, `npm run lint`, `npm run build`, `npm run test:e2e`를 다시 통과했다.
+- 2026-03-24 22:40: Next API 호출 경로를 점검한 결과, Supabase 접근은 `frontend/src/lib/supabase.ts`의 `server-only` 경계 뒤에서만 수행되고 있었다.
+- 2026-03-24 22:40: 다만 `frontend/src/components/CatalogPageClient.tsx`가 `frontend/src/api/liquorApi.ts`를 통해 브라우저에서 내부 API(`/api/liquors`, `/api/liquors/search`)를 호출하고 있어, 현재 구조는 "외부 데이터 접근은 서버 전용"이지만 "모든 API 호출이 서버 컴포넌트 내부에서만 실행"되는 구조는 아님을 확인했다.
+- 2026-03-24 22:41: 이후 Next API 작업마다 서버사이드 호출 여부를 점검할 수 있도록 `frontend/README.md`와 `plan.md`에 서버 경계 체크리스트를 추가했다.
+- 2026-03-24 22:45: `3000` 포트에 이전 dev 서버가 남아 있어 제거한 상단 히어로/요약 문구가 계속 보이던 상태를 확인했고, 기존 프로세스를 종료한 뒤 현재 작업 트리 기준으로 `3000`을 다시 기동했다.
+- 2026-03-24 22:46: 재기동 후 `3000` 기준으로 `판매처별 가격과 핵심 정보를 한 번에 비교하는 위스키 카탈로그`, `Catalog Overview`, `Curated Price Radar`가 더 이상 렌더링되지 않음을 확인했다.
+- 2026-03-24 22:48: 헤더 텍스트를 `Jururuk`만 남기도록 정리하고, 관련 Playwright 테스트를 새 접근성 이름 기준으로 갱신했다.
+- 2026-03-24 22:49: 최종 상태를 기준으로 `frontend`에서 `npm run lint`, `npm run build`, `npm run test:e2e`를 다시 수행해 모두 통과했다.
+- 2026-03-24 22:50: 이슈 문서를 최신 구현 상태로 정리했고, 중간 인계용 `HANDOFF.md`는 제거했다.
+- 2026-03-25 08:55: Vercel Speed Insights 계측을 위해 `frontend/app/layout.tsx`에 `@vercel/speed-insights/next`의 `<SpeedInsights />`를 전역으로 추가했다.
+- 2026-03-25 09:10: LCP 개선을 위해 홈 첫 페이지 데이터를 `frontend/app/page.tsx`에서 서버 선조회하도록 바꾸고, `CatalogPageClient`는 초기 데이터를 hydrate 받아 첫 진입 시 클라이언트 재요청 없이 목록을 즉시 렌더링하도록 조정했다.
+- 2026-03-25 09:10: 그리드의 첫 카드 이미지를 `priority` 로드로 지정해 above-the-fold 대표 카드 이미지가 더 빨리 뜨도록 보강했다.
+- 2026-03-25 10:02: 경계 케이스 테스트 보강을 위해 `frontend/tests/app-flows.spec.ts`에 검색 결과 없음 상태와 추가 페이지 로드 실패 후 inline 에러/재시도 복구 시나리오를 추가했다.
+- 2026-03-25 10:03: 서버 선조회가 있는 현재 구조에서 E2E가 초기 SSR 데이터에 흔들리지 않도록, 새 테스트는 브라우저 mock이 확실히 개입하는 클라이언트 검색 경로를 기준으로 안정화했다.
+- 2026-03-25 10:03: `frontend`에서 `npm run lint`, `npm run test:e2e`를 다시 수행했고 5개 Playwright 시나리오가 모두 통과했다.

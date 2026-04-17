@@ -15,14 +15,17 @@
   --catalog-primary: #8b4a2c;
   --catalog-primary-strong: #a96242;
   --catalog-accent: #fed65b;
-  --catalog-display-font: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
-  --catalog-body-font: "Avenir Next", "Segoe UI", "Noto Sans KR", sans-serif;
+  --catalog-display-font: var(--font-newsreader), var(--font-noto-serif-kr), "Iowan Old Style", Georgia, serif;
+  --catalog-body-font: var(--font-manrope), var(--font-noto-sans-kr), "Avenir Next", "Segoe UI", sans-serif;
 }
 
 html {
   min-height: 100%;
   background-color: var(--catalog-bg-solid);
   scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
