@@ -34,41 +34,50 @@ const macallanCard = {
   ],
 } satisfies CatalogCardItem;
 
+const taliskerCard = {
+  ...macallanCard,
+  id: 2,
+  product_code: "TAL-10",
+  name: "Talisker 10",
+  brand: "Talisker",
+} satisfies CatalogCardItem;
+
 describe("catalog model", () => {
   it("skips the first client fetch only when SSR data is still valid", () => {
-    expect(
-      shouldSkipInitialCatalogRequest({
-        hasInitialItems: true,
-        hasInitialError: false,
-        query: "",
-        page: 0,
-        initialPage: 0,
-        reloadToken: 0,
-      }),
-    ).toBe(true);
+    const validInitialRequest = {
+      hasInitialItems: true,
+      hasInitialError: false,
+      query: "",
+      page: 0,
+      initialPage: 0,
+      reloadToken: 0,
+    };
 
-    expect(
-      shouldSkipInitialCatalogRequest({
-        hasInitialItems: true,
-        hasInitialError: false,
-        query: "Macallan",
-        page: 0,
-        initialPage: 0,
-        reloadToken: 0,
-      }),
-    ).toBe(false);
+    expect(shouldSkipInitialCatalogRequest(validInitialRequest)).toBe(true);
+    expect(shouldSkipInitialCatalogRequest({ ...validInitialRequest, hasInitialItems: false })).toBe(false);
+    expect(shouldSkipInitialCatalogRequest({ ...validInitialRequest, hasInitialError: true })).toBe(false);
+    expect(shouldSkipInitialCatalogRequest({ ...validInitialRequest, query: "Macallan" })).toBe(false);
+    expect(shouldSkipInitialCatalogRequest({ ...validInitialRequest, page: 1 })).toBe(false);
+    expect(shouldSkipInitialCatalogRequest({ ...validInitialRequest, initialPage: 1 })).toBe(false);
+    expect(shouldSkipInitialCatalogRequest({ ...validInitialRequest, reloadToken: 1 })).toBe(false);
   });
 
-  it("replaces first-page items and appends next-page items", () => {
+  it("replaces first-page items, appends next-page items, and preserves source arrays", () => {
+    const previousItems = [macallanCard];
     const nextPage = {
-      items: [{ ...macallanCard, id: 2, product_code: "TAL-10", name: "Talisker 10" }],
+      items: [taliskerCard],
       page: 1,
       size: 24,
       hasNext: false,
     } satisfies CatalogPage;
 
-    expect(mergeCatalogPageItems([macallanCard], { ...nextPage, page: 0 }, 0)).toEqual(nextPage.items);
-    expect(mergeCatalogPageItems([macallanCard], nextPage, 1)).toEqual([macallanCard, ...nextPage.items]);
+    expect(mergeCatalogPageItems(previousItems, { ...nextPage, page: 0 }, 0)).toEqual(nextPage.items);
+
+    const mergedItems = mergeCatalogPageItems(previousItems, nextPage, 1);
+    expect(mergedItems).toEqual([macallanCard, taliskerCard]);
+    expect(mergedItems).not.toBe(previousItems);
+    expect(previousItems).toEqual([macallanCard]);
+    expect(nextPage.items).toEqual([taliskerCard]);
   });
 
   it("returns page-sensitive error messages", () => {
