@@ -1,4 +1,4 @@
-import type { RefObject } from "react";
+import { memo, type RefObject } from "react";
 import type { CatalogCardItem } from "../model/catalog";
 import LiquorCard from "./LiquorCard";
 
@@ -14,6 +14,24 @@ interface LiquorGridProps {
 }
 
 const LOADING_PLACEHOLDERS = Array.from({ length: 8 }, (_, index) => index);
+
+interface LiquorCardListProps {
+  liquors: CatalogCardItem[];
+}
+
+const LiquorCardList = memo(function LiquorCardList({ liquors }: LiquorCardListProps) {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {liquors.map((liquor, index) => (
+        <LiquorCard
+          key={`${liquor.id}-${liquor.product_code || liquor.name}`}
+          liquor={liquor}
+          prioritizeImage={index === 0}
+        />
+      ))}
+    </div>
+  );
+});
 
 export default function LiquorGrid({
   searchQuery,
@@ -117,11 +135,7 @@ export default function LiquorGrid({
           </button>
         </div>
       )}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {liquors.map((l, index) => (
-          <LiquorCard key={`${l.id}-${l.product_code || l.name}`} liquor={l} prioritizeImage={index === 0} />
-        ))}
-      </div>
+      <LiquorCardList liquors={liquors} />
       {hasNext && <div ref={loadMoreRef} className="h-10" aria-hidden="true" />}
       {loadingMore && (
         <div className="py-10 text-center">
