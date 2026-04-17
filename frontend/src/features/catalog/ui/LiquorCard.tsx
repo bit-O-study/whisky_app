@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Image from "next/image";
 import type { CatalogCardItem } from "../model/catalog";
 
@@ -47,9 +48,9 @@ interface LiquorCardProps {
   prioritizeImage?: boolean;
 }
 
-export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCardProps) {
-  const sortedVendors = liquor.vendors.slice().sort((a, b) => a.current_price - b.current_price);
-  const bestVendor = sortedVendors[0];
+function LiquorCard({ liquor, prioritizeImage = false }: LiquorCardProps) {
+  const vendors = liquor.vendors;
+  const bestVendor = vendors[0];
   const signal = getCardSignal(liquor);
   const metaLine = [liquor.brand, formatMetaValue(liquor.country, "Archive")]
     .filter(Boolean)
@@ -63,7 +64,7 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
           alt={liquor.name}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
-          className="h-full w-full object-contain p-4 transition-transform duration-700 group-hover:scale-[1.05]"
+          className="h-full w-full object-contain p-4 transition-transform duration-300 ease-out md:group-hover:scale-[1.02]"
           unoptimized
           priority={prioritizeImage}
         />
@@ -105,7 +106,7 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
                 Vendors
               </p>
               <p className="mt-1 text-sm font-extrabold leading-none text-[color:var(--catalog-ink)]">
-                {sortedVendors.length}
+                {vendors.length}
               </p>
             </div>
           </div>
@@ -115,7 +116,7 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
               판매처
             </summary>
             <ul className="mt-3 space-y-2">
-              {sortedVendors.map((vendor) => (
+              {vendors.map((vendor) => (
                 <li key={vendor.source}>
                   <a
                     href={vendor.product_url}
@@ -148,19 +149,19 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
         </div>
       </div>
 
-      <div className="pointer-events-none absolute inset-0 hidden flex-col justify-end bg-[linear-gradient(180deg,rgba(28,28,23,0.02),rgba(28,28,23,0.82))] p-4 opacity-0 backdrop-blur-[2px] transition duration-300 group-hover:opacity-100 group-focus-within:opacity-100 md:flex md:pointer-events-auto">
-        <div className="rounded-[1.15rem] border border-white/16 bg-[rgba(26,20,16,0.56)] p-4 backdrop-blur-md">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden translate-y-2 p-4 opacity-0 transition-[opacity,transform] duration-150 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100 md:flex md:pointer-events-auto">
+        <div className="w-full rounded-[1.15rem] border border-white/14 bg-[linear-gradient(180deg,rgba(31,24,19,0.86),rgba(22,17,13,0.94))] p-4 shadow-[0_18px_38px_rgba(20,15,12,0.2)]">
           <h4 className="mb-3 text-[11px] font-bold uppercase tracking-[0.16em] text-white/92">
             판매처
           </h4>
           <ul className="space-y-2">
-            {sortedVendors.map((vendor) => (
+            {vendors.map((vendor) => (
               <li key={vendor.source}>
                 <a
                   href={vendor.product_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between gap-3 rounded-lg bg-white/10 px-3 py-2 text-sm transition hover:bg-white/18"
+                  className="flex items-center justify-between gap-3 rounded-lg border border-white/8 bg-white/8 px-3 py-2 text-sm transition-colors duration-150 hover:bg-white/14"
                 >
                   <span className="font-semibold text-white">{vendor.source}</span>
                   <span className="flex items-center gap-2 text-right">
@@ -184,3 +185,9 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
     </article>
   );
 }
+
+const MemoizedLiquorCard = memo(LiquorCard);
+
+MemoizedLiquorCard.displayName = "LiquorCard";
+
+export default MemoizedLiquorCard;
