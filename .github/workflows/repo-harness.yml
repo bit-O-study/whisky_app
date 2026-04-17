@@ -1,0 +1,38 @@
+name: Repo Harness
+
+on:
+  pull_request:
+    paths:
+      - 'AGENTS.md'
+      - 'README.md'
+      - 'CONSTITUTION.md'
+      - 'ARCHITECTURE.md'
+      - 'backend/AGENTS.md'
+      - 'frontend/AGENTS.md'
+      - 'docs/**'
+      - 'scripts/verify-repo.sh'
+      - '.github/workflows/repo-harness.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'AGENTS.md'
+      - 'README.md'
+      - 'CONSTITUTION.md'
+      - 'ARCHITECTURE.md'
+      - 'backend/AGENTS.md'
+      - 'frontend/AGENTS.md'
+      - 'docs/**'
+      - 'scripts/verify-repo.sh'
+      - '.github/workflows/repo-harness.yml'
+
+jobs:
+  verify-repo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify repository harness
+        run: bash scripts/verify-repo.sh

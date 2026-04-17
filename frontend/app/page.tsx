@@ -3,6 +3,8 @@ import CatalogPageClient from "../src/features/catalog/ui/CatalogPageClient";
 
 const INITIAL_PAGE_SIZE = 24;
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
     let initialError: string | null = null;
     let initialPage;
