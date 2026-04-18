@@ -133,18 +133,34 @@ function normalizePrice(value: number | null | undefined) {
   return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : 0;
 }
 
-function buildVendorLookup(rows: LiquorPriceRow[], liquorRows: LiquorRow[]) {
-  const productUrlByLiquorId = new Map<number, string>();
+function buildVendorLookup(rows: LiquorPriceRow[], liquorRows: any[]) {
+  // 1. 기존: liquor_id -> URL 매핑
+  // 변경: liquor_id + source -> URL 매핑 (예: "864:LOTTEON" -> "롯데온 URL")
+  const urlLookupByLiquorAndSource = new Map<string, string>();
+
   for (const liquor of liquorRows) {
-    productUrlByLiquorId.set(liquor.id, normalizeText(liquor.product_url));
+    // liquor.liquor_url 배열을 순회하면서 source별로 URL을 맵에 저장합니다.
+    if (Array.isArray(liquor.liquor_url)) {
+      for (const urlData of liquor.liquor_url) {
+        const source = normalizeText(urlData.source, "UNKNOWN").toUpperCase();
+        const key = `${liquor.id}:${source}`;
+        urlLookupByLiquorAndSource.set(key, normalizeText(urlData.product_url));
+      }
+    } else if (liquor.product_url) {
+      // 만약 조인이 안된 단일 객체 구조가 섞여 들어올 경우를 대비한 방어 코드
+      const key = `${liquor.id}:UNKNOWN`;
+      urlLookupByLiquorAndSource.set(key, normalizeText(liquor.product_url));
+    }
   }
 
   const latestByLiquorAndSource = new Map<string, LiquorPriceRow>();
 
+  // 가격 최신화 로직 (기존과 동일)
   for (const row of rows) {
-    const source = normalizeText(row.source, "UNKNOWN");
+    const source = normalizeText(row.source, "UNKNOWN").toUpperCase();
     const key = `${row.liquor_id}:${source}`;
     const existing = latestByLiquorAndSource.get(key);
+
     if (!existing) {
       latestByLiquorAndSource.set(key, row);
       continue;
@@ -159,13 +175,19 @@ function buildVendorLookup(rows: LiquorPriceRow[], liquorRows: LiquorRow[]) {
 
   const vendorLookup = new Map<number, CatalogCardVendor[]>();
 
+  // ⭐️ 2. Vendor 배열을 만들 때 해당 source에 맞는 URL을 꺼내옵니다.
   for (const row of latestByLiquorAndSource.values()) {
     const vendors = vendorLookup.get(row.liquor_id) ?? [];
+
+    const source = normalizeText(row.source, "UNKNOWN");
+    const searchKey = `${row.liquor_id}:${source.toUpperCase()}`; // URL 맵에서 찾을 키 생성
+
     vendors.push({
-      source: normalizeText(row.source, "UNKNOWN"),
+      source: source,
       current_price: normalizePrice(row.current_price),
       original_price: normalizePrice(row.original_price),
-      product_url: productUrlByLiquorId.get(row.liquor_id) ?? "",
+      // 방금 만든 복합 키로 각 벤더의 고유 URL을 찾아 주입!
+      product_url: urlLookupByLiquorAndSource.get(searchKey) ?? "",
     });
     vendorLookup.set(row.liquor_id, vendors);
   }
@@ -276,44 +298,64 @@ export async function fetchLiquorDetailFromServer(id: string): Promise<CatalogCa
   const supabase = getSupabaseClient() as unknown as CatalogSupabaseClient;
   const liquorId = parseInt(id, 10);
 
-  type HttpError = Error & { status?: number };
-
-  if (isNaN(liquorId)) {
-    const error = new Error("Invalid Liquor ID") as HttpError;
-    error.status = 400;
-    throw error;
-  }
+  // ... (id 유효성 검사 등 생략) ...
 
   const { data: liquors, error: liquorError } = await supabase
       .from("liquor")
-      .select("id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at")
-      .in("id", [liquorId]) as QueryResponse<LiquorRow>;
+      .select(`
+        id, 
+        normalized_name, 
+        brand, 
+        category, 
+        country, 
+        product_code, 
+        product_name, 
+        image_url, 
+        updated_at,
+        liquor_info!fk_liquor_info (volume_ml, alcohol_percent),
+        liquor_url!fk_liquor_url_liquor (source, product_url)
+      `)
+      .in("id", [liquorId]);
 
-  if (liquorError) {
-    throw liquorError;
+  if (liquorError || !liquors?.[0]) throw liquorError || new Error("Not Found");
+
+  const rawLiquor = liquors[0] as any;
+
+  const urlMap = new Map<string, string>();
+  if (Array.isArray(rawLiquor.liquor_url)) {
+    rawLiquor.liquor_url.forEach((u: any) => {
+      if (u.source && u.product_url) {
+        const safeKey = String(u.source).trim().toUpperCase();
+        urlMap.set(safeKey, u.product_url);
+      }
+    });
   }
-
-  if (!liquors || liquors.length === 0) {
-    const error = new Error(`Liquor not found: ${id}`) as HttpError;
-    error.status = 404;
-    throw error;
-  }
-
-  const liquorRow = liquors[0];
 
   const { data: priceRows, error: priceError } = await supabase
       .from("liquor_price")
       .select("liquor_id, source, current_price, original_price, crawled_at")
       .in("liquor_id", [liquorId])
-      .order("crawled_at", { ascending: false }) as QueryResponse<LiquorPriceRow>;
+      .order("crawled_at", { ascending: false });
 
-  if (priceError) {
-    throw priceError;
-  }
+  if (priceError) throw priceError;
 
-  const prices = (priceRows ?? []) as LiquorPriceRow[];
+  const pricesWithUrl = (priceRows ?? []).map((p: any) => {
+    const safeSearchKey = String(p.source).trim().toUpperCase();
+    const matchedUrl = urlMap.get(safeSearchKey) || "";
+    return {
+      ...p,
+      product_url: matchedUrl
+    };
+  });
+console.log(pricesWithUrl)
+  const liquorRow: any = {
+    ...rawLiquor,
+    volume_ml: rawLiquor.liquor_info?.volume_ml,
+    alcohol_percent: rawLiquor.liquor_info?.alcohol_percent,
+  };
 
-  const vendorLookup = buildVendorLookup(prices, [liquorRow]);
+  // 4. 조립 및 반환
+  const vendorLookup = buildVendorLookup(pricesWithUrl, [liquorRow]);
   const mappedItem = mapLiquorRowToCatalogItem(liquorRow, vendorLookup.get(liquorRow.id) ?? []);
 
   return mappedItem;
