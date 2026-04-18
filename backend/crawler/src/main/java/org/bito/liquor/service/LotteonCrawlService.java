@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.bito.liquor.common.model.Liquor;
 import org.bito.liquor.common.model.LiquorInfo;
 import org.bito.liquor.common.model.LiquorPrice;
+import org.bito.liquor.common.model.LiquorUrl;
 import org.bito.liquor.common.repository.LiquorInfoRepository;
 import org.bito.liquor.common.repository.LiquorRepository;
 import org.bito.liquor.common.repository.LiquorPriceRepository;
+import org.bito.liquor.common.repository.LiquorUrlRepository;
 import org.bito.liquor.scraper.LotteonScraper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +23,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class LotteonCrawlService {
     private static final String NORMALIZED_SOURCE = "LOTTEON";
-
+    private final LiquorUrlRepository liquorUrlRepository;
     private final LiquorRepository liquorRepository;
     private final LiquorPriceRepository liquorPriceRepository;
     private final LiquorInfoRepository liquorInfoRepository;
@@ -47,12 +49,11 @@ public class LotteonCrawlService {
 
             scraped.setLiquorInfo(infoOpt.get());
 
-            // ⭐️ Liquor 테이블 중복 방지 (기존 데이터가 있으면 덮어쓰지 않음)
             Liquor liquor = upsertLiquor(scraped);
 
-            boolean existed = liquorPriceRepository.findByLiquorIdAndSource(liquor.getId(), NORMALIZED_SOURCE).isPresent();
+            updateLiquorUrls(liquor, scraped.getProductUrl(), scraped.getImageUrl(), NORMALIZED_SOURCE);
 
-            // ⭐️ LiquorPrice에만 소스별 가격 갱신/저장
+            boolean existed = liquorPriceRepository.findByLiquorIdAndSource(liquor.getId(), NORMALIZED_SOURCE).isPresent();
             upsertLiquorPrice(liquor, scraped);
 
             if (existed) {
@@ -202,5 +203,19 @@ public class LotteonCrawlService {
 
     private String normalizeText(String value) {
         return value == null ? "" : value.trim();
+    }
+    private void updateLiquorUrls(Liquor liquor, String scrapedProductUrl, String scrapedImageUrl, String source) {
+        if (scrapedProductUrl == null || scrapedProductUrl.isBlank()) return;
+
+        LiquorUrl liquorUrl = liquorUrlRepository.findByLiquorIdAndSource(liquor.getId(), source)
+                .orElseGet(() -> LiquorUrl.builder()
+                        .liquor(liquor)
+                        .source(source)
+                        .build());
+
+        liquorUrl.setProductUrl(scrapedProductUrl);
+        liquorUrl.setImageUrl(scrapedImageUrl);
+
+        liquorUrlRepository.save(liquorUrl);
     }
 }

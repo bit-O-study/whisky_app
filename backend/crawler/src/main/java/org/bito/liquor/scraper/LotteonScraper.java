@@ -156,19 +156,27 @@ public class LotteonScraper {
     }
 
     private WebDriver createWebDriver() {
+        System.clearProperty("webdriver.chrome.driver");
+
         ChromeOptions options = new ChromeOptions();
+
         options.addArguments("--headless=new");
-        options.addArguments("--disable-gpu");
+
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--disable-gpu");
         options.addArguments("--window-size=1920,1080");
+
         options.addArguments("--disable-blink-features=AutomationControlled");
         options.addArguments("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+
+        options.addArguments("--remote-allow-origins=*");
+
         options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
+        options.setExperimentalOption("useAutomationExtension", false);
 
         return new ChromeDriver(options);
     }
-
     private Liquor parseFirstFromScript(String pageSource) {
         try {
             Pattern dataItemPattern = Pattern.compile("data-item=\"\\{([^}]+)\\}\"");
