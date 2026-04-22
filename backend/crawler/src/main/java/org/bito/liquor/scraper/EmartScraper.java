@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bito.liquor.common.model.Liquor;
 import org.bito.liquor.common.repository.LiquorInfoRepository;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -91,32 +93,38 @@ public class EmartScraper {
                     log.info("이마트 키워드 검색 중: '{}' | URL: {}", keyword, searchUrl);
 
                     driver.get(searchUrl);
-
-                    // 첫 페인트만 대기. 과거에는 1.5~2.5s 강제 대기 + 스크롤 2회 했으나 비용 큼.
                     Thread.sleep(800);
-                    ((JavascriptExecutor) driver).executeScript("window.scrollBy(0, 1200)");
 
-                    List<WebElement> items = findItemsWithFallback(driver, keyword);
-                    if (items.isEmpty()) {
-                        log.warn("'{}' 이마트 검색 결과가 없습니다. (모든 셀렉터 실패)", keyword);
-                        saveDebugHtml(driver.getPageSource(), keyword);
-                        continue;
-                    }
-
-                    log.info("'{}' 검색 결과 발견된 아이템 {}개", keyword, items.size());
-
+                    // Emart는 Next.js SSR이라 상품 데이터가 __NEXT_DATA__ JSON에 박혀 옴.
+                    // DOM hydration 전에도 pageSource에 전부 있으니 JSON을 1순위로 파싱.
+                    String pageSource = driver.getPageSource();
                     Liquor best = null;
                     int bestScore = Integer.MIN_VALUE;
-                    int limit = Math.min(items.size(), MAX_ITEMS_PER_KEYWORD);
-                    for (int i = 0; i < limit; i++) {
-                        Liquor candidate = extractItem(items.get(i));
-                        if (candidate == null) {
-                            continue;
+                    BestPick jsonPick = parseBestFromNextData(pageSource, keyword);
+                    if (jsonPick != null) {
+                        best = jsonPick.liquor;
+                        bestScore = jsonPick.score;
+                        log.info("'{}' NEXT_DATA에서 후보 찾음 (점수 {})", keyword, bestScore);
+                    }
+
+                    // JSON이 없거나 기준 미달이면 DOM 폴백(구버전 SSG 레이아웃 대응).
+                    if (best == null || bestScore < MIN_MATCH_SCORE) {
+                        ((JavascriptExecutor) driver).executeScript("window.scrollBy(0, 1200)");
+                        List<WebElement> items = findItemsWithFallback(driver, keyword);
+                        int limit = Math.min(items.size(), MAX_ITEMS_PER_KEYWORD);
+                        for (int i = 0; i < limit; i++) {
+                            Liquor candidate = extractItem(items.get(i));
+                            if (candidate == null) continue;
+                            int score = calculateMatchScore(keyword, candidate);
+                            if (score > bestScore) {
+                                bestScore = score;
+                                best = candidate;
+                            }
                         }
-                        int score = calculateMatchScore(keyword, candidate);
-                        if (score > bestScore) {
-                            bestScore = score;
-                            best = candidate;
+                        if (items.isEmpty() && jsonPick == null) {
+                            log.warn("'{}' 이마트 검색 결과 없음 (NEXT_DATA + DOM 모두 실패)", keyword);
+                            saveDebugHtml(pageSource, keyword);
+                            continue;
                         }
                     }
 
@@ -144,6 +152,124 @@ public class EmartScraper {
             }
         }
         return liquors;
+    }
+
+    private static final Pattern NEXT_DATA_PATTERN = Pattern.compile(
+            "<script id=\"__NEXT_DATA__\" type=\"application/json\">([\\s\\S]*?)</script>");
+
+    private record BestPick(Liquor liquor, int score) {}
+
+    /**
+     * Emart 검색 페이지의 __NEXT_DATA__ JSON을 파싱해 최고 점수 상품 1건 반환.
+     * 경로: props.pageProps.dehydratedState.queries[?].state.data.areaList[0].dataList
+     *      (queryKey에 "fetchSearchItemListArea"가 포함된 쿼리)
+     */
+    private BestPick parseBestFromNextData(String pageSource, String keyword) {
+        try {
+            Matcher m = NEXT_DATA_PATTERN.matcher(pageSource);
+            if (!m.find()) {
+                return null;
+            }
+            JSONObject root = new JSONObject(m.group(1));
+            JSONArray queries = root
+                    .getJSONObject("props")
+                    .getJSONObject("pageProps")
+                    .getJSONObject("dehydratedState")
+                    .getJSONArray("queries");
+
+            JSONArray dataList = null;
+            for (int i = 0; i < queries.length(); i++) {
+                JSONObject q = queries.optJSONObject(i);
+                if (q == null) continue;
+                JSONArray queryKey = q.optJSONArray("queryKey");
+                if (!queryKeyMatches(queryKey, "fetchSearchItemListArea")) continue;
+                JSONObject state = q.optJSONObject("state");
+                if (state == null) continue;
+                JSONObject data = state.optJSONObject("data");
+                if (data == null) continue;
+                JSONArray areaList = data.optJSONArray("areaList");
+                if (areaList == null || areaList.length() == 0) continue;
+                JSONObject firstArea = areaList.optJSONObject(0);
+                if (firstArea == null) continue;
+                dataList = firstArea.optJSONArray("dataList");
+                if (dataList != null && dataList.length() > 0) break;
+            }
+
+            if (dataList == null || dataList.length() == 0) {
+                return null;
+            }
+
+            Liquor best = null;
+            int bestScore = Integer.MIN_VALUE;
+            int limit = Math.min(dataList.length(), MAX_ITEMS_PER_KEYWORD);
+            for (int i = 0; i < limit; i++) {
+                JSONObject it = dataList.optJSONObject(i);
+                if (it == null) continue;
+                Liquor candidate = mapJsonItem(it);
+                if (candidate == null) continue;
+                int score = calculateMatchScore(keyword, candidate);
+                if (score > bestScore) {
+                    bestScore = score;
+                    best = candidate;
+                }
+            }
+            return best == null ? null : new BestPick(best, bestScore);
+
+        } catch (Exception e) {
+            log.debug("NEXT_DATA 파싱 실패: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    private boolean queryKeyMatches(JSONArray queryKey, String token) {
+        if (queryKey == null) return false;
+        for (int i = 0; i < queryKey.length(); i++) {
+            Object v = queryKey.opt(i);
+            if (v instanceof String s && s.equals(token)) return true;
+        }
+        return false;
+    }
+
+    private Liquor mapJsonItem(JSONObject it) {
+        String name = it.optString("itemName", "").trim();
+        if (name.isBlank()) return null;
+
+        String itemId = it.optString("itemId", "").trim();
+        int price = parsePriceDigits(it.optString("finalPrice", ""));
+        int originalPrice = parsePriceDigits(it.optString("strikeOutPrice", ""));
+        if (originalPrice <= 0) originalPrice = price;
+        if (originalPrice < price) originalPrice = price;
+
+        String imgUrl = it.optString("itemImgUrl", "").trim();
+        String itemUrl = it.optString("itemUrl", "").trim();
+        if (itemUrl.isBlank() && !itemId.isBlank()) {
+            itemUrl = "https://emart.ssg.com/item/itemView.ssg?itemId=" + itemId;
+        }
+
+        Liquor.LiquorBuilder b = Liquor.builder()
+                .source(SOURCE)
+                .name(name)
+                .category(detectCategory(name))
+                .currentPrice(price)
+                .originalPrice(originalPrice)
+                .imageUrl(imgUrl)
+                .productUrl(itemUrl)
+                .productCode(itemId.isBlank() ? "EMART_" + Math.abs(name.hashCode()) : itemId);
+
+        Liquor liquor = b.build();
+        enrichLiquorInfo(liquor);
+        return liquor;
+    }
+
+    private int parsePriceDigits(String raw) {
+        if (raw == null) return 0;
+        String digits = raw.replaceAll("[^0-9]", "");
+        if (digits.isEmpty()) return 0;
+        try {
+            return Integer.parseInt(digits);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     private List<WebElement> findItemsWithFallback(WebDriver driver, String keyword) {
