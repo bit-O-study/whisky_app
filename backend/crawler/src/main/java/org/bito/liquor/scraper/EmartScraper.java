@@ -177,7 +177,10 @@ public class EmartScraper {
                     .getJSONObject("dehydratedState")
                     .getJSONArray("queries");
 
-            JSONArray dataList = null;
+            // areaList는 광고/추천/실제 검색결과/관련상품 등 여러 영역으로 쪼개져 있고,
+            // 실제 결과 위치가 areaList[0]이 아닐 수 있다(세션/광고 여부에 따라 3~4번에 밀리기도 함).
+            // 모든 area의 dataList를 합쳐서 후보로 넣는다.
+            List<JSONObject> candidates = new ArrayList<>();
             for (int i = 0; i < queries.length(); i++) {
                 JSONObject q = queries.optJSONObject(i);
                 if (q == null) continue;
@@ -189,23 +192,27 @@ public class EmartScraper {
                 if (data == null) continue;
                 JSONArray areaList = data.optJSONArray("areaList");
                 if (areaList == null || areaList.length() == 0) continue;
-                JSONObject firstArea = areaList.optJSONObject(0);
-                if (firstArea == null) continue;
-                dataList = firstArea.optJSONArray("dataList");
-                if (dataList != null && dataList.length() > 0) break;
+                for (int a = 0; a < areaList.length(); a++) {
+                    JSONObject area = areaList.optJSONObject(a);
+                    if (area == null) continue;
+                    JSONArray dl = area.optJSONArray("dataList");
+                    if (dl == null) continue;
+                    for (int k = 0; k < dl.length(); k++) {
+                        JSONObject it = dl.optJSONObject(k);
+                        if (it != null && it.has("itemId")) candidates.add(it);
+                    }
+                }
             }
 
-            if (dataList == null || dataList.length() == 0) {
+            if (candidates.isEmpty()) {
                 return null;
             }
 
             Liquor best = null;
             int bestScore = Integer.MIN_VALUE;
-            int limit = Math.min(dataList.length(), MAX_ITEMS_PER_KEYWORD);
+            int limit = Math.min(candidates.size(), MAX_ITEMS_PER_KEYWORD);
             for (int i = 0; i < limit; i++) {
-                JSONObject it = dataList.optJSONObject(i);
-                if (it == null) continue;
-                Liquor candidate = mapJsonItem(it);
+                Liquor candidate = mapJsonItem(candidates.get(i));
                 if (candidate == null) continue;
                 int score = calculateMatchScore(keyword, candidate);
                 if (score > bestScore) {
