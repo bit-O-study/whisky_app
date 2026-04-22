@@ -97,6 +97,7 @@ public class EmartCrawlService {
 
         String scrapedBrand = scraped.getBrand().replace(" ", "").toLowerCase();
         String scrapedClazz = scraped.getClazz() != null ? scraped.getClazz().replace(" ", "").toLowerCase() : "";
+        String scrapedName = scraped.getName() != null ? scraped.getName().replace(" ", "").toLowerCase() : "";
 
         for (LiquorInfo info : candidates) {
             if (info.getBrand() == null) continue;
@@ -114,6 +115,12 @@ public class EmartCrawlService {
             }
 
             if (dbClazz.contains(scrapedClazz) || scrapedClazz.contains(dbClazz)) {
+                return Optional.of(info);
+            }
+
+            // scrapedClazz 추출 실패(None)이더라도 상품명 자체에 dbClazz가 포함되면 허용.
+            // 예: 스크래퍼가 "가쿠빈"을 clazz로 못 뽑았지만 상품명이 "산토리 가쿠빈 700ml"이면 매칭.
+            if (!dbClazz.isEmpty() && scrapedName.contains(dbClazz)) {
                 return Optional.of(info);
             }
         }
