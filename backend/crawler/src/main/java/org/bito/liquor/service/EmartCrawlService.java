@@ -51,7 +51,17 @@ public class EmartCrawlService {
             }
 
             // 1. 마스터 정보 매칭
-            scraped.setLiquorInfo(infoOpt.get());
+            LiquorInfo info = infoOpt.get();
+            scraped.setLiquorInfo(info);
+
+            // scraped.clazz 추출 실패(None/빈값) 시 마스터 clazz로 통일.
+            // 이게 없으면 upsertLiquor가 findByBrandAndClazzAndVolume으로 기존 행을
+            // 못 찾아 동일 제품이 liquor 테이블에 중복 저장됨 (예: 산토리 가쿠빈).
+            String sc = scraped.getClazz();
+            if ((sc == null || sc.isBlank() || sc.equalsIgnoreCase("none"))
+                    && info.getClazz() != null && !info.getClazz().isBlank()) {
+                scraped.setClazz(info.getClazz());
+            }
 
             // 2. Liquor 테이블 저장/조회 (upsert)
             Liquor liquor = upsertLiquor(scraped);
@@ -91,6 +101,7 @@ public class EmartCrawlService {
 
         String scrapedBrand = scraped.getBrand().replace(" ", "").toLowerCase();
         String scrapedClazz = scraped.getClazz() != null ? scraped.getClazz().replace(" ", "").toLowerCase() : "";
+        String scrapedName = scraped.getName() != null ? scraped.getName().replace(" ", "").toLowerCase() : "";
 
         for (LiquorInfo info : candidates) {
             if (info.getBrand() == null) continue;
@@ -108,6 +119,12 @@ public class EmartCrawlService {
             }
 
             if (dbClazz.contains(scrapedClazz) || scrapedClazz.contains(dbClazz)) {
+                return Optional.of(info);
+            }
+
+            // scrapedClazz 추출 실패(None)이더라도 상품명 자체에 dbClazz가 포함되면 허용.
+            // 예: 스크래퍼가 "가쿠빈"을 clazz로 못 뽑았지만 상품명이 "산토리 가쿠빈 700ml"이면 매칭.
+            if (!dbClazz.isEmpty() && scrapedName.contains(dbClazz)) {
                 return Optional.of(info);
             }
         }

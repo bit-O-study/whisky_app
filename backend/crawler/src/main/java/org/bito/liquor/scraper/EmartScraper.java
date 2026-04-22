@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bito.liquor.common.model.Liquor;
 import org.bito.liquor.common.repository.LiquorInfoRepository;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -28,6 +30,33 @@ public class EmartScraper {
 
     private static final String SEARCH_URL_TEMPLATE = "https://emart.ssg.com/search.ssg?query=%s";
     private static final String SOURCE = "EMART";
+    private static final int MIN_MATCH_SCORE = 30;
+    private static final int MAX_ITEMS_PER_KEYWORD = 20;
+
+    // Emart(SSG)는 CSS-in-JS로 클래스 해시가 자주 바뀌므로 다중 셀렉터로 폴백.
+    private static final String[] ITEM_SELECTORS = {
+            "div.css-sz3opf",
+            "li[id*='itemUnit']",
+            "li[data-react-bind*='ItemUnit']",
+            "div[class*='cunit']",
+            "div[class*='item_unit']",
+            "[data-position]"
+    };
+    private static final String[] NAME_SELECTORS = {
+            ".css-1mrk1dy",
+            "[class*='title']",
+            "[class*='name']",
+            ".infoTit",
+            ".tlt"
+    };
+    private static final String[] PRICE_SELECTORS = {
+            ".css-1oiygnj",
+            "em[class*='price']",
+            "span[class*='ssg_price']",
+            "[class*='final_price']",
+            ".opt_price",
+            ".ssg_price"
+    };
 
     private static final List<String> KNOWN_BRANDS = Arrays.asList(
             "조니워커", "발렌타인", "글렌피딕", "맥캘란", "짐빔", "산토리", "잭다니엘",
@@ -35,7 +64,7 @@ public class EmartScraper {
             "글렌리벳", "발베니", "아드벡", "라프로익", "탈리스커", "싱글톤", "에반윌리엄스",
             "제임슨", "카나디안클럽", "벨즈", "블랙앤화이트", "커티삭", "몽키숄더", "니카",
             "하이랜드파크", "보모어", "라가불린", "오반", "글렌모렌지", "달모어", "히비키", "야마자키",
-            "카발란", "글렌그란트", "더글렌그란트", "커티삭",
+            "카발란", "글렌그란트", "더글렌그란트",
             "1865", "몬테스", "G7", "디아블로", "칸티", "빌라엠", "모엣샹동", "돔페리뇽",
             "뵈브클리코", "투핸즈", "이스까이", "텍스트북", "덕혼", "클라우디베이", "펜폴즈",
             "샤토", "샤또", "울프블라스", "옐로우테일", "코노수르", "앙시앙땅", "트라피체",
@@ -64,37 +93,48 @@ public class EmartScraper {
                     log.info("이마트 키워드 검색 중: '{}' | URL: {}", keyword, searchUrl);
 
                     driver.get(searchUrl);
+                    Thread.sleep(800);
 
-                    Thread.sleep((long) (Math.random() * 1500) + 1000);
-
-                    JavascriptExecutor js = (JavascriptExecutor) driver;
-                    for (int i = 0; i < 2; i++) {
-                        js.executeScript("window.scrollBy(0, 1000)");
-                        Thread.sleep(500);
+                    // Emart는 Next.js SSR이라 상품 데이터가 __NEXT_DATA__ JSON에 박혀 옴.
+                    // DOM hydration 전에도 pageSource에 전부 있으니 JSON을 1순위로 파싱.
+                    String pageSource = driver.getPageSource();
+                    Liquor best = null;
+                    int bestScore = Integer.MIN_VALUE;
+                    BestPick jsonPick = parseBestFromNextData(pageSource, keyword);
+                    if (jsonPick != null) {
+                        best = jsonPick.liquor;
+                        bestScore = jsonPick.score;
+                        log.info("'{}' NEXT_DATA에서 후보 찾음 (점수 {})", keyword, bestScore);
                     }
 
-                    List<WebElement> items = Collections.emptyList();
-                    try {
-                        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
-                        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div.css-sz3opf")));
-                        items = driver.findElements(By.cssSelector("div.css-sz3opf"));
-                    } catch (TimeoutException e) {
-                        log.warn("'{}' 이마트 검색 결과가 없습니다.", keyword);
-                        continue;
-                    }
-
-                    if (items.isEmpty()) continue;
-
-                    log.info("'{}' 검색 결과 발견된 아이템 {}개", keyword, items.size());
-
-                    for (WebElement item : items) {
-                        try {
-                            Liquor liquor = extractItem(item);
-                            if (liquor != null) {
-                                liquors.add(liquor);
+                    // JSON이 없거나 기준 미달이면 DOM 폴백(구버전 SSG 레이아웃 대응).
+                    if (best == null || bestScore < MIN_MATCH_SCORE) {
+                        ((JavascriptExecutor) driver).executeScript("window.scrollBy(0, 1200)");
+                        List<WebElement> items = findItemsWithFallback(driver, keyword);
+                        int limit = Math.min(items.size(), MAX_ITEMS_PER_KEYWORD);
+                        for (int i = 0; i < limit; i++) {
+                            Liquor candidate = extractItem(items.get(i));
+                            if (candidate == null) continue;
+                            int score = calculateMatchScore(keyword, candidate);
+                            if (score > bestScore) {
+                                bestScore = score;
+                                best = candidate;
                             }
-                        } catch (Exception e) {
                         }
+                        if (items.isEmpty() && jsonPick == null) {
+                            log.warn("'{}' 이마트 검색 결과 없음 (NEXT_DATA + DOM 모두 실패)", keyword);
+                            saveDebugHtml(pageSource, keyword);
+                            continue;
+                        }
+                    }
+
+                    if (best != null && bestScore >= MIN_MATCH_SCORE) {
+                        liquors.add(best);
+                        log.info("'{}' → 수집 성공: '{}' ({}점, {}원)",
+                                keyword, best.getName(), bestScore, best.getCurrentPrice());
+                    } else {
+                        log.warn("'{}' → 매칭 점수 미달 (best={}, threshold={})",
+                                keyword, bestScore, MIN_MATCH_SCORE);
                     }
 
                 } catch (Exception e) {
@@ -112,6 +152,150 @@ public class EmartScraper {
             }
         }
         return liquors;
+    }
+
+    private static final Pattern NEXT_DATA_PATTERN = Pattern.compile(
+            "<script id=\"__NEXT_DATA__\" type=\"application/json\">([\\s\\S]*?)</script>");
+
+    private record BestPick(Liquor liquor, int score) {}
+
+    /**
+     * Emart 검색 페이지의 __NEXT_DATA__ JSON을 파싱해 최고 점수 상품 1건 반환.
+     * 경로: props.pageProps.dehydratedState.queries[?].state.data.areaList[0].dataList
+     *      (queryKey에 "fetchSearchItemListArea"가 포함된 쿼리)
+     */
+    private BestPick parseBestFromNextData(String pageSource, String keyword) {
+        try {
+            Matcher m = NEXT_DATA_PATTERN.matcher(pageSource);
+            if (!m.find()) {
+                return null;
+            }
+            JSONObject root = new JSONObject(m.group(1));
+            JSONArray queries = root
+                    .getJSONObject("props")
+                    .getJSONObject("pageProps")
+                    .getJSONObject("dehydratedState")
+                    .getJSONArray("queries");
+
+            // areaList는 광고/추천/실제 검색결과/관련상품 등 여러 영역으로 쪼개져 있고,
+            // 실제 결과 위치가 areaList[0]이 아닐 수 있다(세션/광고 여부에 따라 3~4번에 밀리기도 함).
+            // 모든 area의 dataList를 합쳐서 후보로 넣는다.
+            List<JSONObject> candidates = new ArrayList<>();
+            for (int i = 0; i < queries.length(); i++) {
+                JSONObject q = queries.optJSONObject(i);
+                if (q == null) continue;
+                JSONArray queryKey = q.optJSONArray("queryKey");
+                if (!queryKeyMatches(queryKey, "fetchSearchItemListArea")) continue;
+                JSONObject state = q.optJSONObject("state");
+                if (state == null) continue;
+                JSONObject data = state.optJSONObject("data");
+                if (data == null) continue;
+                JSONArray areaList = data.optJSONArray("areaList");
+                if (areaList == null || areaList.length() == 0) continue;
+                for (int a = 0; a < areaList.length(); a++) {
+                    JSONObject area = areaList.optJSONObject(a);
+                    if (area == null) continue;
+                    JSONArray dl = area.optJSONArray("dataList");
+                    if (dl == null) continue;
+                    for (int k = 0; k < dl.length(); k++) {
+                        JSONObject it = dl.optJSONObject(k);
+                        if (it != null && it.has("itemId")) candidates.add(it);
+                    }
+                }
+            }
+
+            if (candidates.isEmpty()) {
+                return null;
+            }
+
+            Liquor best = null;
+            int bestScore = Integer.MIN_VALUE;
+            int limit = Math.min(candidates.size(), MAX_ITEMS_PER_KEYWORD);
+            for (int i = 0; i < limit; i++) {
+                Liquor candidate = mapJsonItem(candidates.get(i));
+                if (candidate == null) continue;
+                int score = calculateMatchScore(keyword, candidate);
+                if (score > bestScore) {
+                    bestScore = score;
+                    best = candidate;
+                }
+            }
+            return best == null ? null : new BestPick(best, bestScore);
+
+        } catch (Exception e) {
+            log.debug("NEXT_DATA 파싱 실패: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    private boolean queryKeyMatches(JSONArray queryKey, String token) {
+        if (queryKey == null) return false;
+        for (int i = 0; i < queryKey.length(); i++) {
+            Object v = queryKey.opt(i);
+            if (v instanceof String s && s.equals(token)) return true;
+        }
+        return false;
+    }
+
+    private Liquor mapJsonItem(JSONObject it) {
+        String name = it.optString("itemName", "").trim();
+        if (name.isBlank()) return null;
+
+        String itemId = it.optString("itemId", "").trim();
+        int price = parsePriceDigits(it.optString("finalPrice", ""));
+        int originalPrice = parsePriceDigits(it.optString("strikeOutPrice", ""));
+        if (originalPrice <= 0) originalPrice = price;
+        if (originalPrice < price) originalPrice = price;
+
+        String imgUrl = it.optString("itemImgUrl", "").trim();
+        String itemUrl = it.optString("itemUrl", "").trim();
+        if (itemUrl.isBlank() && !itemId.isBlank()) {
+            itemUrl = "https://emart.ssg.com/item/itemView.ssg?itemId=" + itemId;
+        }
+
+        Liquor.LiquorBuilder b = Liquor.builder()
+                .source(SOURCE)
+                .name(name)
+                .category(detectCategory(name))
+                .currentPrice(price)
+                .originalPrice(originalPrice)
+                .imageUrl(imgUrl)
+                .productUrl(itemUrl)
+                .productCode(itemId.isBlank() ? "EMART_" + Math.abs(name.hashCode()) : itemId);
+
+        Liquor liquor = b.build();
+        enrichLiquorInfo(liquor);
+        return liquor;
+    }
+
+    private int parsePriceDigits(String raw) {
+        if (raw == null) return 0;
+        String digits = raw.replaceAll("[^0-9]", "");
+        if (digits.isEmpty()) return 0;
+        try {
+            return Integer.parseInt(digits);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private List<WebElement> findItemsWithFallback(WebDriver driver, String keyword) {
+        for (String selector : ITEM_SELECTORS) {
+            try {
+                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(3));
+                wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(selector)));
+                List<WebElement> els = driver.findElements(By.cssSelector(selector));
+                if (!els.isEmpty()) {
+                    log.debug("'{}' 매칭 셀렉터: {} ({}개)", keyword, selector, els.size());
+                    return els;
+                }
+            } catch (TimeoutException ignored) {
+                // 다음 셀렉터로
+            } catch (Exception e) {
+                log.debug("셀렉터 '{}' 시도 중 오류: {}", selector, e.getMessage());
+            }
+        }
+        return Collections.emptyList();
     }
 
     private List<String> generateDynamicKeywords() {
@@ -143,10 +327,8 @@ public class EmartScraper {
 
     private Liquor extractItem(WebElement el) {
         try {
-            String name = "";
-            try {
-                name = el.findElement(By.cssSelector(".css-1mrk1dy")).getText().trim();
-            } catch (Exception e) {
+            String name = findFirstText(el, NAME_SELECTORS);
+            if (name == null || name.isBlank()) {
                 return null;
             }
 
@@ -157,12 +339,16 @@ public class EmartScraper {
                     .source(SOURCE)
                     .category(category);
 
-            try {
-                String priceTxt = el.findElement(By.cssSelector(".css-1oiygnj")).getText();
-                int price = Integer.parseInt(priceTxt.replaceAll("[^0-9]", ""));
-                builder.currentPrice(price);
-                builder.originalPrice(price);
-            } catch (Exception e) {
+            String priceTxt = findFirstText(el, PRICE_SELECTORS);
+            if (priceTxt != null && !priceTxt.isBlank()) {
+                try {
+                    int price = Integer.parseInt(priceTxt.replaceAll("[^0-9]", ""));
+                    builder.currentPrice(price);
+                    builder.originalPrice(price);
+                } catch (NumberFormatException e) {
+                    builder.currentPrice(0);
+                }
+            } else {
                 builder.currentPrice(0);
             }
 
@@ -171,12 +357,12 @@ public class EmartScraper {
                 String href = linkElement.getAttribute("href");
 
                 if (href == null || href.isEmpty()) {
-                    throw new RuntimeException("href 속성을 찾을 수 없습니다.");
+                    return null;
                 }
 
                 builder.productUrl(href);
 
-                String itemId = "";
+                String itemId;
                 if (href.contains("itemId=")) {
                     itemId = href.split("itemId=")[1].split("&")[0];
                 } else {
@@ -184,14 +370,15 @@ public class EmartScraper {
                 }
                 builder.productCode(itemId);
 
-            } catch (Exception e) {
+            } catch (org.openqa.selenium.NoSuchElementException e) {
                 return null;
             }
 
             try {
                 String img = el.findElement(By.tagName("img")).getAttribute("src");
                 builder.imageUrl(img);
-            } catch (Exception ignored) {}
+            } catch (org.openqa.selenium.NoSuchElementException ignored) {
+            }
 
             Liquor liquor = builder.build();
             enrichLiquorInfo(liquor);
@@ -199,8 +386,22 @@ public class EmartScraper {
             return liquor;
 
         } catch (Exception e) {
+            log.debug("아이템 파싱 실패: {}", e.getMessage());
             return null;
         }
+    }
+
+    private String findFirstText(WebElement el, String[] selectors) {
+        for (String sel : selectors) {
+            try {
+                String text = el.findElement(By.cssSelector(sel)).getText();
+                if (text != null && !text.isBlank()) {
+                    return text.trim();
+                }
+            } catch (org.openqa.selenium.NoSuchElementException ignored) {
+            }
+        }
+        return null;
     }
 
     private String detectCategory(String name) {
@@ -356,15 +557,118 @@ public class EmartScraper {
         return "None";
     }
 
+    private int calculateMatchScore(String keyword, Liquor liquor) {
+        if (liquor == null || liquor.getName() == null || liquor.getName().isBlank()) {
+            return Integer.MIN_VALUE;
+        }
+
+        String name = liquor.getName();
+        String normalizedKeyword = normalizeForMatch(keyword);
+        String normalizedName = normalizeForMatch(name);
+        int score = 0;
+
+        if (normalizedName.contains(normalizedKeyword)) {
+            score += 100;
+        }
+
+        for (String token : keyword.split("\\s+")) {
+            String normalizedToken = normalizeForMatch(token);
+            if (normalizedToken.length() < 2) {
+                continue;
+            }
+            if (normalizedName.contains(normalizedToken)) {
+                score += 18;
+            } else {
+                score -= 6;
+            }
+        }
+
+        if (containsLiquorHint(name)) {
+            score += 25;
+        }
+        if (containsAccessoryHint(name)) {
+            score -= 80;
+        }
+
+        return score;
+    }
+
+    private boolean containsLiquorHint(String name) {
+        String lower = name.toLowerCase();
+        return lower.contains("위스키")
+                || lower.contains("whisky")
+                || lower.contains("whiskey")
+                || lower.contains("버번")
+                || lower.contains("스카치")
+                || lower.contains("single malt")
+                || lower.contains("싱글몰트")
+                || lower.contains("와인")
+                || lower.contains("샴페인")
+                || lower.contains("사케")
+                || lower.contains("청주");
+    }
+
+    private boolean containsAccessoryHint(String name) {
+        String lower = name.toLowerCase();
+        return lower.contains("잔")
+                || lower.contains("글라스")
+                || lower.contains("머그")
+                || lower.contains("컵")
+                || lower.contains("치약")
+                || lower.contains("원피스")
+                || lower.contains("팬츠")
+                || lower.contains("스푼")
+                || lower.contains("미니어처")
+                || lower.contains("디캔터")
+                || lower.contains("코스터");
+    }
+
+    private String normalizeForMatch(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.toLowerCase()
+                .replace(" ", "")
+                .replace("더블우드", "더블 우드")
+                .replace("더블캐스크", "더블 캐스크")
+                .replace("트리플우드", "트리플 우드")
+                .replace("블랙라벨", "블랙 라벨")
+                .replace("골드라벨", "골드 라벨")
+                .replace("화이트라벨", "화이트 라벨")
+                .replace("버팔로트레이스", "버팔로 트레이스")
+                .replace("와일드터키", "와일드 터키")
+                .replace("조니워커", "조니 워커")
+                .replace("시바스리갈", "시바스 리갈")
+                .replace("로얄살루트", "로얄 살루트")
+                .replace("짐빔", "짐 빔")
+                .replace("맥켈란", "맥캘란")
+                .replaceAll("[^0-9a-z가-힣]", "");
+    }
+
+    private void saveDebugHtml(String pageSource, String keyword) {
+        try {
+            String fileName = "emart_debug_" + keyword.replaceAll("\\s+", "_") + ".html";
+            java.nio.file.Files.writeString(
+                    java.nio.file.Paths.get(fileName),
+                    pageSource,
+                    StandardCharsets.UTF_8
+            );
+            log.info("디버깅용 HTML 저장 완료: {}", fileName);
+        } catch (Exception ex) {
+            log.error("HTML 파일 저장 실패: {}", ex.getMessage());
+        }
+    }
+
     private WebDriver createWebDriver() {
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=true");
+        options.addArguments("--headless=new");
         options.addArguments("--disable-blink-features=AutomationControlled");
         options.setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
         options.setExperimentalOption("useAutomationExtension", false);
         options.addArguments("--disable-gpu");
         options.addArguments("--no-sandbox");
-        options.addArguments("--start-maximized");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--window-size=1920,1080");
         options.addArguments("--lang=ko_KR");
         options.addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
 
