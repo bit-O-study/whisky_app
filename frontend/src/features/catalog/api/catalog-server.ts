@@ -362,3 +362,59 @@ export async function fetchLiquorDetailFromServer(id: string): Promise<CatalogCa
 
   return mappedItem;
 }
+
+export interface PriceHistoryPoint {
+  /** ISO date (YYYY-MM-DD) */
+  date: string;
+  /** lowest current_price across all sources for that day */
+  lowest: number;
+}
+
+interface RawHistoryRow {
+  source: string | null;
+  current_price: number | null;
+  crawled_at: string | null;
+}
+
+/**
+ * 특정 liquor의 가격 히스토리를 일자별로 집계해 반환.
+ * 각 날짜의 모든 소스의 current_price 중 MIN을 사용해 "그 날의 최저가"를 만든다.
+ */
+export async function fetchLiquorPriceHistoryFromServer(
+    id: string,
+    days: number = 90,
+): Promise<PriceHistoryPoint[]> {
+  const supabase = getSupabaseClient() as any;
+  const liquorId = parseInt(id, 10);
+  if (!Number.isFinite(liquorId)) return [];
+
+  const since = new Date();
+  since.setUTCDate(since.getUTCDate() - days);
+
+  const { data, error } = await supabase
+      .from("liquor_price_history")
+      .select("source, current_price, crawled_at")
+      .eq("liquor_id", liquorId)
+      .gte("crawled_at", since.toISOString())
+      .order("crawled_at", { ascending: true });
+
+  if (error) {
+    console.error("history fetch error", error);
+    return [];
+  }
+
+  const byDay = new Map<string, number>();
+  for (const row of (data ?? []) as RawHistoryRow[]) {
+    const cp = row.current_price;
+    if (typeof cp !== "number" || cp <= 0) continue;
+    const ts = row.crawled_at ? new Date(row.crawled_at) : null;
+    if (!ts || Number.isNaN(ts.getTime())) continue;
+    const day = ts.toISOString().slice(0, 10);
+    const prev = byDay.get(day);
+    if (prev == null || cp < prev) byDay.set(day, cp);
+  }
+
+  return Array.from(byDay.entries())
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(([date, lowest]) => ({ date, lowest }));
+}

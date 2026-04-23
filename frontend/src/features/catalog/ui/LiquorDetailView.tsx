@@ -1,8 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { PriceHistoryPoint } from "../api/catalog-server";
+import PriceTrendChart from "./PriceTrendChart";
 
 interface Props {
     liquor: any;
+    priceHistory?: PriceHistoryPoint[];
 }
 
 function formatPrice(price: number) {
@@ -10,7 +13,7 @@ function formatPrice(price: number) {
     return price.toLocaleString("ko-KR") + "원";
 }
 
-export default function LiquorDetailView({ liquor }: Props) {
+export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
     const sortedVendors = (liquor.vendors ?? []).slice().sort((a: any, b: any) => a.current_price - b.current_price);
     const bestVendor = sortedVendors[0];
 
@@ -106,6 +109,19 @@ export default function LiquorDetailView({ liquor }: Props) {
                             )}
                         </div>
                     </div>
+                </section>
+
+                {/* 가격 추이 그래프 */}
+                <section className="mt-20">
+                    <div className="mb-6 flex items-end justify-between">
+                        <h2 className="text-2xl font-bold tracking-[-0.015em] text-[color:var(--catalog-ink)]">
+                            가격 추이
+                        </h2>
+                        <span className="catalog-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--catalog-muted)]">
+                            최근 90일
+                        </span>
+                    </div>
+                    <PriceTrendChart points={priceHistory} />
                 </section>
 
                 {/* 판매처 리스트 */}
