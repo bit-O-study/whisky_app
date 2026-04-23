@@ -2,19 +2,39 @@
 
 :root {
   color-scheme: light;
-  --catalog-bg-solid: #fdf9f0;
-  --catalog-bg-secondary: #f7f3ea;
-  --catalog-bg-strong: #ece6db;
-  --catalog-surface: rgba(255, 255, 255, 0.78);
-  --catalog-surface-strong: rgba(247, 243, 234, 0.9);
-  --catalog-surface-ink: rgba(28, 28, 23, 0.05);
-  --catalog-ink: #1c1c17;
-  --catalog-muted: #524439;
-  --catalog-soft: #857467;
-  --catalog-outline: rgba(216, 195, 180, 0.42);
-  --catalog-primary: #8b4a2c;
-  --catalog-primary-strong: #a96242;
-  --catalog-accent: #fed65b;
+
+  /* Surfaces */
+  --catalog-bg-solid: #f7f2e8;
+  --catalog-bg-secondary: #efe8d9;
+  --catalog-bg-strong: #e6dcc8;
+  --catalog-surface: #ffffff;
+  --catalog-surface-soft: rgba(255, 255, 255, 0.92);
+  --catalog-surface-strong: rgba(247, 242, 232, 0.94);
+  --catalog-surface-ink: rgba(24, 22, 18, 0.04);
+
+  /* Text */
+  --catalog-ink: #181612;
+  --catalog-muted: #4a4036;
+  --catalog-soft: #7e6e5f;
+
+  /* Lines / borders */
+  --catalog-outline: rgba(202, 184, 156, 0.42);
+  --catalog-outline-strong: rgba(202, 184, 156, 0.62);
+  --catalog-hairline: rgba(24, 22, 18, 0.06);
+
+  /* Accents — deep cabernet + champagne gold */
+  --catalog-primary: #6b2b3a;
+  --catalog-primary-strong: #8c3a4b;
+  --catalog-primary-soft: rgba(107, 43, 58, 0.08);
+  --catalog-accent: #c9a961;
+  --catalog-accent-strong: #b89548;
+
+  /* Shadows */
+  --catalog-shadow-sm: 0 4px 12px rgba(24, 22, 18, 0.04);
+  --catalog-shadow-md: 0 10px 28px rgba(24, 22, 18, 0.05);
+  --catalog-shadow-lg: 0 18px 42px rgba(24, 22, 18, 0.08);
+
+  /* Typography */
   --catalog-display-font: var(--font-newsreader), var(--font-noto-serif-kr), "Iowan Old Style", Georgia, serif;
   --catalog-body-font: var(--font-manrope), var(--font-noto-sans-kr), "Avenir Next", "Segoe UI", sans-serif;
 }
@@ -34,25 +54,25 @@ body {
   color: var(--catalog-ink);
   background-color: var(--catalog-bg-solid);
   background-image:
-    radial-gradient(circle at top left, rgba(169, 98, 66, 0.1), transparent 26%),
-    radial-gradient(circle at top right, rgba(254, 214, 91, 0.14), transparent 18%),
-    linear-gradient(180deg, rgba(253, 249, 240, 0.92), rgba(247, 243, 234, 0.96)),
-    radial-gradient(rgba(216, 195, 180, 0.16) 0.7px, transparent 0.7px);
-  background-size: auto, auto, auto, 28px 28px;
-  background-attachment: fixed, fixed, fixed, fixed;
+    radial-gradient(ellipse at top, rgba(107, 43, 58, 0.05), transparent 55%),
+    radial-gradient(circle at 92% 8%, rgba(201, 169, 97, 0.08), transparent 30%);
   font-family: var(--catalog-body-font);
+  font-feature-settings: "ss01", "cv11";
+  letter-spacing: -0.005em;
 }
 
 * {
   box-sizing: border-box;
 }
 
+::selection {
+  background: rgba(107, 43, 58, 0.18);
+  color: var(--catalog-ink);
+}
+
 .catalog-shell {
   position: relative;
   isolation: isolate;
-  background:
-    linear-gradient(180deg, rgba(253, 249, 240, 0.72), rgba(253, 249, 240, 0)),
-    radial-gradient(circle at 20% 0%, rgba(169, 98, 66, 0.08), transparent 28%);
 }
 
 .catalog-shell > * {
@@ -61,21 +81,18 @@ body {
 }
 
 .catalog-metric {
-  border-radius: 1.5rem;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(247, 243, 234, 0.94));
+  border-radius: 1.25rem;
+  background: var(--catalog-surface);
   border: 1px solid var(--catalog-outline);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.78),
-    0 18px 40px rgba(28, 28, 23, 0.06);
+  box-shadow: var(--catalog-shadow-sm);
   padding: 1.1rem 1.2rem;
 }
 
 .catalog-metric-label {
   display: block;
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--catalog-primary);
 }
@@ -104,9 +121,9 @@ body {
 
 .catalog-kicker {
   display: inline-block;
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--catalog-primary);
 }
@@ -116,38 +133,45 @@ body {
 }
 
 .catalog-glass {
-  background: rgba(253, 249, 240, 0.78);
-  backdrop-filter: blur(20px);
+  background: rgba(247, 242, 232, 0.78);
+  backdrop-filter: saturate(140%) blur(18px);
+  -webkit-backdrop-filter: saturate(140%) blur(18px);
 }
 
 .catalog-panel {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(247, 243, 234, 0.92));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.78),
-    0 22px 48px rgba(28, 28, 23, 0.06);
+  background: var(--catalog-surface);
+  border: 1px solid var(--catalog-outline);
+  box-shadow: var(--catalog-shadow-md);
 }
 
 .catalog-chip {
   border-radius: 999px;
-  padding: 0.4rem 0.8rem;
+  padding: 0.35rem 0.8rem;
   font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--catalog-ink);
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--catalog-surface);
+  border: 1px solid var(--catalog-outline);
 }
 
 .catalog-chip-warm {
   background: linear-gradient(135deg, var(--catalog-primary), var(--catalog-primary-strong));
-  color: #fffaf5;
+  color: #fbf6ee;
+  border-color: transparent;
+}
+
+.catalog-chip-accent {
+  background: var(--catalog-accent);
+  color: var(--catalog-ink);
+  border-color: var(--catalog-accent-strong);
 }
 
 .catalog-rule {
   height: 1px;
   border: 0;
-  background: linear-gradient(90deg, transparent, rgba(216, 195, 180, 0.8), transparent);
+  background: linear-gradient(90deg, transparent, var(--catalog-outline-strong), transparent);
 }
 
 .catalog-details > summary {
@@ -156,10 +180,4 @@ body {
 
 .catalog-details > summary::-webkit-details-marker {
   display: none;
-}
-
-@media (max-width: 767px) {
-  body {
-    background-size: auto, auto, auto, 24px 24px;
-  }
 }

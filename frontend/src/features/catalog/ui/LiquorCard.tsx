@@ -19,27 +19,27 @@ function getCardSignal(liquor: CatalogCardItem) {
   if (liquor.vendors.length >= 10) {
     return {
       label: "Tracked",
-      className: "bg-[rgba(139,74,44,0.92)] text-white",
+      className: "bg-[color:var(--catalog-primary)] text-[#fbf6ee]",
     };
   }
 
   if (liquor.lowest_price >= 150000) {
     return {
       label: "Rare",
-      className: "bg-[rgba(194,93,43,0.92)] text-white",
+      className: "bg-[color:var(--catalog-accent)] text-[color:var(--catalog-ink)]",
     };
   }
 
   if (liquor.alcohol_percent >= 46) {
     return {
       label: "Bold",
-      className: "bg-[rgba(115,92,0,0.92)] text-white",
+      className: "bg-[color:var(--catalog-ink)] text-[#fbf6ee]",
     };
   }
 
   return {
     label: "Listed",
-    className: "bg-[rgba(82,68,57,0.82)] text-white",
+    className: "bg-[color:var(--catalog-bg-strong)] text-[color:var(--catalog-muted)]",
   };
 }
 
@@ -57,75 +57,74 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
     .join(" · ");
 
   return (
-      <article className="group relative flex h-full flex-col overflow-hidden rounded-xl bg-[rgba(255,255,255,0.84)] shadow-[0_14px_32px_rgba(28,28,23,0.05)] ring-1 ring-[color:rgba(216,195,180,0.24)]">
+      <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-[color:var(--catalog-surface)] shadow-[var(--catalog-shadow-sm)] ring-1 ring-[color:var(--catalog-outline)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--catalog-shadow-lg)] hover:ring-[color:var(--catalog-outline-strong)]">
 
-        {/* 🟢 1. 이미지 영역 (기존 div를 Link로 변경하고 block 속성 추가) */}
+        {/* 이미지 영역 */}
         <Link
             href={`/liquor/${liquor.id}`}
-            className="block relative isolate z-10 aspect-square overflow-hidden border-b border-[color:rgba(216,195,180,0.16)] bg-white cursor-pointer"
+            className="block relative isolate z-10 aspect-square overflow-hidden border-b border-[color:var(--catalog-hairline)] bg-[color:var(--catalog-surface)] cursor-pointer"
         >
           <Image
               src={liquor.image_url || "https://jeqvxzkvumkiraclauvo.supabase.co/storage/v1/object/public/whisky-images/default_whisky.webp"}
               alt={liquor.name}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
-              className="h-full w-full object-contain p-4 transition-transform duration-700 group-hover:scale-[1.05]"
-              unoptimized
+              className="h-full w-full object-contain p-6 transition-transform duration-500 group-hover:scale-[1.03]"
               priority={prioritizeImage}
           />
-          <div className="absolute left-2 top-2">
-          <span
-              className={`rounded px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[0.18em] ${signal.className}`}
-          >
-            {signal.label}
-          </span>
+          <div className="absolute left-3 top-3">
+            <span
+                className={`rounded-full px-2 py-[3px] text-[9px] font-bold uppercase tracking-[0.2em] ${signal.className}`}
+            >
+              {signal.label}
+            </span>
           </div>
         </Link>
 
-        <div className="flex flex-1 flex-col p-4">
+        <div className="flex flex-1 flex-col p-5">
 
-          {/* 🟢 2. 타이틀 영역 (메타 정보와 h3 태그를 묶어서 Link로 감싸기) */}
+          {/* 타이틀 영역 */}
           <Link
               href={`/liquor/${liquor.id}`}
-              className="block group-hover:opacity-70 transition-opacity cursor-pointer"
+              className="block transition-opacity duration-300 group-hover:opacity-80 cursor-pointer"
           >
-            <div className="mb-1 flex items-start justify-between gap-3">
-              <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-[color:var(--catalog-muted)]">
+            <div className="mb-2 flex items-start justify-between gap-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[color:var(--catalog-muted)]">
                 {metaLine}
               </p>
-              <span className="text-[9px] font-bold text-[color:var(--catalog-muted)]">
-              {liquor.alcohol_percent > 0 ? `${liquor.alcohol_percent}%` : "--"}
-            </span>
+              <span className="text-[10px] font-bold tracking-[0.08em] text-[color:var(--catalog-muted)]">
+                {liquor.alcohol_percent > 0 ? `${liquor.alcohol_percent}%` : "--"}
+              </span>
             </div>
 
-            <h3 className="catalog-editorial text-[1.15rem] font-medium italic leading-tight tracking-[-0.015em] text-[color:var(--catalog-ink)]">
+            <h3 className="catalog-editorial text-[1.2rem] font-medium italic leading-snug tracking-[-0.01em] text-[color:var(--catalog-ink)]">
               {liquor.name}
             </h3>
           </Link>
 
-          {/* 🟡 3. 가격 및 판매처 영역 (내부에 <a> 태그가 있으므로 여기는 그대로 둠) */}
-          <div className="mt-auto pt-3">
-            <div className="flex items-end justify-between gap-3 border-t border-[color:rgba(216,195,180,0.16)] pt-3">
+          {/* 가격 및 판매처 */}
+          <div className="mt-auto pt-4">
+            <div className="flex items-end justify-between gap-3 border-t border-[color:var(--catalog-hairline)] pt-4">
               <div>
-                <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-[color:var(--catalog-primary)]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[color:var(--catalog-primary)]">
                   From
                 </p>
-                <p className="catalog-editorial mt-1 text-[1.3rem] font-medium italic leading-none text-[color:var(--catalog-primary)]">
+                <p className="catalog-editorial mt-1.5 text-[1.4rem] font-medium italic leading-none text-[color:var(--catalog-primary)]">
                   {liquor.lowest_price > 0 ? formatPrice(liquor.lowest_price) : "가격 확인 중"}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-[color:var(--catalog-muted)]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[color:var(--catalog-muted)]">
                   Vendors
                 </p>
-                <p className="mt-1 text-sm font-extrabold leading-none text-[color:var(--catalog-ink)]">
+                <p className="mt-1.5 text-[0.95rem] font-extrabold leading-none text-[color:var(--catalog-ink)]">
                   {sortedVendors.length}
                 </p>
               </div>
             </div>
 
-            <details className="catalog-details mt-2 md:hidden">
-              <summary className="cursor-pointer text-[9px] font-bold uppercase tracking-[0.18em] text-[color:rgba(82,68,57,0.68)]">
+            <details className="catalog-details mt-3 md:hidden">
+              <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-[0.2em] text-[color:rgba(82,68,57,0.68)]">
                 판매처
               </summary>
               <ul className="mt-3 space-y-2">
@@ -135,7 +134,7 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
                           href={vendor.product_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center justify-between gap-3 rounded-lg bg-[rgba(247,243,234,0.88)] px-3 py-2 text-sm transition hover:bg-[rgba(241,238,229,0.98)]"
+                          className="flex items-center justify-between gap-3 rounded-lg bg-[color:var(--catalog-bg-secondary)] px-3 py-2 text-sm transition hover:bg-[color:var(--catalog-bg-strong)]"
                       >
                         <span className="font-semibold text-[color:var(--catalog-ink)]">{vendor.source}</span>
                         <span className="flex items-center gap-2 text-right">
@@ -162,20 +161,20 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
           </div>
         </div>
 
-        {/* 데스크톱 호버 시 나타나는 판매처 목록 (기존 코드 유지) */}
-        <div className="pointer-events-none absolute inset-0 hidden flex-col justify-end bg-[linear-gradient(180deg,rgba(28,28,23,0.02),rgba(28,28,23,0.82))] p-4 opacity-0 backdrop-blur-[2px] transition duration-300 group-hover:opacity-100 group-focus-within:opacity-100 md:flex md:pointer-events-auto">
-          <div className="rounded-[1.15rem] border border-white/16 bg-[rgba(26,20,16,0.56)] p-4 backdrop-blur-md">
-            <h4 className="mb-3 text-[11px] font-bold uppercase tracking-[0.16em] text-white/92">
+        {/* 데스크톱 호버 시 나타나는 판매처 목록 */}
+        <div className="pointer-events-none absolute inset-0 z-20 hidden flex-col justify-end bg-[linear-gradient(180deg,rgba(24,22,18,0)_0%,rgba(24,22,18,0.78)_85%)] p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100 md:flex">
+          <div className="pointer-events-auto rounded-2xl border border-white/10 bg-[rgba(20,17,13,0.78)] p-4 backdrop-blur-md">
+            <h4 className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-white/80">
               판매처
             </h4>
-            <ul className="space-y-2">
+            <ul className="space-y-1.5">
               {sortedVendors.map((vendor) => (
                   <li key={vendor.source}>
                     <a
                         href={vendor.product_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-between gap-3 rounded-lg bg-white/10 px-3 py-2 text-sm transition hover:bg-white/18"
+                        className="flex items-center justify-between gap-3 rounded-lg bg-white/5 px-3 py-2 text-sm transition hover:bg-white/10"
                     >
                       <span className="font-semibold text-white">{vendor.source}</span>
                       <span className="flex items-center gap-2 text-right">
@@ -184,7 +183,7 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
                     )}
                         <span
                             className={`font-semibold ${
-                                bestVendor?.source === vendor.source ? "text-[#fed65b]" : "text-white"
+                                bestVendor?.source === vendor.source ? "text-[color:var(--catalog-accent)]" : "text-white"
                             }`}
                         >
                       {vendor.current_price > 0 ? formatPrice(vendor.current_price) : "가격 확인 중"}
