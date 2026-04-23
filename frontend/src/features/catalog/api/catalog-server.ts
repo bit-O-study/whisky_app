@@ -403,18 +403,42 @@ export async function fetchLiquorPriceHistoryFromServer(
     return [];
   }
 
-  const byDay = new Map<string, number>();
-  for (const row of (data ?? []) as RawHistoryRow[]) {
-    const cp = row.current_price;
-    if (typeof cp !== "number" || cp <= 0) continue;
-    const ts = row.crawled_at ? new Date(row.crawled_at) : null;
-    if (!ts || Number.isNaN(ts.getTime())) continue;
-    const day = ts.toISOString().slice(0, 10);
-    const prev = byDay.get(day);
-    if (prev == null || cp < prev) byDay.set(day, cp);
+  // 1) 유효한 행만 골라서 시간순 정렬
+  const rows = ((data ?? []) as RawHistoryRow[])
+      .filter((r) => typeof r.current_price === "number" && r.current_price > 0 && !!r.crawled_at)
+      .map((r) => ({
+        source: (r.source ?? "UNKNOWN").toUpperCase(),
+        price: r.current_price as number,
+        ts: new Date(r.crawled_at as string),
+      }))
+      .filter((r) => !Number.isNaN(r.ts.getTime()))
+      .sort((a, b) => a.ts.getTime() - b.ts.getTime());
+
+  if (rows.length === 0) return [];
+
+  // 2) 일자별로 그룹
+  const byDay = new Map<string, typeof rows>();
+  for (const r of rows) {
+    const day = r.ts.toISOString().slice(0, 10);
+    const bucket = byDay.get(day);
+    if (bucket) bucket.push(r);
+    else byDay.set(day, [r]);
   }
 
-  return Array.from(byDay.entries())
-      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-      .map(([date, lowest]) => ({ date, lowest }));
+  // 3) forward-fill: 각 source의 마지막 알려진 가격을 carry-forward.
+  //    그날의 최저가 = 그 시점에 알려진 모든 source 가격 중 MIN.
+  //    한 source가 다른 날 안 크롤되어도 직전 알려진 값을 살려서 비교.
+  const sortedDays = Array.from(byDay.keys()).sort();
+  const sourceLatest = new Map<string, number>();
+  const points: PriceHistoryPoint[] = [];
+  for (const day of sortedDays) {
+    for (const r of byDay.get(day)!) {
+      sourceLatest.set(r.source, r.price);
+    }
+    if (sourceLatest.size === 0) continue;
+    const lowest = Math.min(...sourceLatest.values());
+    points.push({ date: day, lowest });
+  }
+
+  return points;
 }
