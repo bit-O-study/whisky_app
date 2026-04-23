@@ -173,17 +173,17 @@ export default function CatalogPageClient({
 
   return (
     <main className="catalog-shell min-h-screen pb-24 md:pb-20">
-      <header className="catalog-glass sticky top-0 z-20 border-b border-[color:var(--catalog-hairline)]">
+      <header className="catalog-glass sticky top-0 z-20">
         <div className="mx-auto flex max-w-[96rem] flex-col gap-4 px-5 py-4 sm:px-8 lg:flex-row lg:items-center lg:justify-between">
           <button
             type="button"
             onClick={handleLogoClick}
-            className="group flex items-center gap-2.5 text-left transition-opacity hover:opacity-90"
+            className="group flex items-center gap-2.5 text-left transition-opacity hover:opacity-80"
             aria-label="위스키다모아"
             title="페이지 상단으로 이동"
           >
-            <span className="h-2.5 w-2.5 rounded-full bg-[color:var(--catalog-primary)] shadow-[0_0_12px_rgba(200,161,88,0.6)]" />
-            <span className="catalog-editorial text-[1.85rem] font-medium italic leading-none tracking-[-0.025em] text-[color:var(--catalog-ink)]">
+            <span className="h-2.5 w-2.5 rounded-full bg-[color:var(--catalog-primary)]" />
+            <span className="text-[1.4rem] font-bold leading-none tracking-[-0.02em] text-[color:var(--catalog-ink)]">
               위스키다모아
             </span>
           </button>
@@ -228,40 +228,43 @@ export default function CatalogPageClient({
       </header>
 
       {/* HERO band */}
-      <section className="mx-auto max-w-[96rem] px-5 pt-16 sm:px-8 md:pt-24">
-        <p className="catalog-kicker">CURATED MARKET INDEX · 2026</p>
-        <h1 className="mt-5 catalog-editorial text-[2.5rem] font-medium italic leading-[1.05] tracking-[-0.025em] text-[color:var(--catalog-ink)] sm:text-[3.4rem] md:text-[4.2rem]">
+      <section className="mx-auto max-w-[96rem] px-5 pt-14 sm:px-8 md:pt-24">
+        <span className="catalog-kicker">
+          <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--catalog-primary)]" />
+          CURATED MARKET · 2026
+        </span>
+        <h1 className="mt-5 text-[2.6rem] font-bold leading-[0.98] tracking-[-0.035em] text-[color:var(--catalog-ink)] sm:text-[3.8rem] md:text-[5rem]">
           오늘 가장 합리적인<br />
-          <span className="text-[color:var(--catalog-primary)]">한 병</span>의 가격.
+          <span className="catalog-editorial italic font-medium text-[color:var(--catalog-primary)]">한 병</span>의 가격.
         </h1>
-        <p className="mt-6 max-w-xl text-sm leading-7 text-[color:var(--catalog-muted)] md:text-base md:leading-8">
-          국내 주요 쇼핑몰의 위스키 가격을 매일 갱신해 한눈에 비교합니다.<br className="hidden md:block" />
-          최저가 · 판매처 · 시세 변동을 디지털 셀러에 정리해 드립니다.
+        <p className="mt-6 max-w-xl text-base leading-8 text-[color:var(--catalog-muted)] md:text-[1.05rem]">
+          국내 주요 쇼핑몰의 위스키 가격을 매일 갱신해 한눈에 비교합니다.
+          최저가 · 판매처 · 시세 변동을 한곳에 정리했습니다.
         </p>
       </section>
 
-      <section className="mx-auto max-w-[96rem] px-5 pt-16 sm:px-8 md:pt-20">
-        <div className="mb-8 flex flex-col gap-3 border-t border-[color:var(--catalog-hairline)] pt-8 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-3">
-            <span className="catalog-mono text-[2rem] font-bold leading-none text-[color:var(--catalog-ink)]">
+      <section className="mx-auto max-w-[96rem] px-5 pt-14 sm:px-8 md:pt-16">
+        <div className="mb-8 flex flex-col gap-4 border-t border-[color:var(--catalog-hairline)] pt-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-baseline gap-3">
+            <span className="text-[2.2rem] font-bold leading-none tracking-[-0.02em] text-[color:var(--catalog-ink)]">
               {formatCount(visibleBottleCount)}
             </span>
             <div>
-              <p className="catalog-mono text-[10px] font-semibold uppercase tracking-[0.28em] text-[color:var(--catalog-primary)]">
-                Bottles Indexed
+              <p className="catalog-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--catalog-primary)]">
+                Bottles
               </p>
               {activeSearchQuery && (
                 <p className="mt-0.5 text-xs text-[color:var(--catalog-muted)]">
-                  &quot;{activeSearchQuery}&quot; 검색 결과
+                  &quot;{activeSearchQuery}&quot; 검색
                 </p>
               )}
             </div>
           </div>
-          <div className="flex items-center gap-3 catalog-mono text-[10px] font-semibold uppercase tracking-[0.28em] text-[color:var(--catalog-muted)]">
-            <span>Sort</span>
+          <div className="flex items-center gap-2 text-sm text-[color:var(--catalog-muted)]">
+            <span className="catalog-mono text-[11px] font-semibold uppercase tracking-[0.22em]">Sort</span>
             <button
               type="button"
-              className="flex items-center gap-1.5 rounded-full border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] px-3 py-1.5 text-[color:var(--catalog-primary)]"
+              className="flex items-center gap-1.5 rounded-full border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] px-3.5 py-1.5 text-sm font-semibold text-[color:var(--catalog-ink)]"
               disabled
             >
               Newest
@@ -294,29 +297,29 @@ export default function CatalogPageClient({
           </div>
         )}
 
-        <footer className="mt-20 rounded-2xl border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] px-6 py-10 sm:px-10">
+        <footer className="mt-20 rounded-3xl border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] px-6 py-10 sm:px-10">
           <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
             <div className="max-w-md space-y-5">
               <div className="flex items-center gap-2.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-[color:var(--catalog-primary)] shadow-[0_0_12px_rgba(200,161,88,0.6)]" />
-                <p className="catalog-editorial text-2xl font-medium italic tracking-[-0.02em] text-[color:var(--catalog-ink)]">
+                <span className="h-2.5 w-2.5 rounded-full bg-[color:var(--catalog-primary)]" />
+                <p className="text-xl font-bold tracking-[-0.02em] text-[color:var(--catalog-ink)]">
                   위스키다모아
                 </p>
               </div>
               <p className="text-sm leading-7 text-[color:var(--catalog-muted)]">
-                국내 주요 쇼핑몰의 위스키 가격을 매일 갱신해 비교하는 큐레이션 인덱스. 합리적인 시세 선택을 돕습니다.
+                국내 주요 쇼핑몰의 위스키 가격을 매일 갱신해 비교하는 큐레이션 인덱스.
               </p>
             </div>
             <div className="space-y-4">
               <p className="catalog-kicker">Legal</p>
-              <ul className="space-y-2 text-sm text-[color:var(--catalog-ink-soft)]">
+              <ul className="space-y-2 text-sm font-medium text-[color:var(--catalog-ink)]">
                 <li className="transition hover:text-[color:var(--catalog-primary)]">Terms</li>
                 <li className="transition hover:text-[color:var(--catalog-primary)]">Privacy</li>
               </ul>
             </div>
           </div>
           <div className="mt-10 border-t border-[color:var(--catalog-hairline)] pt-6">
-            <p className="catalog-mono text-[10px] font-semibold uppercase tracking-[0.24em] text-[color:var(--catalog-soft)]">
+            <p className="catalog-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--catalog-muted)]">
               © 2026 위스키다모아 · 정보 제공 목적의 가격 데이터
             </p>
           </div>
@@ -324,10 +327,10 @@ export default function CatalogPageClient({
       </section>
 
       <nav className="catalog-glass fixed inset-x-0 bottom-0 z-20 flex items-center justify-around border-t border-[color:var(--catalog-hairline)] px-4 py-3 md:hidden">
-        <span className="catalog-mono text-[10px] font-semibold uppercase tracking-[0.28em] text-[color:var(--catalog-primary)]">Market</span>
-        <span className="catalog-mono text-[10px] font-medium uppercase tracking-[0.28em] text-[color:var(--catalog-muted)]">Search</span>
-        <span className="catalog-mono text-[10px] font-medium uppercase tracking-[0.28em] text-[color:var(--catalog-muted)]">Vault</span>
-        <span className="catalog-mono text-[10px] font-medium uppercase tracking-[0.28em] text-[color:var(--catalog-muted)]">Profile</span>
+        <span className="text-[11px] font-bold text-[color:var(--catalog-primary)]">Market</span>
+        <span className="text-[11px] font-medium text-[color:var(--catalog-muted)]">Search</span>
+        <span className="text-[11px] font-medium text-[color:var(--catalog-muted)]">Vault</span>
+        <span className="text-[11px] font-medium text-[color:var(--catalog-muted)]">Profile</span>
       </nav>
     </main>
   );

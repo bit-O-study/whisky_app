@@ -1,41 +1,42 @@
 @import "tailwindcss";
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* Surfaces — near-black with warm undertone (whisky cellar) */
-  --catalog-bg-solid: #0e0c09;
-  --catalog-bg-secondary: #16130e;
-  --catalog-bg-strong: #1f1b14;
-  --catalog-surface: #16130e;
-  --catalog-surface-soft: rgba(22, 19, 14, 0.72);
-  --catalog-surface-strong: #1c1812;
-  --catalog-surface-elevated: #211c14;
+  /* Surfaces — warm bright whites */
+  --catalog-bg-solid: #fbfaf7;
+  --catalog-bg-secondary: #f4f1ea;
+  --catalog-bg-strong: #ebe6da;
+  --catalog-surface: #ffffff;
+  --catalog-surface-soft: rgba(255, 255, 255, 0.85);
+  --catalog-surface-strong: #ffffff;
+  --catalog-surface-elevated: #ffffff;
 
-  /* Text — antique cream */
-  --catalog-ink: #f4efe6;
-  --catalog-ink-soft: #d6cdbb;
-  --catalog-muted: #9a8d75;
-  --catalog-soft: #6b6253;
-  --catalog-mute: #4a4337;
+  /* Text — high contrast warm near-black */
+  --catalog-ink: #14110d;
+  --catalog-ink-soft: #2a2620;
+  --catalog-muted: #6b6258;
+  --catalog-soft: #9c9388;
+  --catalog-mute: #c4bcaf;
 
   /* Lines */
-  --catalog-outline: rgba(200, 161, 88, 0.18);
-  --catalog-outline-strong: rgba(200, 161, 88, 0.36);
-  --catalog-hairline: rgba(244, 239, 230, 0.06);
+  --catalog-outline: rgba(20, 17, 13, 0.08);
+  --catalog-outline-strong: rgba(20, 17, 13, 0.18);
+  --catalog-hairline: rgba(20, 17, 13, 0.06);
 
-  /* Accents — antique gold + deep ember */
-  --catalog-primary: #c8a158;
-  --catalog-primary-strong: #d9b76a;
-  --catalog-primary-soft: rgba(200, 161, 88, 0.12);
-  --catalog-accent: #b54a2a;
-  --catalog-accent-strong: #d2603c;
+  /* Accents — vibrant warm terracotta + deep ink contrast */
+  --catalog-primary: #e25822;
+  --catalog-primary-strong: #c84411;
+  --catalog-primary-soft: rgba(226, 88, 34, 0.1);
+  --catalog-primary-tint: rgba(226, 88, 34, 0.04);
+  --catalog-accent: #1a1814;
+  --catalog-accent-strong: #000000;
 
-  /* Shadows — for dark mode, use inset glows + outer halos */
-  --catalog-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --catalog-shadow-md: 0 12px 32px rgba(0, 0, 0, 0.5);
-  --catalog-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.6);
-  --catalog-glow: 0 0 0 1px rgba(200, 161, 88, 0.32), 0 18px 48px rgba(200, 161, 88, 0.12);
+  /* Shadows — soft, modern */
+  --catalog-shadow-sm: 0 1px 2px rgba(20, 17, 13, 0.04), 0 1px 1px rgba(20, 17, 13, 0.03);
+  --catalog-shadow-md: 0 6px 16px rgba(20, 17, 13, 0.06), 0 2px 4px rgba(20, 17, 13, 0.04);
+  --catalog-shadow-lg: 0 18px 40px rgba(20, 17, 13, 0.08), 0 6px 12px rgba(20, 17, 13, 0.05);
+  --catalog-shadow-pop: 0 0 0 4px var(--catalog-primary-soft);
 
   /* Typography */
   --catalog-display-font: var(--font-newsreader), var(--font-noto-serif-kr), "Iowan Old Style", Georgia, serif;
@@ -56,10 +57,6 @@ body {
   margin: 0;
   color: var(--catalog-ink);
   background-color: var(--catalog-bg-solid);
-  background-image:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(200, 161, 88, 0.08), transparent 70%),
-    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(181, 74, 42, 0.05), transparent 70%);
-  background-attachment: fixed;
   font-family: var(--catalog-body-font);
   font-feature-settings: "ss01", "cv11";
   letter-spacing: -0.005em;
@@ -70,63 +67,59 @@ body {
 }
 
 ::selection {
-  background: rgba(200, 161, 88, 0.36);
-  color: var(--catalog-ink);
+  background: var(--catalog-primary);
+  color: #ffffff;
 }
 
-/* Scrollbar — subtle gold */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--catalog-bg-solid);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(200, 161, 88, 0.18);
+  background: rgba(20, 17, 13, 0.16);
   border-radius: 999px;
-  border: 2px solid var(--catalog-bg-solid);
+  border: 3px solid var(--catalog-bg-solid);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(200, 161, 88, 0.32);
+  background: rgba(20, 17, 13, 0.32);
 }
 
 .catalog-shell {
   position: relative;
   isolation: isolate;
 }
+.catalog-shell > * { position: relative; z-index: 1; }
 
-.catalog-shell > * {
-  position: relative;
-  z-index: 1;
-}
-
-.catalog-editorial {
-  font-family: var(--catalog-display-font);
-}
+.catalog-editorial { font-family: var(--catalog-display-font); }
 
 .catalog-mono {
   font-family: ui-monospace, "SF Mono", "JetBrains Mono", monospace;
   font-feature-settings: "tnum", "ss01";
+  letter-spacing: 0;
 }
 
 .catalog-kicker {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: ui-monospace, "SF Mono", monospace;
   font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--catalog-primary);
 }
 
-.catalog-muted {
-  color: var(--catalog-muted);
-}
+.catalog-muted { color: var(--catalog-muted); }
 
 .catalog-glass {
-  background: rgba(14, 12, 9, 0.78);
-  backdrop-filter: saturate(160%) blur(18px);
-  -webkit-backdrop-filter: saturate(160%) blur(18px);
+  background: rgba(251, 250, 247, 0.78);
+  backdrop-filter: saturate(160%) blur(20px);
+  -webkit-backdrop-filter: saturate(160%) blur(20px);
+  border-bottom: 1px solid var(--catalog-hairline);
 }
 
 .catalog-panel {
@@ -135,81 +128,110 @@ body {
   box-shadow: var(--catalog-shadow-sm);
 }
 
+/* Pill chip — modern, large hit area */
 .catalog-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
   border-radius: 999px;
-  padding: 0.28rem 0.72rem;
-  font-size: 0.65rem;
+  padding: 0.32rem 0.85rem;
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--catalog-ink);
-  background: var(--catalog-surface-elevated);
+  background: var(--catalog-bg-secondary);
   border: 1px solid var(--catalog-outline);
 }
-
 .catalog-chip-warm {
-  background: linear-gradient(135deg, var(--catalog-primary), var(--catalog-primary-strong));
-  color: var(--catalog-bg-solid);
+  background: var(--catalog-primary);
+  color: #ffffff;
   border-color: transparent;
 }
-
-.catalog-chip-ember {
-  background: var(--catalog-accent);
-  color: var(--catalog-ink);
+.catalog-chip-ink {
+  background: var(--catalog-ink);
+  color: #ffffff;
+  border-color: transparent;
+}
+.catalog-chip-soft {
+  background: var(--catalog-primary-soft);
+  color: var(--catalog-primary-strong);
   border-color: transparent;
 }
 
 .catalog-rule {
   height: 1px;
   border: 0;
-  background: linear-gradient(90deg, transparent, var(--catalog-outline-strong), transparent);
+  background: var(--catalog-hairline);
 }
 
-.catalog-details > summary {
-  list-style: none;
-}
+.catalog-details > summary { list-style: none; }
+.catalog-details > summary::-webkit-details-marker { display: none; }
 
-.catalog-details > summary::-webkit-details-marker {
-  display: none;
+/* Modern button */
+.catalog-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  letter-spacing: -0.005em;
+  transition: transform .15s, background-color .2s, color .2s;
 }
+.catalog-btn:active { transform: translateY(1px); }
+.catalog-btn-primary {
+  background: var(--catalog-ink);
+  color: #ffffff;
+}
+.catalog-btn-primary:hover { background: #000000; }
+.catalog-btn-pop {
+  background: var(--catalog-primary);
+  color: #ffffff;
+}
+.catalog-btn-pop:hover { background: var(--catalog-primary-strong); }
 
-/* Underline for inline links — refined gold */
-.catalog-link {
-  color: var(--catalog-primary);
-  text-decoration: underline;
-  text-decoration-color: var(--catalog-outline);
-  text-underline-offset: 4px;
-  text-decoration-thickness: 1px;
-  transition: color .2s, text-decoration-color .2s;
-}
-.catalog-link:hover {
-  color: var(--catalog-primary-strong);
-  text-decoration-color: var(--catalog-primary);
-}
-
-/* Hover lift utility */
+/* Hover lift */
 .catalog-lift {
   transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s, border-color .35s;
 }
 .catalog-lift:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   box-shadow: var(--catalog-shadow-lg);
+  border-color: var(--catalog-outline-strong);
 }
 
-/* Whisky bottle image well — warm spotlight */
+/* Bottle image well — soft, bright */
 .catalog-bottle-well {
   position: relative;
   background:
-    radial-gradient(ellipse 70% 80% at 50% 60%, rgba(200, 161, 88, 0.12), transparent 60%),
-    linear-gradient(180deg, #1a1610 0%, #0e0c09 100%);
+    radial-gradient(ellipse 60% 70% at 50% 55%, rgba(226, 88, 34, 0.06), transparent 70%),
+    linear-gradient(180deg, #ffffff 0%, #f8f5ee 100%);
 }
-.catalog-bottle-well::after {
+
+/* Underline link */
+.catalog-link {
+  color: var(--catalog-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--catalog-outline-strong);
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-color .2s;
+}
+.catalog-link:hover { text-decoration-color: var(--catalog-primary); }
+
+/* Subtle ambient glow under cards (modern bento) */
+.catalog-bento {
+  position: relative;
+}
+.catalog-bento::before {
   content: "";
   position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 60% 30% at 50% 92%, rgba(0, 0, 0, 0.5), transparent 70%);
+  inset: 0 0 -20px 0;
+  background: radial-gradient(ellipse 60% 30% at 50% 100%, rgba(20, 17, 13, 0.04), transparent 70%);
+  z-index: -1;
   pointer-events: none;
 }

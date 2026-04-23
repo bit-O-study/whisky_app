@@ -74,16 +74,16 @@ export default function LiquorGrid({
 
   if (error && liquors.length === 0) {
     return (
-      <div className="catalog-panel rounded-[2rem] px-6 py-16 text-center sm:px-10">
+      <div className="catalog-panel rounded-3xl px-6 py-16 text-center sm:px-10">
         <span className="catalog-kicker">Catalog Error</span>
-        <h2 className="catalog-editorial mt-4 text-4xl font-medium italic leading-tight tracking-[-0.02em] text-[color:var(--catalog-ink)]">
+        <h2 className="mt-4 text-3xl font-bold leading-tight tracking-[-0.02em] text-[color:var(--catalog-ink)] md:text-4xl">
           데이터를 불러오지 못했습니다
         </h2>
         <p className="mt-4 text-base leading-7 text-[color:var(--catalog-muted)]">{error}</p>
         <button
           type="button"
           onClick={onRetry}
-          className="mt-6 rounded-full bg-[color:var(--catalog-primary)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[color:var(--catalog-primary-strong)]"
+          className="catalog-btn catalog-btn-pop mt-6"
         >
           다시 시도
         </button>
@@ -93,30 +93,27 @@ export default function LiquorGrid({
 
   if (liquors.length === 0) {
     return (
-      <div className="catalog-panel flex flex-col items-center justify-center rounded-[2rem] px-6 py-16 text-center sm:px-10">
-        <svg className="mb-5 h-12 w-12 text-[color:var(--catalog-soft)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
+      <div className="catalog-panel flex flex-col items-center justify-center rounded-3xl px-6 py-16 text-center sm:px-10">
+        <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-[color:var(--catalog-bg-secondary)]">
+          <svg className="h-6 w-6 text-[color:var(--catalog-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
         <span className="catalog-kicker">No Matching Labels</span>
         {searchQuery ? (
           <>
-            <p className="catalog-editorial mt-4 text-3xl font-medium italic leading-tight tracking-[-0.02em] text-[color:var(--catalog-ink)] md:text-4xl">
-              &quot;{searchQuery}&quot;에 대한 검색 결과가 없습니다
+            <p className="mt-4 text-3xl font-bold leading-tight tracking-[-0.02em] text-[color:var(--catalog-ink)] md:text-4xl">
+              &quot;{searchQuery}&quot; 결과가 없습니다
             </p>
-            <p className="mt-4 text-sm leading-6 text-[color:var(--catalog-muted)]">다른 검색어로 시도해보세요</p>
+            <p className="mt-4 text-base leading-7 text-[color:var(--catalog-muted)]">다른 검색어를 시도해보세요</p>
           </>
         ) : (
           <>
-            <p className="catalog-editorial mt-4 text-3xl font-medium italic leading-tight tracking-[-0.02em] text-[color:var(--catalog-ink)] md:text-4xl">
-              아직 표시할 주류 데이터가 없습니다
+            <p className="mt-4 text-3xl font-bold leading-tight tracking-[-0.02em] text-[color:var(--catalog-ink)] md:text-4xl">
+              표시할 데이터가 없습니다
             </p>
-            <p className="mt-4 text-sm leading-6 text-[color:var(--catalog-muted)]">
-              잠시 후 다시 시도하거나 다른 환경에서 재확인해주세요
+            <p className="mt-4 text-base leading-7 text-[color:var(--catalog-muted)]">
+              잠시 후 다시 시도해주세요
             </p>
           </>
         )}
@@ -127,15 +124,15 @@ export default function LiquorGrid({
   return (
     <>
       {error && liquors.length > 0 && (
-        <div className="catalog-panel mb-5 flex flex-col gap-3 rounded-2xl px-4 py-4 text-sm text-[color:var(--catalog-ink)] sm:flex-row sm:items-center sm:justify-between">
+        <div className="catalog-panel mb-5 flex flex-col gap-3 rounded-2xl px-5 py-4 text-sm text-[color:var(--catalog-ink)] sm:flex-row sm:items-center sm:justify-between">
           <div>
             <span className="catalog-kicker">Partial Load Warning</span>
-            <p className="mt-2">{error}</p>
+            <p className="mt-1">{error}</p>
           </div>
           <button
             type="button"
             onClick={onRetry}
-            className="shrink-0 rounded-full bg-[color:var(--catalog-primary)] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[color:var(--catalog-primary-strong)]"
+            className="shrink-0 rounded-full bg-[color:var(--catalog-ink)] px-4 py-2 text-xs font-semibold text-white transition hover:bg-black"
           >
             다시 시도
           </button>
