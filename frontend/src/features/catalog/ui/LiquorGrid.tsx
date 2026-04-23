@@ -21,7 +21,7 @@ interface LiquorCardListProps {
 
 const LiquorCardList = memo(function LiquorCardList({ liquors }: LiquorCardListProps) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {liquors.map((liquor, index) => (
         <LiquorCard
           key={`${liquor.id}-${liquor.product_code || liquor.name}`}
@@ -45,23 +45,23 @@ export default function LiquorGrid({
 }: LiquorGridProps) {
   if (loading) {
     return (
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {LOADING_PLACEHOLDERS.map((placeholder) => (
           <article
             key={placeholder}
-            className="overflow-hidden rounded-2xl bg-[color:var(--catalog-surface)] p-4 shadow-[var(--catalog-shadow-sm)] ring-1 ring-[color:var(--catalog-outline)]"
+            className="overflow-hidden rounded-2xl border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)]"
           >
-            <div className="aspect-square animate-pulse rounded-xl bg-[color:var(--catalog-bg-secondary)]" />
-            <div className="space-y-3 px-1 pb-1 pt-5">
-              <div className="h-3 w-28 animate-pulse rounded-full bg-[color:var(--catalog-bg-strong)]" />
+            <div className="aspect-[4/5] animate-pulse bg-[color:var(--catalog-bg-strong)]" />
+            <div className="space-y-3 p-5">
+              <div className="h-2.5 w-32 animate-pulse rounded-full bg-[color:var(--catalog-bg-strong)]" />
               <div className="h-6 w-5/6 animate-pulse rounded-full bg-[color:var(--catalog-bg-secondary)]" />
               <div className="mt-4 flex items-end justify-between border-t border-[color:var(--catalog-hairline)] pt-4">
                 <div className="space-y-2">
-                  <div className="h-2.5 w-10 animate-pulse rounded-full bg-[color:var(--catalog-primary-soft)]" />
-                  <div className="h-6 w-28 animate-pulse rounded-full bg-[color:var(--catalog-bg-strong)]" />
+                  <div className="h-2.5 w-12 animate-pulse rounded-full bg-[color:var(--catalog-primary-soft)]" />
+                  <div className="h-5 w-24 animate-pulse rounded-full bg-[color:var(--catalog-bg-strong)]" />
                 </div>
                 <div className="space-y-2 text-right">
-                  <div className="ml-auto h-2.5 w-12 animate-pulse rounded-full bg-[color:var(--catalog-bg-strong)]" />
+                  <div className="ml-auto h-2.5 w-14 animate-pulse rounded-full bg-[color:var(--catalog-bg-strong)]" />
                   <div className="ml-auto h-4 w-6 animate-pulse rounded-full bg-[color:var(--catalog-bg-secondary)]" />
                 </div>
               </div>

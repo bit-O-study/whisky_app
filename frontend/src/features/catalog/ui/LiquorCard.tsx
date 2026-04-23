@@ -17,30 +17,15 @@ function formatMetaValue(value: string, fallback: string) {
 
 function getCardSignal(liquor: CatalogCardItem) {
   if (liquor.vendors.length >= 10) {
-    return {
-      label: "Tracked",
-      className: "bg-[color:var(--catalog-primary)] text-[#fbf6ee]",
-    };
+    return { label: "Tracked", className: "catalog-chip-warm" };
   }
-
   if (liquor.lowest_price >= 150000) {
-    return {
-      label: "Rare",
-      className: "bg-[color:var(--catalog-accent)] text-[color:var(--catalog-ink)]",
-    };
+    return { label: "Rare", className: "catalog-chip-ember" };
   }
-
   if (liquor.alcohol_percent >= 46) {
-    return {
-      label: "Bold",
-      className: "bg-[color:var(--catalog-ink)] text-[#fbf6ee]",
-    };
+    return { label: "Cask Strength", className: "catalog-chip" };
   }
-
-  return {
-    label: "Listed",
-    className: "bg-[color:var(--catalog-bg-strong)] text-[color:var(--catalog-muted)]",
-  };
+  return null;
 }
 
 interface LiquorCardProps {
@@ -52,149 +37,158 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
   const sortedVendors = liquor.vendors.slice().sort((a, b) => a.current_price - b.current_price);
   const bestVendor = sortedVendors[0];
   const signal = getCardSignal(liquor);
-  const metaLine = [liquor.brand, formatMetaValue(liquor.country, "Archive")]
+  const metaLine = [liquor.brand, formatMetaValue(liquor.country, "Unknown")]
     .filter(Boolean)
     .join(" · ");
 
   return (
-      <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-[color:var(--catalog-surface)] shadow-[var(--catalog-shadow-sm)] ring-1 ring-[color:var(--catalog-outline)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--catalog-shadow-lg)] hover:ring-[color:var(--catalog-outline-strong)]">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] catalog-lift hover:border-[color:var(--catalog-outline-strong)]">
+      {/* 이미지 영역 — spotlight bottle well */}
+      <Link
+        href={`/liquor/${liquor.id}`}
+        className="catalog-bottle-well relative isolate z-10 block aspect-[4/5] overflow-hidden border-b border-[color:var(--catalog-hairline)]"
+      >
+        <Image
+          src={
+            liquor.image_url ||
+            "https://jeqvxzkvumkiraclauvo.supabase.co/storage/v1/object/public/whisky-images/default_whisky.webp"
+          }
+          alt={liquor.name}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1536px) 33vw, 25vw"
+          className="object-contain p-8 transition-transform duration-700 group-hover:scale-[1.04]"
+          priority={prioritizeImage}
+        />
 
-        {/* 이미지 영역 */}
-        <Link
-            href={`/liquor/${liquor.id}`}
-            className="block relative isolate z-10 aspect-square overflow-hidden border-b border-[color:var(--catalog-hairline)] bg-[color:var(--catalog-surface)] cursor-pointer"
-        >
-          <Image
-              src={liquor.image_url || "https://jeqvxzkvumkiraclauvo.supabase.co/storage/v1/object/public/whisky-images/default_whisky.webp"}
-              alt={liquor.name}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
-              className="h-full w-full object-contain p-6 transition-transform duration-500 group-hover:scale-[1.03]"
-              priority={prioritizeImage}
-          />
-          <div className="absolute left-3 top-3">
-            <span
-                className={`rounded-full px-2 py-[3px] text-[9px] font-bold uppercase tracking-[0.2em] ${signal.className}`}
-            >
-              {signal.label}
-            </span>
+        {signal && (
+          <div className="absolute left-4 top-4 z-10">
+            <span className={`${signal.className}`}>{signal.label}</span>
           </div>
+        )}
+
+        {/* alcohol badge */}
+        <div className="absolute right-4 top-4 z-10 catalog-mono text-[10px] font-semibold tracking-wider text-[color:var(--catalog-muted)]">
+          {liquor.alcohol_percent > 0 ? `${liquor.alcohol_percent}%` : "—"}
+        </div>
+      </Link>
+
+      <div className="flex flex-1 flex-col px-5 pb-5 pt-5">
+        <Link
+          href={`/liquor/${liquor.id}`}
+          className="block transition-opacity duration-300 group-hover:opacity-90"
+        >
+          <p className="catalog-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--catalog-muted)]">
+            {metaLine}
+          </p>
+
+          <h3 className="mt-2 catalog-editorial text-[1.3rem] font-medium italic leading-[1.18] tracking-[-0.012em] text-[color:var(--catalog-ink)]">
+            {liquor.name}
+          </h3>
         </Link>
 
-        <div className="flex flex-1 flex-col p-5">
-
-          {/* 타이틀 영역 */}
-          <Link
-              href={`/liquor/${liquor.id}`}
-              className="block transition-opacity duration-300 group-hover:opacity-80 cursor-pointer"
-          >
-            <div className="mb-2 flex items-start justify-between gap-3">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[color:var(--catalog-muted)]">
-                {metaLine}
+        {/* 가격 푸터 */}
+        <div className="mt-auto pt-5">
+          <div className="flex items-end justify-between gap-3 border-t border-[color:var(--catalog-hairline)] pt-4">
+            <div>
+              <p className="catalog-mono text-[10px] font-semibold uppercase tracking-[0.24em] text-[color:var(--catalog-primary)]">
+                Lowest
               </p>
-              <span className="text-[10px] font-bold tracking-[0.08em] text-[color:var(--catalog-muted)]">
-                {liquor.alcohol_percent > 0 ? `${liquor.alcohol_percent}%` : "--"}
-              </span>
+              <p className="mt-1.5 catalog-mono text-[1.25rem] font-bold leading-none text-[color:var(--catalog-ink)]">
+                {liquor.lowest_price > 0 ? formatPrice(liquor.lowest_price) : "—"}
+              </p>
             </div>
-
-            <h3 className="catalog-editorial text-[1.2rem] font-medium italic leading-snug tracking-[-0.01em] text-[color:var(--catalog-ink)]">
-              {liquor.name}
-            </h3>
-          </Link>
-
-          {/* 가격 및 판매처 */}
-          <div className="mt-auto pt-4">
-            <div className="flex items-end justify-between gap-3 border-t border-[color:var(--catalog-hairline)] pt-4">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[color:var(--catalog-primary)]">
-                  From
-                </p>
-                <p className="catalog-editorial mt-1.5 text-[1.4rem] font-medium italic leading-none text-[color:var(--catalog-primary)]">
-                  {liquor.lowest_price > 0 ? formatPrice(liquor.lowest_price) : "가격 확인 중"}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[color:var(--catalog-muted)]">
-                  Vendors
-                </p>
-                <p className="mt-1.5 text-[0.95rem] font-extrabold leading-none text-[color:var(--catalog-ink)]">
-                  {sortedVendors.length}
-                </p>
-              </div>
+            <div className="text-right">
+              <p className="catalog-mono text-[10px] font-semibold uppercase tracking-[0.24em] text-[color:var(--catalog-muted)]">
+                Vendors
+              </p>
+              <p className="mt-1.5 catalog-mono text-[1.05rem] font-bold leading-none text-[color:var(--catalog-ink-soft)]">
+                {sortedVendors.length}
+              </p>
             </div>
+          </div>
 
-            <details className="catalog-details mt-3 md:hidden">
-              <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-[0.2em] text-[color:rgba(82,68,57,0.68)]">
-                판매처
-              </summary>
-              <ul className="mt-3 space-y-2">
-                {sortedVendors.map((vendor) => (
-                    <li key={vendor.source}>
-                      <a
-                          href={vendor.product_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-between gap-3 rounded-lg bg-[color:var(--catalog-bg-secondary)] px-3 py-2 text-sm transition hover:bg-[color:var(--catalog-bg-strong)]"
-                      >
-                        <span className="font-semibold text-[color:var(--catalog-ink)]">{vendor.source}</span>
-                        <span className="flex items-center gap-2 text-right">
+          {/* 모바일: 판매처 펼치기 */}
+          <details className="catalog-details mt-3 md:hidden">
+            <summary className="cursor-pointer catalog-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--catalog-soft)] transition hover:text-[color:var(--catalog-primary)]">
+              판매처 보기 →
+            </summary>
+            <ul className="mt-3 space-y-1.5">
+              {sortedVendors.map((vendor) => (
+                <li key={vendor.source}>
+                  <a
+                    href={vendor.product_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between gap-3 rounded-lg bg-[color:var(--catalog-bg-strong)] px-3 py-2 text-sm transition hover:bg-[color:var(--catalog-surface-elevated)]"
+                  >
+                    <span className="catalog-mono text-xs font-semibold tracking-wide text-[color:var(--catalog-ink-soft)]">
+                      {vendor.source}
+                    </span>
+                    <span className="flex items-center gap-2 text-right">
                       {vendor.original_price > vendor.current_price && (
-                          <span className="text-xs text-[color:var(--catalog-soft)] line-through">
+                        <span className="catalog-mono text-xs text-[color:var(--catalog-soft)] line-through">
                           {formatPrice(vendor.original_price)}
                         </span>
                       )}
-                          <span
-                              className={`font-semibold ${
-                                  bestVendor?.source === vendor.source
-                                      ? "text-[color:var(--catalog-primary)]"
-                                      : "text-[color:var(--catalog-ink)]"
-                              }`}
-                          >
-                        {vendor.current_price > 0 ? formatPrice(vendor.current_price) : "가격 확인 중"}
+                      <span
+                        className={`catalog-mono text-sm font-bold ${
+                          bestVendor?.source === vendor.source
+                            ? "text-[color:var(--catalog-primary)]"
+                            : "text-[color:var(--catalog-ink)]"
+                        }`}
+                      >
+                        {vendor.current_price > 0 ? formatPrice(vendor.current_price) : "—"}
                       </span>
                     </span>
-                      </a>
-                    </li>
-                ))}
-              </ul>
-            </details>
-          </div>
-        </div>
-
-        {/* 데스크톱 호버 시 나타나는 판매처 목록 */}
-        <div className="pointer-events-none absolute inset-0 z-20 hidden flex-col justify-end bg-[linear-gradient(180deg,rgba(24,22,18,0)_0%,rgba(24,22,18,0.78)_85%)] p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100 md:flex">
-          <div className="pointer-events-auto rounded-2xl border border-white/10 bg-[rgba(20,17,13,0.78)] p-4 backdrop-blur-md">
-            <h4 className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-white/80">
-              판매처
-            </h4>
-            <ul className="space-y-1.5">
-              {sortedVendors.map((vendor) => (
-                  <li key={vendor.source}>
-                    <a
-                        href={vendor.product_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-between gap-3 rounded-lg bg-white/5 px-3 py-2 text-sm transition hover:bg-white/10"
-                    >
-                      <span className="font-semibold text-white">{vendor.source}</span>
-                      <span className="flex items-center gap-2 text-right">
-                    {vendor.original_price > vendor.current_price && (
-                        <span className="text-xs text-white/45 line-through">{formatPrice(vendor.original_price)}</span>
-                    )}
-                        <span
-                            className={`font-semibold ${
-                                bestVendor?.source === vendor.source ? "text-[color:var(--catalog-accent)]" : "text-white"
-                            }`}
-                        >
-                      {vendor.current_price > 0 ? formatPrice(vendor.current_price) : "가격 확인 중"}
-                    </span>
-                  </span>
-                    </a>
-                  </li>
+                  </a>
+                </li>
               ))}
             </ul>
-          </div>
+          </details>
         </div>
-      </article>
+      </div>
+
+      {/* 데스크톱 hover 오버레이 — 미세한 골드 글로우 + 벤더 리스트 */}
+      <div className="pointer-events-none absolute inset-0 z-20 hidden flex-col justify-end p-4 opacity-0 transition-opacity duration-400 group-hover:opacity-100 group-focus-within:opacity-100 md:flex">
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(14,12,9,0)_50%,rgba(14,12,9,0.92)_100%)]" />
+        <div className="pointer-events-auto relative rounded-xl border border-[color:var(--catalog-outline-strong)] bg-[rgba(14,12,9,0.78)] p-4 backdrop-blur-md">
+          <h4 className="mb-3 catalog-mono text-[10px] font-semibold uppercase tracking-[0.24em] text-[color:var(--catalog-primary)]">
+            판매처
+          </h4>
+          <ul className="space-y-1.5">
+            {sortedVendors.map((vendor) => (
+              <li key={vendor.source}>
+                <a
+                  href={vendor.product_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between gap-3 rounded-lg border border-transparent bg-white/[0.04] px-3 py-2 text-sm transition hover:border-[color:var(--catalog-outline-strong)] hover:bg-white/[0.08]"
+                >
+                  <span className="catalog-mono text-xs font-semibold tracking-wide text-[color:var(--catalog-ink-soft)]">
+                    {vendor.source}
+                  </span>
+                  <span className="flex items-center gap-2 text-right">
+                    {vendor.original_price > vendor.current_price && (
+                      <span className="catalog-mono text-xs text-[color:var(--catalog-soft)] line-through">
+                        {formatPrice(vendor.original_price)}
+                      </span>
+                    )}
+                    <span
+                      className={`catalog-mono text-sm font-bold ${
+                        bestVendor?.source === vendor.source
+                          ? "text-[color:var(--catalog-primary)]"
+                          : "text-[color:var(--catalog-ink)]"
+                      }`}
+                    >
+                      {vendor.current_price > 0 ? formatPrice(vendor.current_price) : "—"}
+                    </span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </article>
   );
 }
