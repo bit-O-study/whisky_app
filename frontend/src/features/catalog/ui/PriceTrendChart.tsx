@@ -7,6 +7,9 @@ interface Props {
   points: PriceHistoryPoint[];
 }
 
+// 차트는 가장 최근 N개만. 7이 720x220 캔버스에서 점/라벨이 겹치지 않는 최적값.
+const MAX_POINTS = 7;
+
 const W = 720;
 const H = 220;
 const PAD_X = 28;
@@ -26,9 +29,15 @@ function formatShortDate(iso: string) {
 export default function PriceTrendChart({ points }: Props) {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
+  // 그래프엔 가장 최근 N개만 보여줌 (점이 많으면 안 이쁨)
+  const visiblePoints = useMemo(
+    () => (points.length > MAX_POINTS ? points.slice(-MAX_POINTS) : points),
+    [points],
+  );
+
   const stats = useMemo(() => {
-    if (points.length === 0) return null;
-    const values = points.map((p) => p.lowest);
+    if (visiblePoints.length === 0) return null;
+    const values = visiblePoints.map((p) => p.lowest);
     const min = Math.min(...values);
     const max = Math.max(...values);
     // give some headroom so the line doesn't kiss the edges
@@ -36,14 +45,14 @@ export default function PriceTrendChart({ points }: Props) {
     const yMin = range === 0 ? min - min * 0.05 : min - range * 0.15;
     const yMax = range === 0 ? max + max * 0.05 : max + range * 0.15;
     return { min, max, yMin, yMax };
-  }, [points]);
+  }, [visiblePoints]);
 
   // 추이 그래프는 서로 다른 날짜가 2개 이상일 때만 의미가 있음.
-  if (points.length < 2 || !stats) {
+  if (visiblePoints.length < 2 || !stats) {
     return (
       <div className="flex h-40 items-center justify-center rounded-3xl border border-dashed border-[color:var(--catalog-outline)] bg-[color:var(--catalog-bg-secondary)] px-6 text-center">
         <p className="text-sm text-[color:var(--catalog-muted)]">
-          {points.length === 0
+          {visiblePoints.length === 0
             ? "아직 가격 변동 기록이 없습니다"
             : "가격 추이를 보여주려면 다른 날짜의 기록이 더 필요합니다"}
         </p>
@@ -55,33 +64,33 @@ export default function PriceTrendChart({ points }: Props) {
   const innerH = H - PAD_TOP - PAD_BOTTOM;
 
   const xFor = (i: number) =>
-    points.length === 1 ? W / 2 : PAD_X + (i / (points.length - 1)) * innerW;
+    visiblePoints.length === 1 ? W / 2 : PAD_X + (i / (visiblePoints.length - 1)) * innerW;
   const yFor = (v: number) =>
     PAD_TOP + (1 - (v - stats.yMin) / (stats.yMax - stats.yMin)) * innerH;
 
-  const linePath = points
+  const linePath = visiblePoints
     .map((p, i) => `${i === 0 ? "M" : "L"} ${xFor(i).toFixed(2)} ${yFor(p.lowest).toFixed(2)}`)
     .join(" ");
 
   const areaPath =
-    `${linePath} L ${xFor(points.length - 1).toFixed(2)} ${(H - PAD_BOTTOM).toFixed(2)}` +
+    `${linePath} L ${xFor(visiblePoints.length - 1).toFixed(2)} ${(H - PAD_BOTTOM).toFixed(2)}` +
     ` L ${xFor(0).toFixed(2)} ${(H - PAD_BOTTOM).toFixed(2)} Z`;
 
-  const last = points[points.length - 1];
-  const first = points[0];
+  const last = visiblePoints[visiblePoints.length - 1];
+  const first = visiblePoints[0];
   const delta = last.lowest - first.lowest;
   const deltaPct = first.lowest > 0 ? (delta / first.lowest) * 100 : 0;
   const deltaUp = delta > 0;
   const deltaDown = delta < 0;
 
-  const hoverPoint = hoverIdx != null ? points[hoverIdx] : null;
+  const hoverPoint = hoverIdx != null ? visiblePoints[hoverIdx] : null;
 
   return (
     <div className="rounded-3xl border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] p-6">
       <div className="mb-4 flex items-end justify-between gap-4">
         <div>
           <p className="catalog-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--catalog-primary)]">
-            Lowest Price · {points.length}-day trend
+            Lowest Price · 최근 {visiblePoints.length}회
           </p>
           <p className="mt-2 text-2xl font-bold tracking-tight text-[color:var(--catalog-ink)]">
             {formatPrice(hoverPoint?.lowest ?? last.lowest)}
@@ -90,7 +99,7 @@ export default function PriceTrendChart({ points }: Props) {
             {hoverPoint ? hoverPoint.date : `${first.date} → ${last.date}`}
           </p>
         </div>
-        {points.length > 1 && (
+        {visiblePoints.length > 1 && (
           <div
             className={`rounded-full px-3 py-1.5 catalog-mono text-xs font-bold ${
               deltaUp
@@ -114,13 +123,13 @@ export default function PriceTrendChart({ points }: Props) {
           const rect = (e.currentTarget as SVGSVGElement).getBoundingClientRect();
           const x = ((e.clientX - rect.left) / rect.width) * W;
           const i =
-            points.length === 1
+            visiblePoints.length === 1
               ? 0
               : Math.max(
                   0,
                   Math.min(
-                    points.length - 1,
-                    Math.round(((x - PAD_X) / innerW) * (points.length - 1)),
+                    visiblePoints.length - 1,
+                    Math.round(((x - PAD_X) / innerW) * (visiblePoints.length - 1)),
                   ),
                 );
           setHoverIdx(i);
@@ -181,7 +190,7 @@ export default function PriceTrendChart({ points }: Props) {
           strokeLinejoin="round"
         />
         {/* points */}
-        {points.map((p, i) => (
+        {visiblePoints.map((p, i) => (
           <circle
             key={p.date}
             cx={xFor(i)}
@@ -204,22 +213,20 @@ export default function PriceTrendChart({ points }: Props) {
           />
         )}
 
-        {/* x labels — first / mid / last */}
-        {[0, Math.floor((points.length - 1) / 2), points.length - 1]
-          .filter((idx, i, arr) => arr.indexOf(idx) === i && idx >= 0 && idx < points.length)
-          .map((idx) => (
-            <text
-              key={`xl-${idx}`}
-              x={xFor(idx)}
-              y={H - 10}
-              fontSize="10"
-              fill="var(--catalog-muted)"
-              textAnchor={idx === 0 ? "start" : idx === points.length - 1 ? "end" : "middle"}
-              fontFamily="ui-monospace, monospace"
-            >
-              {formatShortDate(points[idx].date)}
-            </text>
-          ))}
+        {/* x labels — 모든 점에 라벨 (최대 5개라 충분히 깔끔) */}
+        {visiblePoints.map((p, idx) => (
+          <text
+            key={`xl-${idx}`}
+            x={xFor(idx)}
+            y={H - 10}
+            fontSize="10"
+            fill="var(--catalog-muted)"
+            textAnchor={idx === 0 ? "start" : idx === visiblePoints.length - 1 ? "end" : "middle"}
+            fontFamily="ui-monospace, monospace"
+          >
+            {formatShortDate(p.date)}
+          </text>
+        ))}
       </svg>
     </div>
   );
