@@ -303,14 +303,16 @@ export async function fetchLiquorDetailFromServer(id: string): Promise<CatalogCa
   const { data: liquors, error: liquorError } = await supabase
       .from("liquor")
       .select(`
-        id, 
-        normalized_name, 
-        brand, 
-        category, 
-        country, 
-        product_code, 
-        product_name, 
-        image_url, 
+        id,
+        normalized_name,
+        brand,
+        category,
+        country,
+        volume_ml,
+        alcohol_percent,
+        product_code,
+        product_name,
+        image_url,
         updated_at,
         liquor_info!fk_liquor_info (volume_ml, alcohol_percent),
         liquor_url!fk_liquor_url_liquor (source, product_url)
@@ -347,11 +349,11 @@ export async function fetchLiquorDetailFromServer(id: string): Promise<CatalogCa
       product_url: matchedUrl
     };
   });
-console.log(pricesWithUrl)
+
   const liquorRow: any = {
     ...rawLiquor,
-    volume_ml: rawLiquor.liquor_info?.volume_ml,
-    alcohol_percent: rawLiquor.liquor_info?.alcohol_percent,
+    volume_ml: rawLiquor.liquor_info?.volume_ml ?? rawLiquor.volume_ml,
+    alcohol_percent: rawLiquor.liquor_info?.alcohol_percent ?? rawLiquor.alcohol_percent,
   };
 
   // 4. 조립 및 반환
