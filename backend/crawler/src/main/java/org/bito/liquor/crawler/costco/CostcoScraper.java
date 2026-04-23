@@ -55,25 +55,15 @@ public class CostcoScraper {
     private static final int MIN_MATCH_SCORE = 30;
     private static final int MAX_ITEMS_PER_KEYWORD = 12;
 
-    // ⚠️ 추정 selector. 운영 전에 DevTools로 확정 필요.
+    // 실제 Angular Storefront DOM 진단으로 확정한 selector.
+    // 카드: <li class="product-list-item ..."> 또는 <sip-product-list-item>
+    // 링크: <a class="thumb" href="/.../p/{code}">
+    // 영문명: <a class="lister-name-en">
+    // 한글명/가격: 둘 다 <span class="notranslate"> — 텍스트 패턴(원/숫자)으로 구분
     private static final String[] ITEM_SELECTORS = {
-            "[data-product-id]",
-            ".product-tile",
-            ".product",
-            "li.product-item",
-    };
-    private static final String[] NAME_SELECTORS = {
-            ".description",
-            ".product-title",
-            "[class*='title']",
-            "[class*='name']",
-            "h2", "h3"
-    };
-    private static final String[] PRICE_SELECTORS = {
-            "[data-price]",
-            ".price-value",
-            ".product-price",
-            "[class*='price']"
+            "li.product-list-item",
+            "sip-product-list-item",
+            "[class*='product-list-item']",
     };
 
     private static final List<String> KNOWN_BRANDS = List.of(
@@ -187,9 +177,39 @@ public class CostcoScraper {
         return Collections.emptyList();
     }
 
+    private static final Pattern PRICE_PATTERN = Pattern.compile("([0-9][0-9,]*)\\s*원");
+
     private Liquor extractItem(WebElement el) {
         try {
-            String name = findFirstText(el, NAME_SELECTORS);
+            // 카드 안의 모든 .notranslate 텍스트를 모은다 — 가격 패턴(N원)이면 가격, 아니면 한글 상품명.
+            String priceTxt = null;
+            String koreanName = null;
+            for (WebElement n : el.findElements(By.cssSelector("span.notranslate"))) {
+                String t = n.getText();
+                if (t == null || t.isBlank()) continue;
+                Matcher pm = PRICE_PATTERN.matcher(t);
+                if (pm.find()) {
+                    if (priceTxt == null) priceTxt = pm.group(1).replace(",", "");
+                } else if (koreanName == null) {
+                    koreanName = t.trim();
+                }
+            }
+
+            // 영문명 fallback
+            String englishName = null;
+            try {
+                englishName = el.findElement(By.cssSelector("a.lister-name-en")).getText().trim();
+            } catch (org.openqa.selenium.NoSuchElementException ignored) {}
+
+            // 한글 상품명을 우선, 없으면 a.thumb의 title 속성, 없으면 영문명
+            String name = koreanName;
+            if (name == null || name.isBlank()) {
+                try {
+                    String t = el.findElement(By.cssSelector("a.thumb")).getAttribute("title");
+                    if (t != null && !t.isBlank()) name = t.trim();
+                } catch (org.openqa.selenium.NoSuchElementException ignored) {}
+            }
+            if (name == null || name.isBlank()) name = englishName;
             if (name == null || name.isBlank()) return null;
 
             Liquor.LiquorBuilder b = Liquor.builder()
@@ -197,10 +217,9 @@ public class CostcoScraper {
                     .source(SOURCE)
                     .category(detectCategory(name));
 
-            String priceTxt = findFirstText(el, PRICE_SELECTORS);
-            if (priceTxt != null && !priceTxt.isBlank()) {
+            if (priceTxt != null) {
                 try {
-                    int price = Integer.parseInt(priceTxt.replaceAll("[^0-9]", ""));
+                    int price = Integer.parseInt(priceTxt);
                     b.currentPrice(price);
                     b.originalPrice(price);
                 } catch (NumberFormatException e) {
@@ -211,13 +230,17 @@ public class CostcoScraper {
             }
 
             try {
-                WebElement link = el.findElement(By.tagName("a"));
+                WebElement link = el.findElement(By.cssSelector("a.thumb"));
                 String href = link.getAttribute("href");
+                if (href == null || href.isEmpty()) {
+                    // 폴백: 첫 번째 a 태그
+                    href = el.findElement(By.tagName("a")).getAttribute("href");
+                }
                 if (href == null || href.isEmpty()) return null;
                 b.productUrl(href);
                 String code = href.contains("/p/")
-                        ? href.split("/p/")[1].split("[/?]")[0]
-                        : "COSTCO_" + Math.abs(name.hashCode());
+                        ? href.split("/p/")[1].split("[/?#]")[0]
+                        : String.valueOf(Math.abs(name.hashCode()));
                 b.productCode("COSTCO_" + code);
             } catch (org.openqa.selenium.NoSuchElementException e) {
                 return null;
@@ -235,16 +258,6 @@ public class CostcoScraper {
             log.debug("Costco item 파싱 실패: {}", e.getMessage());
             return null;
         }
-    }
-
-    private String findFirstText(WebElement el, String[] selectors) {
-        for (String sel : selectors) {
-            try {
-                String t = el.findElement(By.cssSelector(sel)).getText();
-                if (t != null && !t.isBlank()) return t.trim();
-            } catch (org.openqa.selenium.NoSuchElementException ignored) {}
-        }
-        return null;
     }
 
     private String detectCategory(String name) {
