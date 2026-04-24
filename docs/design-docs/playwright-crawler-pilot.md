@@ -12,7 +12,7 @@
 
 ## 현재 범위
 - 런타임 위치: `backend/crawler-playwright`
-- 초기 소스: Emart
+- 현재 파일럿 소스: Emart, Lotteon
 - 실행 형태: HTTP 서버가 아닌 CLI 배치
 - 출력 형태: 결과 JSON + 선택적 trace/debug HTML 아티팩트
 
@@ -28,6 +28,8 @@
   브라우저, 키워드 해석, 파일 출력 유틸
 - `src/sources/emart.ts`
   Emart 검색 수집, `__NEXT_DATA__` 파싱, 점수 계산
+- `src/sources/lotteon.ts`
+  Lotteon script 파싱 우선 + DOM fallback 검색 수집
 
 ## 운영 원칙
 - 쇼핑몰별 차이는 source 모듈에 가둔다.

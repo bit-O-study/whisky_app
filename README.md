@@ -119,6 +119,7 @@ Playwright 파일럿 크롤러 (`backend/crawler-playwright/`):
 npm install
 npm run install:browsers
 npm run crawl:emart -- --keyword "산토리 가쿠빈 700ml"
+npm run crawl:lotteon -- --keyword "조니워커 블랙 라벨 700ml"
 ```
 
 프론트엔드 (`frontend/`):
@@ -158,7 +159,7 @@ curl -X POST http://localhost:8081/api/crawl/emart
 ## 주의사항
 
 - Selenium 사용을 위해 로컬 Chrome 설치가 필요합니다.
-- `backend/crawler-playwright`는 Selenium을 대체하지 않는 병행 파일럿 런타임이며, 현재는 Emart dry-run JSON/trace 수집까지만 제공합니다.
+- `backend/crawler-playwright`는 Selenium을 대체하지 않는 병행 파일럿 런타임이며, 현재는 Emart/Lotteon dry-run JSON/trace 수집까지만 제공합니다.
 - 사이트 구조 변경 시 크롤러 파서 수정이 필요합니다.
 - `backend/crawler`는 `spring.jpa.hibernate.ddl-auto=validate`이므로 대상 DB에 스키마가 먼저 있어야 실행됩니다.
 - 기본 이미지는 현재 Supabase Storage 공개 경로 fallback을 유지합니다.
