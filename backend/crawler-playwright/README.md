@@ -5,8 +5,9 @@ Node + Playwright 기반 파일럿 크롤러 런타임입니다.
 ## 현재 범위
 - 기존 `backend/crawler` Selenium 런타임과 병행
 - Emart/Lotteon 검색 결과 dry-run CLI 제공
-- DB write 대신 결과 JSON/trace/debug HTML 아티팩트와 ingest preview 계획 저장
+- Emart/Lotteon 모두 batch preview/ingest 실행 가능
 - preview 결과에는 `confidence`, `reviewNeeded`, `blockReason`, `autoWriteAllowed` 안전장치 판단이 포함됨
+- Emart는 공개 검색 fallback 위험 때문에 신규 `liquor` insert를 자동 허용하지 않고 기존 row reuse/update 중심으로 운영
 
 ## 설치
 ```bash
@@ -27,6 +28,8 @@ npm run install:browsers
 npm run crawl:emart -- --keyword "산토리 가쿠빈 700ml"
 npm run preview:emart -- --keyword "산토리 가쿠빈 700ml"
 npm run ingest:emart -- --keyword "산토리 가쿠빈 700ml"
+npm run preview:emart:batch
+npm run ingest:emart:batch
 npm run crawl:lotteon -- --keyword "조니워커 블랙 라벨 700ml"
 npm run preview:lotteon -- --keyword "조니워커 블랙 라벨 700ml"
 npm run ingest:lotteon -- --keyword "조니워커 블랙 라벨 700ml"

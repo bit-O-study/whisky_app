@@ -43,8 +43,13 @@ export function evaluateSafetyGate(input: SafetyGateInput): SafetyGateResult {
     reasons.push('conflicting_existing_candidates');
   }
 
-  if (input.source.toUpperCase() === 'LOTTEON' && input.ingestPreview.liquorAction === 'insert') {
+  const source = input.source.toUpperCase();
+  if (source === 'LOTTEON' && input.ingestPreview.liquorAction === 'insert') {
     reasons.push('lotteon_new_insert_requires_review');
+  }
+
+  if (source === 'EMART' && input.ingestPreview.liquorAction === 'insert') {
+    reasons.push('emart_new_insert_requires_review');
   }
 
   const confidence = score >= HIGH_SCORE_THRESHOLD

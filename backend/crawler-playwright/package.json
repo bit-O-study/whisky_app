@@ -10,10 +10,12 @@
     "install:browsers": "playwright install chromium",
     "crawl:lotteon": "npm run build && node dist/cli/run-lotteon.js",
     "preview:emart": "npm run build && node dist/cli/preview-emart.js",
+    "preview:emart:batch": "npm run build && node dist/cli/batch-preview-emart.js",
     "preview:lotteon": "npm run build && node dist/cli/preview-lotteon.js",
-    "ingest:emart": "npm run build && node dist/cli/ingest-emart.js",
-    "ingest:lotteon": "npm run build && node dist/cli/ingest-lotteon.js",
     "preview:lotteon:batch": "npm run build && node dist/cli/batch-preview-lotteon.js",
+    "ingest:emart": "npm run build && node dist/cli/ingest-emart.js",
+    "ingest:emart:batch": "npm run build && node dist/cli/batch-ingest-emart.js",
+    "ingest:lotteon": "npm run build && node dist/cli/ingest-lotteon.js",
     "ingest:lotteon:batch": "npm run build && node dist/cli/batch-ingest-lotteon.js"
   },
   "dependencies": {

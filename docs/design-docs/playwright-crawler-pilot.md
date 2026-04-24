@@ -47,7 +47,8 @@
 - upsert 대상은 현재 Java crawler write path와 동일하게 `liquor`, `liquor_price`, `liquor_url`이다.
 - 차단된 건은 DB를 변경하지 않고 write artifact에 `blocked=true`, `blockReason`, `details[]`만 남긴다.
 
-## Lotteon Batch Operations
-- `preview:lotteon:batch`, `ingest:lotteon:batch`는 `liquor_info` 전체를 기준으로 keyword를 생성해 일괄 실행한다.
+## Batch Operations
+- `preview:lotteon:batch`, `ingest:lotteon:batch`, `preview:emart:batch`, `ingest:emart:batch`는 `liquor_info` 전체를 기준으로 keyword를 생성해 일괄 실행한다.
 - batch 실행은 raw artifact 외에 `artifacts/summaries/*.json`, `*.md` 요약 리포트를 남긴다.
-- 현재 검증 기준으로 22개 keyword 중 13개가 자동 적재 허용, 9개가 review/차단 대상으로 분류됐다.
+- Lotteon은 현재 검증 기준으로 22개 keyword 중 13개가 자동 적재 허용, 9개가 review/차단 대상으로 분류됐다.
+- Emart는 공개 검색 fallback 위험 때문에 신규 `liquor` insert를 자동 허용하지 않고, 기존 `liquor` reuse/update만 자동 적재 대상으로 둔다. 2026-04-24 batch 검증 기준으로 22개 중 4개가 자동 적재 허용, 18개가 review/차단 대상으로 분류됐다.

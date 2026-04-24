@@ -121,6 +121,8 @@ npm run install:browsers
 npm run crawl:emart -- --keyword "산토리 가쿠빈 700ml"
 npm run preview:emart -- --keyword "산토리 가쿠빈 700ml"
 npm run ingest:emart -- --keyword "산토리 가쿠빈 700ml"
+npm run preview:emart:batch
+npm run ingest:emart:batch
 npm run crawl:lotteon -- --keyword "조니워커 블랙 라벨 700ml"
 npm run preview:lotteon -- --keyword "조니워커 블랙 라벨 700ml"
 npm run ingest:lotteon -- --keyword "조니워커 블랙 라벨 700ml"
@@ -131,7 +133,7 @@ npm run ingest:lotteon:batch
 preview CLI는 서버 전용 Supabase 자격증명이 필요하며,
 `backend/crawler-playwright/.env` → `backend/.env` → `frontend/.env.local` 순서로 자동 탐색합니다.
 preview 결과에는 `confidence`, `reviewNeeded`, `blockReason`, `autoWriteAllowed`가 포함되어 자동 적재 위험도를 먼저 볼 수 있습니다.
-ingest CLI는 같은 safety gate를 통과한 건만 실제 upsert를 수행하고, 차단된 건은 write artifact에 block reason만 남깁니다.
+ingest CLI는 같은 safety gate를 통과한 건만 실제 upsert를 수행하고, 차단된 건은 write artifact에 block reason만 남깁니다. Emart는 신규 master insert를 review 대상으로 차단하고 기존 `liquor` reuse/update 중심으로 운영합니다.
 
 프론트엔드 (`frontend/`):
 
@@ -170,7 +172,7 @@ curl -X POST http://localhost:8081/api/crawl/emart
 ## 주의사항
 
 - Selenium 사용을 위해 로컬 Chrome 설치가 필요합니다.
-- `backend/crawler-playwright`는 Selenium을 대체하지 않는 병행 파일럿 런타임이며, 현재는 Emart/Lotteon dry-run JSON/trace 수집까지만 제공합니다.
+- `backend/crawler-playwright`는 Selenium을 대체하지 않는 병행 런타임이며, 현재는 Emart/Lotteon preview와 safety gate 통과 건의 실제 upsert를 제공합니다.
 - 사이트 구조 변경 시 크롤러 파서 수정이 필요합니다.
 - `backend/crawler`는 `spring.jpa.hibernate.ddl-auto=validate`이므로 대상 DB에 스키마가 먼저 있어야 실행됩니다.
 - 기본 이미지는 현재 Supabase Storage 공개 경로 fallback을 유지합니다.
