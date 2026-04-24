@@ -13,8 +13,15 @@ interface Props {
     liquor: LiquorDetailItem;
 }
 
+function isKnownMetaValue(value: string) {
+    return Boolean(value && value !== "Unknown");
+}
+
 export default function LiquorDetailView({liquor}: Props) {
     const formatPrice = (price: number) => price.toLocaleString("ko-KR") + "원";
+    const headerMeta = [liquor.category, liquor.sub_category, liquor.country]
+        .filter(isKnownMetaValue)
+        .join(" · ");
 
     // 테이스팅 노트 그래프용 데이터
     const profiles = [
@@ -55,9 +62,11 @@ export default function LiquorDetailView({liquor}: Props) {
                     {/* 3. 정보 섹션 */}
                     <section className="flex-1 px-5 pt-8 md:pt-0">
                         <header className="mb-10">
-                            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#A96242]">
-                                {[liquor.category, liquor.sub_category, liquor.country].filter(Boolean).join(" · ")}
-                            </p>
+                            {headerMeta && (
+                                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#A96242]">
+                                    {headerMeta}
+                                </p>
+                            )}
                             <h2 className="catalog-editorial text-4xl font-medium italic leading-tight text-[#1C1C17] md:text-5xl">
                                 {liquor.name}
                             </h2>

@@ -238,7 +238,7 @@ function mapLiquorRowToCatalogItem(row: LiquorRow, vendors: CatalogCardVendor[])
     sub_category: normalizeText(row.liquor_info?.sub_category),
     volume: typeof row.volume_ml === "number" ? row.volume_ml : 700,
     alcohol_percent: typeof row.alcohol_percent === "number" ? row.alcohol_percent : 0,
-    country: normalizeText(row.country, "Unknown"),
+    country: normalizeText(row.country),
     image_url: normalizeText(row.image_url),
     vendors,
     lowest_price: Number.isFinite(lowestPrice) ? lowestPrice : 0,

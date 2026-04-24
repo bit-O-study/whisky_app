@@ -11,8 +11,8 @@ function formatPrice(price: number) {
   return normalized.toLocaleString("ko-KR") + "원";
 }
 
-function formatMetaValue(value: string, fallback: string) {
-  return value && value !== "Unknown" ? value : fallback;
+function isKnownMetaValue(value: string) {
+  return Boolean(value && value !== "Unknown");
 }
 
 function getCardSignal(liquor: CatalogCardItem) {
@@ -52,8 +52,8 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
   const sortedVendors = liquor.vendors.slice().sort((a, b) => a.current_price - b.current_price);
   const bestVendor = sortedVendors[0];
   const signal = getCardSignal(liquor);
-  const metaLine = [liquor.brand, liquor.sub_category || liquor.category, formatMetaValue(liquor.country, "Archive")]
-    .filter(Boolean)
+  const metaLine = [liquor.brand, liquor.sub_category || liquor.category, liquor.country]
+    .filter(isKnownMetaValue)
     .join(" · ");
 
   return (
