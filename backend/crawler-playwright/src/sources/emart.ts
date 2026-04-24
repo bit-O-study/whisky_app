@@ -26,6 +26,8 @@ interface NextDataQuery {
   state?: {
     data?: {
       areaList?: Array<{
+        srchRsvDisCd?: string;
+        unitType?: string;
         dataList?: NextDataItem[];
       }>;
     };
@@ -119,12 +121,17 @@ function extractNextDataCandidates(nextDataSource: string): EmartCandidate[] {
       continue;
     }
 
-    for (const area of areaList) {
+    const exactSearchAreas = areaList.filter((area) =>
+      area?.srchRsvDisCd === '10' && area?.unitType === 'ITEM_UNIT_LIST',
+    );
+    const candidateAreas = exactSearchAreas.length > 0 ? exactSearchAreas : areaList;
+
+    for (const area of candidateAreas) {
       if (!Array.isArray(area.dataList)) {
         continue;
       }
       for (const item of area.dataList) {
-        if (item?.itemId) {
+        if (item?.itemId && item?.itemName) {
           rawItems.push(item);
         }
       }
@@ -220,8 +227,9 @@ function detectCategory(name: string): string {
 }
 
 function detectBrand(name: string): string {
+  const normalizedName = normalizeBrandToken(name);
   for (const brand of KNOWN_BRANDS) {
-    if (name.includes(brand)) {
+    if (normalizedName.includes(normalizeBrandToken(brand))) {
       return brand;
     }
   }
@@ -378,4 +386,8 @@ function simpleHash(value: string): number {
     hash |= 0;
   }
   return Math.abs(hash);
+}
+
+function normalizeBrandToken(value: string): string {
+  return value.replace(/\s+/g, '').toLowerCase();
 }

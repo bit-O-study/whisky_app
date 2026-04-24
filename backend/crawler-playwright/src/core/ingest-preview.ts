@@ -275,6 +275,10 @@ function normalizeClazz(value: string | null | undefined): string {
     .replace(/\s+/g, '')
     .trim();
 
+  if (!normalized || normalized.toLowerCase() === 'none') {
+    return '';
+  }
+
   return normalized
     .replace(/^블랙$/, '블랙라벨')
     .replace(/^골드$/, '골드라벨')

@@ -124,6 +124,8 @@ npm run ingest:emart -- --keyword "산토리 가쿠빈 700ml"
 npm run crawl:lotteon -- --keyword "조니워커 블랙 라벨 700ml"
 npm run preview:lotteon -- --keyword "조니워커 블랙 라벨 700ml"
 npm run ingest:lotteon -- --keyword "조니워커 블랙 라벨 700ml"
+npm run preview:lotteon:batch
+npm run ingest:lotteon:batch
 ```
 
 preview CLI는 서버 전용 Supabase 자격증명이 필요하며,

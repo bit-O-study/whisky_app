@@ -12,7 +12,9 @@
     "preview:emart": "npm run build && node dist/cli/preview-emart.js",
     "preview:lotteon": "npm run build && node dist/cli/preview-lotteon.js",
     "ingest:emart": "npm run build && node dist/cli/ingest-emart.js",
-    "ingest:lotteon": "npm run build && node dist/cli/ingest-lotteon.js"
+    "ingest:lotteon": "npm run build && node dist/cli/ingest-lotteon.js",
+    "preview:lotteon:batch": "npm run build && node dist/cli/batch-preview-lotteon.js",
+    "ingest:lotteon:batch": "npm run build && node dist/cli/batch-ingest-lotteon.js"
   },
   "dependencies": {
     "playwright": "^1.58.2"
