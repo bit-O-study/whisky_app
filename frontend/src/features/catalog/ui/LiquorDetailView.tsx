@@ -1,8 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { CatalogCardItem, CatalogCardVendor } from "../model/catalog";
+
+type LiquorDetailItem = CatalogCardItem & {
+    sweet?: number;
+    smoky?: number;
+    fruity?: number;
+    body?: number;
+};
 
 interface Props {
-    liquor: any; // 추후 CatalogCardItem을 확장한 상세 타입으로 교체
+    liquor: LiquorDetailItem;
 }
 
 export default function LiquorDetailView({liquor}: Props) {
@@ -48,7 +56,7 @@ export default function LiquorDetailView({liquor}: Props) {
                     <section className="flex-1 px-5 pt-8 md:pt-0">
                         <header className="mb-10">
                             <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#A96242]">
-                                {liquor.category} · {liquor.country}
+                                {[liquor.category, liquor.sub_category, liquor.country].filter(Boolean).join(" · ")}
                             </p>
                             <h2 className="catalog-editorial text-4xl font-medium italic leading-tight text-[#1C1C17] md:text-5xl">
                                 {liquor.name}
@@ -58,7 +66,7 @@ export default function LiquorDetailView({liquor}: Props) {
                     className="rounded-full bg-[#1C1C17] px-3 py-1 text-[9px] font-black text-white uppercase tracking-tighter">
                   {liquor.alcohol_percent}% ABV
                 </span>
-                                <span className="text-sm text-gray-400 font-medium">{liquor.volume_ml}ml</span>
+                                <span className="text-sm text-gray-400 font-medium">{liquor.volume}ml</span>
                             </div>
                         </header>
 
@@ -111,7 +119,7 @@ export default function LiquorDetailView({liquor}: Props) {
                             <h3 className="mb-6 border-b border-black/5 pb-4 text-[11px] font-black uppercase tracking-[0.2em] text-gray-800">Vendors
                                 List</h3>
                             <div className="space-y-3">
-                                {liquor.vendors?.map((v: any) => (
+                                {liquor.vendors?.map((v: CatalogCardVendor) => (
                                     <a
                                         key={v.source}
                                         href={v.product_url}
@@ -127,6 +135,11 @@ export default function LiquorDetailView({liquor}: Props) {
                                         </div>
                                         <div className="text-right">
                                             <p className="text-base font-black text-[#1C1C17]">{formatPrice(v.current_price)}</p>
+                                            {v.discount_percent > 0 && (
+                                                <p className="text-[9px] font-bold text-gray-400">
+                                                    {v.discount_percent}% off · {formatPrice(v.original_price)}
+                                                </p>
+                                            )}
                                             <p className="text-[9px] font-bold text-[#A96242]">상세보기 〉</p>
                                         </div>
                                     </a>

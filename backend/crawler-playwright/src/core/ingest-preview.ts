@@ -19,6 +19,7 @@ interface LiquorInfoRow {
   id: number;
   brand: string | null;
   category: string | null;
+  sub_category: string | null;
   alcohol_percent: number | null;
   volume_ml: number | null;
   clazz: string | null;
@@ -65,6 +66,15 @@ export interface IngestPreview {
     originalPrice: number | null;
     productCode: string;
   } | null;
+  matchedLiquorInfo: {
+    id: number;
+    brand: string;
+    category: string;
+    subCategory: string;
+    clazz: string;
+    volumeMl: number | null;
+    alcoholPercent: number | null;
+  } | null;
   matchedLiquorInfoId: number | null;
   matchedLiquorId: number | null;
   liquorAction: 'reuse' | 'insert' | 'skip';
@@ -88,6 +98,7 @@ export async function previewIngest(candidate: PreviewCandidateInput): Promise<I
       source: normalized.source,
       scrapedName: normalized.name,
       normalizedCandidate: buildNormalizedSnapshot(normalized),
+      matchedLiquorInfo: null,
       matchedLiquorInfoId: null,
       matchedLiquorId: null,
       liquorAction: 'skip',
@@ -110,6 +121,7 @@ export async function previewIngest(candidate: PreviewCandidateInput): Promise<I
       source: normalized.source,
       scrapedName: normalized.name,
       normalizedCandidate: buildNormalizedSnapshot(normalized),
+      matchedLiquorInfo: buildLiquorInfoSnapshot(matchedLiquorInfo),
       matchedLiquorInfoId: matchedLiquorInfo.id,
       matchedLiquorId: null,
       liquorAction: 'insert',
@@ -145,6 +157,7 @@ export async function previewIngest(candidate: PreviewCandidateInput): Promise<I
     source: normalized.source,
     scrapedName: normalized.name,
     normalizedCandidate: buildNormalizedSnapshot(normalized),
+    matchedLiquorInfo: buildLiquorInfoSnapshot(matchedLiquorInfo),
     matchedLiquorInfoId: matchedLiquorInfo.id,
     matchedLiquorId: matchedLiquor.id,
     liquorAction: 'reuse',
@@ -171,6 +184,18 @@ function buildNormalizedSnapshot(candidate: NormalizedCandidate) {
     currentPrice: candidate.currentPrice,
     originalPrice: candidate.originalPrice,
     productCode: candidate.productCode,
+  };
+}
+
+function buildLiquorInfoSnapshot(row: LiquorInfoRow) {
+  return {
+    id: row.id,
+    brand: normalizeText(row.brand),
+    category: normalizeText(row.category),
+    subCategory: normalizeText(row.sub_category),
+    clazz: normalizeClazz(row.clazz),
+    volumeMl: row.volume_ml,
+    alcoholPercent: row.alcohol_percent,
   };
 }
 
@@ -207,7 +232,7 @@ async function findLiquorInfo(candidate: NormalizedCandidate): Promise<LiquorInf
   }
 
   const candidates = await fetchSupabaseRows<LiquorInfoRow>('liquor_info', {
-    select: 'id,brand,category,alcohol_percent,volume_ml,clazz',
+    select: 'id,brand,category,sub_category,alcohol_percent,volume_ml,clazz',
     filters: { category: candidate.category, volume_ml: candidate.volumeMl },
     limit: 100,
   });

@@ -12,6 +12,11 @@ interface LiquorRow {
   normalized_name: string | null;
   brand: string | null;
   category: string | null;
+  liquor_info?: {
+    sub_category?: string | null;
+    volume_ml?: number | null;
+    alcohol_percent?: number | null;
+  } | null;
   volume_ml: number | null;
   alcohol_percent: number | null;
   country: string | null;
@@ -20,6 +25,7 @@ interface LiquorRow {
   product_url: string | null;
   image_url: string | null;
   updated_at: string | null;
+  liquor_url?: LiquorUrlRow[] | null;
 }
 
 interface LiquorPriceRow {
@@ -28,6 +34,11 @@ interface LiquorPriceRow {
   current_price: number | null;
   original_price: number | null;
   crawled_at: string | null;
+}
+
+interface LiquorUrlRow {
+  source: string | null;
+  product_url: string | null;
 }
 
 type CatalogSearchMode = "none" | "short" | "trigram";
@@ -133,7 +144,15 @@ function normalizePrice(value: number | null | undefined) {
   return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : 0;
 }
 
-function buildVendorLookup(rows: LiquorPriceRow[], liquorRows: any[]) {
+function calculateDiscountPercent(currentPrice: number, originalPrice: number) {
+  if (currentPrice <= 0 || originalPrice <= currentPrice) {
+    return 0;
+  }
+
+  return Math.round((1 - currentPrice / originalPrice) * 100);
+}
+
+function buildVendorLookup(rows: LiquorPriceRow[], liquorRows: LiquorRow[]) {
   // 1. 기존: liquor_id -> URL 매핑
   // 변경: liquor_id + source -> URL 매핑 (예: "864:LOTTEON" -> "롯데온 URL")
   const urlLookupByLiquorAndSource = new Map<string, string>();
@@ -181,13 +200,19 @@ function buildVendorLookup(rows: LiquorPriceRow[], liquorRows: any[]) {
 
     const source = normalizeText(row.source, "UNKNOWN");
     const searchKey = `${row.liquor_id}:${source.toUpperCase()}`; // URL 맵에서 찾을 키 생성
+    const fallbackSearchKey = `${row.liquor_id}:UNKNOWN`;
+
+    const currentPrice = normalizePrice(row.current_price);
+    const originalPrice = normalizePrice(row.original_price);
 
     vendors.push({
       source: source,
-      current_price: normalizePrice(row.current_price),
-      original_price: normalizePrice(row.original_price),
+      current_price: currentPrice,
+      original_price: originalPrice,
       // 방금 만든 복합 키로 각 벤더의 고유 URL을 찾아 주입!
-      product_url: urlLookupByLiquorAndSource.get(searchKey) ?? "",
+      product_url: urlLookupByLiquorAndSource.get(searchKey) ?? urlLookupByLiquorAndSource.get(fallbackSearchKey) ?? "",
+      discount_percent: calculateDiscountPercent(currentPrice, originalPrice),
+      crawled_at: normalizeText(row.crawled_at),
     });
     vendorLookup.set(row.liquor_id, vendors);
   }
@@ -210,6 +235,7 @@ function mapLiquorRowToCatalogItem(row: LiquorRow, vendors: CatalogCardVendor[])
     name: normalizeText(row.product_name) || normalizeText(row.normalized_name, "Unknown"),
     brand: normalizeText(row.brand, "Unknown"),
     category: normalizeText(row.category, "Unknown"),
+    sub_category: normalizeText(row.liquor_info?.sub_category),
     volume: typeof row.volume_ml === "number" ? row.volume_ml : 700,
     alcohol_percent: typeof row.alcohol_percent === "number" ? row.alcohol_percent : 0,
     country: normalizeText(row.country, "Unknown"),
@@ -227,7 +253,7 @@ export async function fetchCatalogPageFromServerWithClient(
   let query = supabase
       .from("liquor")
       .select(
-          "id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at",
+          "id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at, liquor_info!fk_liquor_info (sub_category), liquor_url!fk_liquor_url_liquor (source, product_url)",
       )
       .order("updated_at", { ascending: false })
       .range(plan.from, plan.to) as AwaitableQuery<LiquorRow>;
@@ -312,50 +338,31 @@ export async function fetchLiquorDetailFromServer(id: string): Promise<CatalogCa
         product_name, 
         image_url, 
         updated_at,
-        liquor_info!fk_liquor_info (volume_ml, alcohol_percent),
+        liquor_info!fk_liquor_info (volume_ml, alcohol_percent, sub_category),
         liquor_url!fk_liquor_url_liquor (source, product_url)
       `)
-      .in("id", [liquorId]);
+      .in("id", [liquorId]) as QueryResponse<LiquorRow>;
 
   if (liquorError || !liquors?.[0]) throw liquorError || new Error("Not Found");
 
-  const rawLiquor = liquors[0] as any;
-
-  const urlMap = new Map<string, string>();
-  if (Array.isArray(rawLiquor.liquor_url)) {
-    rawLiquor.liquor_url.forEach((u: any) => {
-      if (u.source && u.product_url) {
-        const safeKey = String(u.source).trim().toUpperCase();
-        urlMap.set(safeKey, u.product_url);
-      }
-    });
-  }
+  const rawLiquor = liquors[0];
 
   const { data: priceRows, error: priceError } = await supabase
       .from("liquor_price")
       .select("liquor_id, source, current_price, original_price, crawled_at")
       .in("liquor_id", [liquorId])
-      .order("crawled_at", { ascending: false });
+      .order("crawled_at", { ascending: false }) as QueryResponse<LiquorPriceRow>;
 
   if (priceError) throw priceError;
 
-  const pricesWithUrl = (priceRows ?? []).map((p: any) => {
-    const safeSearchKey = String(p.source).trim().toUpperCase();
-    const matchedUrl = urlMap.get(safeSearchKey) || "";
-    return {
-      ...p,
-      product_url: matchedUrl
-    };
-  });
-console.log(pricesWithUrl)
-  const liquorRow: any = {
+  const liquorRow: LiquorRow = {
     ...rawLiquor,
-    volume_ml: rawLiquor.liquor_info?.volume_ml,
-    alcohol_percent: rawLiquor.liquor_info?.alcohol_percent,
+    volume_ml: rawLiquor.liquor_info?.volume_ml ?? null,
+    alcohol_percent: rawLiquor.liquor_info?.alcohol_percent ?? null,
   };
 
   // 4. 조립 및 반환
-  const vendorLookup = buildVendorLookup(pricesWithUrl, [liquorRow]);
+  const vendorLookup = buildVendorLookup(priceRows ?? [], [liquorRow]);
   const mappedItem = mapLiquorRowToCatalogItem(liquorRow, vendorLookup.get(liquorRow.id) ?? []);
 
   return mappedItem;

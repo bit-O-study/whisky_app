@@ -7,6 +7,7 @@ Node + Playwright 기반 파일럿 크롤러 런타임입니다.
 - Emart/Lotteon 검색 결과 dry-run CLI 제공
 - Emart/Lotteon 모두 batch preview/ingest 실행 가능
 - preview 결과에는 `confidence`, `reviewNeeded`, `blockReason`, `autoWriteAllowed` 안전장치 판단이 포함됨
+- 매칭 성공 시 `liquor_info.sub_category` 기반 `Blended`, `Single Malt`, `Bourbon` 같은 세부 분류를 `matchedLiquorInfo`에 포함
 - Emart는 공개 검색 fallback 위험 때문에 신규 `liquor` insert를 자동 허용하지 않고 기존 row reuse/update 중심으로 운영
 
 ## 설치

@@ -52,7 +52,7 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
   const sortedVendors = liquor.vendors.slice().sort((a, b) => a.current_price - b.current_price);
   const bestVendor = sortedVendors[0];
   const signal = getCardSignal(liquor);
-  const metaLine = [liquor.brand, formatMetaValue(liquor.country, "Archive")]
+  const metaLine = [liquor.brand, liquor.sub_category || liquor.category, formatMetaValue(liquor.country, "Archive")]
     .filter(Boolean)
     .join(" · ");
 
@@ -144,6 +144,11 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
                           {formatPrice(vendor.original_price)}
                         </span>
                       )}
+                          {vendor.discount_percent > 0 && (
+                              <span className="text-[10px] font-bold text-[color:var(--catalog-primary)]">
+                                {vendor.discount_percent}%
+                              </span>
+                          )}
                           <span
                               className={`font-semibold ${
                                   bestVendor?.source === vendor.source
@@ -182,6 +187,11 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
                     {vendor.original_price > vendor.current_price && (
                         <span className="text-xs text-white/45 line-through">{formatPrice(vendor.original_price)}</span>
                     )}
+                        {vendor.discount_percent > 0 && (
+                            <span className="text-[10px] font-bold text-white/80">
+                              {vendor.discount_percent}%
+                            </span>
+                        )}
                         <span
                             className={`font-semibold ${
                                 bestVendor?.source === vendor.source ? "text-[#fed65b]" : "text-white"

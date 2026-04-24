@@ -69,6 +69,8 @@ class FakeSupabaseClient {
       product_url: string | null;
       image_url: string | null;
       updated_at: string | null;
+      liquor_info?: { sub_category?: string | null } | null;
+      liquor_url?: Array<{ source: string | null; product_url: string | null }> | null;
     }>,
     readonly priceQuery: FakeQuery<{
       liquor_id: number;
@@ -137,6 +139,7 @@ describe("fetchCatalogPageFromServerWithClient", () => {
           product_url: "https://example.com/mac-12",
           image_url: "https://example.com/mac-12.jpg",
           updated_at: "2026-03-25T10:00:00.000Z",
+          liquor_info: { sub_category: "Single Malt" },
         },
         {
           id: 2,
@@ -215,6 +218,7 @@ describe("fetchCatalogPageFromServerWithClient", () => {
     });
     expect(page.items[0]).toMatchObject({
       id: 1,
+      sub_category: "Single Malt",
       lowest_price: 98000,
     });
     expect(page.items[0]?.vendors).toEqual([
@@ -223,12 +227,16 @@ describe("fetchCatalogPageFromServerWithClient", () => {
         current_price: 98000,
         original_price: 115000,
         product_url: "https://example.com/mac-12",
+        discount_percent: 15,
+        crawled_at: "2026-03-25T09:30:00.000Z",
       },
       {
         source: "LOTTEON",
         current_price: 101000,
         original_price: 125000,
         product_url: "https://example.com/mac-12",
+        discount_percent: 19,
+        crawled_at: "2026-03-25T11:00:00.000Z",
       },
     ]);
     expect(priceQuery.calls).toContainEqual({

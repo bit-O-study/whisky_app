@@ -13,7 +13,7 @@ interface HttpError extends Error {
 export default async function LiquorDetailPage({ params }: PageProps) {
     const { id } = await params;
 
-    let liquorData;
+    let liquorData: Awaited<ReturnType<typeof fetchLiquorDetailFromServer>> | null = null;
     let fetchError: HttpError | null = null;
 
     try {
@@ -34,6 +34,10 @@ export default async function LiquorDetailPage({ params }: PageProps) {
                 <p>데이터를 불러오는 중 문제가 발생했습니다. (에러 코드: {fetchError.status || '알 수 없음'})</p>
             </div>
         );
+    }
+
+    if (!liquorData) {
+        notFound();
     }
 
     return <LiquorDetailView liquor={liquorData} />;

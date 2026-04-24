@@ -38,6 +38,7 @@ async function main(): Promise<void> {
             source: 'EMART',
             scrapedName: result.keyword,
             normalizedCandidate: null,
+            matchedLiquorInfo: null,
             matchedLiquorInfoId: null,
             matchedLiquorId: null,
             liquorAction: 'skip',

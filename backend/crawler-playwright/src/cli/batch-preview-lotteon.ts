@@ -39,6 +39,7 @@ async function main(): Promise<void> {
             source: 'LOTTEON',
             scrapedName: result.keyword,
             normalizedCandidate: null,
+            matchedLiquorInfo: null,
             matchedLiquorInfoId: null,
             matchedLiquorId: null,
             liquorAction: 'skip',

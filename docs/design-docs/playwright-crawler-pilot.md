@@ -47,6 +47,11 @@
 - upsert 대상은 현재 Java crawler write path와 동일하게 `liquor`, `liquor_price`, `liquor_url`이다.
 - 차단된 건은 DB를 변경하지 않고 write artifact에 `blocked=true`, `blockReason`, `details[]`만 남긴다.
 
+## Enriched Metadata
+- 블렌디드/싱글몰트/버번 같은 세부 분류는 쇼핑몰 문구에서 직접 추출하기보다 매칭된 `liquor_info.sub_category`를 신뢰한다.
+- ingest preview artifact는 매칭 성공 시 `matchedLiquorInfo`에 `brand`, `category`, `subCategory`, `clazz`, `volumeMl`, `alcoholPercent`를 함께 남긴다.
+- 카탈로그 응답은 `sub_category`와 vendor `discount_percent`, `crawled_at`을 포함해 UI와 후속 기능에서 활용할 수 있게 한다.
+
 ## Batch Operations
 - `preview:lotteon:batch`, `ingest:lotteon:batch`, `preview:emart:batch`, `ingest:emart:batch`는 `liquor_info` 전체를 기준으로 keyword를 생성해 일괄 실행한다.
 - batch 실행은 raw artifact 외에 `artifacts/summaries/*.json`, `*.md` 요약 리포트를 남긴다.

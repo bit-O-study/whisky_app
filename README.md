@@ -132,7 +132,7 @@ npm run ingest:lotteon:batch
 
 preview CLI는 서버 전용 Supabase 자격증명이 필요하며,
 `backend/crawler-playwright/.env` → `backend/.env` → `frontend/.env.local` 순서로 자동 탐색합니다.
-preview 결과에는 `confidence`, `reviewNeeded`, `blockReason`, `autoWriteAllowed`가 포함되어 자동 적재 위험도를 먼저 볼 수 있습니다.
+preview 결과에는 `confidence`, `reviewNeeded`, `blockReason`, `autoWriteAllowed`가 포함되어 자동 적재 위험도를 먼저 볼 수 있습니다. 매칭 성공 시 `liquor_info.sub_category` 기반 세부 분류(예: `Blended`, `Single Malt`, `Bourbon`)도 함께 포함됩니다.
 ingest CLI는 같은 safety gate를 통과한 건만 실제 upsert를 수행하고, 차단된 건은 write artifact에 block reason만 남깁니다. Emart는 신규 master insert를 review 대상으로 차단하고 기존 `liquor` reuse/update 중심으로 운영합니다.
 
 프론트엔드 (`frontend/`):
