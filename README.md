@@ -11,6 +11,7 @@
 - `backend/common`: 공통 엔티티, DTO, Repository
 - `backend/api`: 보조 관리/업로드 성격의 Spring 애플리케이션 (`:8080`)
 - `backend/crawler`: 크롤링 및 적재 애플리케이션 (`:8081`)
+- `backend/crawler-playwright`: Node + Playwright 기반 파일럿 크롤러 런타임
 
 문서 구조:
 - `CONSTITUTION.md`: 저장소 전체를 지배하는 최상위 규범
@@ -33,6 +34,7 @@
 - Gradle 멀티모듈
 - PostgreSQL (Supabase)
 - Selenium WebDriver + Jsoup
+- Playwright (crawler pilot)
 - Next.js + React 19 + TypeScript + Tailwind CSS v4
 
 ## 빠른 시작
@@ -95,8 +97,10 @@ SUPABASE_SERVICE_ROLE_KEY=...
 ## MCP 메모
 
 - 저장소 로컬 MCP 설정은 `.mcp.json`을 사용합니다.
-- Supabase MCP는 `bitO` 프로젝트 ref `jeqvxzkvumkiraclauvo` 기준으로 고정해 사용합니다.
-- Supabase MCP personal access token은 파일에 직접 넣지 않고 셸 환경변수 `SUPABASE_ACCESS_TOKEN`으로 주입합니다.
+- `.mcp.json`에는 이 저장소 전용 `supabase`, `playwright` MCP를 둡니다.
+- Supabase MCP는 `bitO` 프로젝트 ref `jeqvxzkvumkiraclauvo` 기준으로 고정하고, 기본값은 `--read-only`입니다.
+- Supabase MCP access token은 파일에 직접 넣지 않고 셸 환경변수 `SUPABASE_ACCESS_TOKEN`으로 주입합니다.
+- Playwright MCP는 headless + isolated 기본값으로 두고 출력 디렉터리는 `.playwright-mcp/`를 사용합니다.
 
 ## 주요 명령어
 
@@ -107,6 +111,14 @@ SUPABASE_SERVICE_ROLE_KEY=...
 ./gradlew test
 ./gradlew :crawler:bootRun
 ./gradlew :api:bootRun
+```
+
+Playwright 파일럿 크롤러 (`backend/crawler-playwright/`):
+
+```bash
+npm install
+npm run install:browsers
+npm run crawl:emart -- --keyword "산토리 가쿠빈 700ml"
 ```
 
 프론트엔드 (`frontend/`):
@@ -146,6 +158,7 @@ curl -X POST http://localhost:8081/api/crawl/emart
 ## 주의사항
 
 - Selenium 사용을 위해 로컬 Chrome 설치가 필요합니다.
+- `backend/crawler-playwright`는 Selenium을 대체하지 않는 병행 파일럿 런타임이며, 현재는 Emart dry-run JSON/trace 수집까지만 제공합니다.
 - 사이트 구조 변경 시 크롤러 파서 수정이 필요합니다.
 - `backend/crawler`는 `spring.jpa.hibernate.ddl-auto=validate`이므로 대상 DB에 스키마가 먼저 있어야 실행됩니다.
 - 기본 이미지는 현재 Supabase Storage 공개 경로 fallback을 유지합니다.

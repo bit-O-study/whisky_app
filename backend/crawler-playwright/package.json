@@ -1,0 +1,19 @@
+{
+  "name": "bito-liquor-crawler-playwright",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "crawl:emart": "npm run build && node dist/cli/run-emart.js",
+    "install:browsers": "playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.58.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "~5.9.3"
+  }
+}
