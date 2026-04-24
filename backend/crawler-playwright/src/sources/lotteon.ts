@@ -333,6 +333,12 @@ function normalizeForMatch(text: string): string {
   return text
     .toLowerCase()
     .replace(/ /g, '')
+    .replace('블랙라벨', '블랙')
+    .replace('골드라벨', '골드')
+    .replace('레드라벨', '레드')
+    .replace('그린라벨', '그린')
+    .replace('블루라벨', '블루')
+    .replace('화이트라벨', '화이트')
     .replace('더블우드', '더블 우드')
     .replace('더블캐스크', '더블 캐스크')
     .replace('트리플우드', '트리플 우드')
