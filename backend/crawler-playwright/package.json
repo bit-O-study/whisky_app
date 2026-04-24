@@ -8,7 +8,11 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "crawl:emart": "npm run build && node dist/cli/run-emart.js",
     "install:browsers": "playwright install chromium",
-    "crawl:lotteon": "npm run build && node dist/cli/run-lotteon.js"
+    "crawl:lotteon": "npm run build && node dist/cli/run-lotteon.js",
+    "preview:emart": "npm run build && node dist/cli/preview-emart.js",
+    "preview:lotteon": "npm run build && node dist/cli/preview-lotteon.js",
+    "ingest:emart": "npm run build && node dist/cli/ingest-emart.js",
+    "ingest:lotteon": "npm run build && node dist/cli/ingest-lotteon.js"
   },
   "dependencies": {
     "playwright": "^1.58.2"

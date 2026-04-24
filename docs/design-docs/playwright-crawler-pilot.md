@@ -35,3 +35,14 @@
 - 쇼핑몰별 차이는 source 모듈에 가둔다.
 - 결과를 DB에 쓰기 전에도 dry-run JSON과 debug artifact를 남겨 관찰 가능하게 한다.
 - Selenium 런타임과 Playwright 런타임은 당분간 공존하며, Playwright가 안정화되기 전까지 기존 write path를 대체하지 않는다.
+
+## Ingest Preview
+- Playwright 결과를 바로 DB에 쓰지 않고, Supabase REST 조회를 통해 `liquor_info` 매칭과 `liquor`/`liquor_price`/`liquor_url` 처리 계획을 계산한다.
+- preview는 `reuse` / `insert` / `update` / `skip` 결정을 JSON 아티팩트로 남기며 실제 write는 수행하지 않는다.
+- preview 런타임은 `backend/crawler-playwright/.env`, `backend/.env`, `frontend/.env.local` 순서로 서버 전용 Supabase 자격증명을 탐색한다.
+- preview 산출물에는 `confidence`, `reviewNeeded`, `blockReason`, `autoWriteAllowed` 안전장치 레이어를 함께 저장해, 저점수/기존 후보 충돌/소스별 신규 insert 같은 위험 조건을 먼저 차단한다.
+
+## Ingest Write Path
+- `ingest:*` CLI는 `preview + safety gate`를 먼저 수행한 뒤 `autoWriteAllowed=true`인 경우만 실제 upsert를 수행한다.
+- upsert 대상은 현재 Java crawler write path와 동일하게 `liquor`, `liquor_price`, `liquor_url`이다.
+- 차단된 건은 DB를 변경하지 않고 write artifact에 `blocked=true`, `blockReason`, `details[]`만 남긴다.

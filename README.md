@@ -119,8 +119,17 @@ Playwright 파일럿 크롤러 (`backend/crawler-playwright/`):
 npm install
 npm run install:browsers
 npm run crawl:emart -- --keyword "산토리 가쿠빈 700ml"
+npm run preview:emart -- --keyword "산토리 가쿠빈 700ml"
+npm run ingest:emart -- --keyword "산토리 가쿠빈 700ml"
 npm run crawl:lotteon -- --keyword "조니워커 블랙 라벨 700ml"
+npm run preview:lotteon -- --keyword "조니워커 블랙 라벨 700ml"
+npm run ingest:lotteon -- --keyword "조니워커 블랙 라벨 700ml"
 ```
+
+preview CLI는 서버 전용 Supabase 자격증명이 필요하며,
+`backend/crawler-playwright/.env` → `backend/.env` → `frontend/.env.local` 순서로 자동 탐색합니다.
+preview 결과에는 `confidence`, `reviewNeeded`, `blockReason`, `autoWriteAllowed`가 포함되어 자동 적재 위험도를 먼저 볼 수 있습니다.
+ingest CLI는 같은 safety gate를 통과한 건만 실제 upsert를 수행하고, 차단된 건은 write artifact에 block reason만 남깁니다.
 
 프론트엔드 (`frontend/`):
 
