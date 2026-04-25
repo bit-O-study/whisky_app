@@ -1,4 +1,4 @@
-package org.bito.liquor.service;
+package org.bito.liquor.crawler.emart;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +12,6 @@ import org.bito.liquor.common.repository.LiquorPriceHistoryRepository;
 import org.bito.liquor.common.repository.LiquorRepository;
 import org.bito.liquor.common.repository.LiquorPriceRepository;
 import org.bito.liquor.common.repository.LiquorUrlRepository;
-import org.bito.liquor.scraper.LotteonScraper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,26 +22,29 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class LotteonCrawlService {
-    private static final String NORMALIZED_SOURCE = "LOTTEON";
+public class EmartCrawlService {
+    private static final String NORMALIZED_SOURCE = "EMART";
     private final LiquorUrlRepository liquorUrlRepository;
+
     private final LiquorRepository liquorRepository;
     private final LiquorPriceRepository liquorPriceRepository;
     private final LiquorPriceHistoryRepository liquorPriceHistoryRepository;
+    private final EmartScraper emartScraper;
     private final LiquorInfoRepository liquorInfoRepository;
-    private final LotteonScraper lotteonScraper;
 
     @Transactional
     public List<LiquorPrice> scrapeLiquors() {
-        log.info("롯데온 양주 크롤링 시작");
+        log.info("이마트 양주 크롤링 시작");
 
-        List<Liquor> scrapedLiquors = lotteonScraper.scrapeLiquors();
+        List<Liquor> scrapedLiquors = emartScraper.scrapeLiquors();
+
         int newCount = 0;
         int updateCount = 0;
         int skipCount = 0;
 
         for (Liquor scraped : scrapedLiquors) {
             normalizeLiquor(scraped, NORMALIZED_SOURCE);
+
             Optional<LiquorInfo> infoOpt = findLiquorInfo(scraped);
 
             if (infoOpt.isEmpty()) {
@@ -50,16 +52,30 @@ public class LotteonCrawlService {
                 continue;
             }
 
-            scraped.setLiquorInfo(infoOpt.get());
+            // 1. 마스터 정보 매칭
+            LiquorInfo info = infoOpt.get();
+            scraped.setLiquorInfo(info);
 
+            // scraped.clazz 추출 실패(None/빈값) 시 마스터 clazz로 통일.
+            // 이게 없으면 upsertLiquor가 findByBrandAndClazzAndVolume으로 기존 행을
+            // 못 찾아 동일 제품이 liquor 테이블에 중복 저장됨 (예: 산토리 가쿠빈).
+            String sc = scraped.getClazz();
+            if ((sc == null || sc.isBlank() || sc.equalsIgnoreCase("none"))
+                    && info.getClazz() != null && !info.getClazz().isBlank()) {
+                scraped.setClazz(info.getClazz());
+            }
+
+            // 2. Liquor 테이블 저장/조회 (upsert)
             Liquor liquor = upsertLiquor(scraped);
 
-            updateLiquorUrls(liquor, scraped.getProductUrl(), scraped.getImageUrl(), NORMALIZED_SOURCE);
+            // 3. ⭐️ [변경] 소스별 URL 정보 저장 (별도 테이블)
+            upsertLiquorUrl(liquor, scraped.getProductUrl(), scraped.getImageUrl(), NORMALIZED_SOURCE);
 
+            // 4. 가격 정보 저장 (latest snapshot)
             boolean existed = liquorPriceRepository.findByLiquorIdAndSource(liquor.getId(), NORMALIZED_SOURCE).isPresent();
             upsertLiquorPrice(liquor, scraped);
 
-            // 가격 이력 적재 (시계열)
+            // 5. 가격 이력 적재 (시계열 — 매 크롤마다 한 행)
             appendLiquorPriceHistory(liquor, scraped);
 
             if (existed) {
@@ -69,7 +85,7 @@ public class LotteonCrawlService {
             }
         }
 
-        log.info("롯데온 크롤링 완료 - 신규: {}개, 업데이트: {}개, 스킵(Info없음): {}개", newCount, updateCount, skipCount);
+        log.info("이마트 크롤링 완료 - 신규: {}개, 업데이트: {}개, 스킵(Info없음): {}개", newCount, updateCount, skipCount);
 
         return liquorPriceRepository.findAllOrderByUpdatedAtDesc();
     }
@@ -90,6 +106,7 @@ public class LotteonCrawlService {
 
         String scrapedBrand = scraped.getBrand().replace(" ", "").toLowerCase();
         String scrapedClazz = scraped.getClazz() != null ? scraped.getClazz().replace(" ", "").toLowerCase() : "";
+        String scrapedName = scraped.getName() != null ? scraped.getName().replace(" ", "").toLowerCase() : "";
 
         for (LiquorInfo info : candidates) {
             if (info.getBrand() == null) continue;
@@ -109,6 +126,12 @@ public class LotteonCrawlService {
             if (dbClazz.contains(scrapedClazz) || scrapedClazz.contains(dbClazz)) {
                 return Optional.of(info);
             }
+
+            // scrapedClazz 추출 실패(None)이더라도 상품명 자체에 dbClazz가 포함되면 허용.
+            // 예: 스크래퍼가 "가쿠빈"을 clazz로 못 뽑았지만 상품명이 "산토리 가쿠빈 700ml"이면 매칭.
+            if (!dbClazz.isEmpty() && scrapedName.contains(dbClazz)) {
+                return Optional.of(info);
+            }
         }
 
         return Optional.empty();
@@ -118,7 +141,6 @@ public class LotteonCrawlService {
         liquor.setSource(source);
         liquor.setNormalizedName(buildNormalizedName(liquor));
         liquor.setClazz(normalizeClazz(liquor.getClazz()));
-
         if (liquor.getCurrentPrice() != null && liquor.getCurrentPrice() <= 0) {
             liquor.setCurrentPrice(null);
         }
@@ -137,21 +159,20 @@ public class LotteonCrawlService {
         }
     }
 
-    // ⭐️ 이마트와 동일하게 브랜드, clazz, 용량으로 기존 마스터 데이터를 검색하여 보호
     private Liquor upsertLiquor(Liquor scraped) {
         String clazz = normalizeClazz(scraped.getClazz());
         Integer volume = scraped.getVolume() == null ? 0 : scraped.getVolume();
         String brand = scraped.getBrand();
 
-        // 1. 이미 동일한 상품(마스터 데이터)이 있는지 조회
+        // 1. 브랜드, clazz, 용량이 같은 상품이 있는지 우선 검색
         Optional<Liquor> existingLiquor = liquorRepository.findByBrandAndClazzAndVolume(brand, clazz, volume);
 
         if (existingLiquor.isPresent()) {
-            // 2. 존재한다면 롯데온의 정보로 마스터를 덮어쓰지 않고 그대로 반환
+            // ⭐️ 이미 존재한다면, 타겟 쇼핑몰의 데이터로 기존 마스터 데이터를 덮어쓰지 않고 그대로 반환합니다.
             return existingLiquor.get();
         }
 
-        // 3. 존재하지 않는다면 새로운 Liquor(마스터) 생성
+        // 2. 존재하지 않는다면 새로운 Liquor(마스터) 생성
         Liquor newLiquor = new Liquor();
         newLiquor.setNormalizedName(scraped.getNormalizedName());
         newLiquor.setName(scraped.getName());
@@ -165,12 +186,13 @@ public class LotteonCrawlService {
         newLiquor.setProductName(scraped.getFullname() == null ? scraped.getName() : scraped.getFullname());
         newLiquor.setProductUrl(scraped.getProductUrl());
         newLiquor.setImageUrl(scraped.getImageUrl());
-        newLiquor.setLiquorInfo(scraped.getLiquorInfo());
+        newLiquor.setLiquorInfo(scraped.getLiquorInfo()); // 매칭된 Info 주입
 
         return liquorRepository.save(newLiquor);
     }
 
     private void appendLiquorPriceHistory(Liquor liquor, Liquor scraped) {
+        // 가격이 둘 다 null이면 기록 skip (의미 없음)
         if (scraped.getCurrentPrice() == null && scraped.getOriginalPrice() == null) {
             return;
         }
@@ -211,10 +233,9 @@ public class LotteonCrawlService {
                 .trim();
     }
 
-    // ⭐️ 이마트와 동일하게 [대괄호] 태그 완벽 제거 로직 추가
     private String normalizeClazz(String clazz) {
         return normalizeText(clazz)
-                .replaceAll("\\[.*?\\]", "")
+                .replaceAll("\\[.*?\\]", "") // ⭐️ 추가: [기획], [전용잔세트] 등 대괄호 안의 태그 완벽 제거
                 .replace("()", "")
                 .replace(" ", "")
                 .trim();
@@ -223,8 +244,9 @@ public class LotteonCrawlService {
     private String normalizeText(String value) {
         return value == null ? "" : value.trim();
     }
-    private void updateLiquorUrls(Liquor liquor, String scrapedProductUrl, String scrapedImageUrl, String source) {
-        if (scrapedProductUrl == null || scrapedProductUrl.isBlank()) return;
+
+    private void upsertLiquorUrl(Liquor liquor, String productUrl, String imageUrl, String source) {
+        if (productUrl == null || productUrl.isBlank()) return;
 
         LiquorUrl liquorUrl = liquorUrlRepository.findByLiquorIdAndSource(liquor.getId(), source)
                 .orElseGet(() -> LiquorUrl.builder()
@@ -232,9 +254,10 @@ public class LotteonCrawlService {
                         .source(source)
                         .build());
 
-        liquorUrl.setProductUrl(scrapedProductUrl);
-        liquorUrl.setImageUrl(scrapedImageUrl);
+        liquorUrl.setProductUrl(productUrl);
+        liquorUrl.setImageUrl(imageUrl);
 
         liquorUrlRepository.save(liquorUrl);
     }
+
 }
