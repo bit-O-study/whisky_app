@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchCatalogPage } from "../api/catalog-client";
 import {
   getCatalogLoadErrorMessage,
@@ -10,6 +10,14 @@ import {
   type CatalogCardItem,
 } from "../model/catalog";
 import LiquorGrid from "./LiquorGrid";
+
+type SortKey = "newest" | "lowest" | "highest";
+
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: "newest", label: "Newest" },
+  { key: "lowest", label: "Lowest" },
+  { key: "highest", label: "Highest" },
+];
 
 interface CatalogPageClientProps {
   initialError?: string | null;
@@ -41,6 +49,7 @@ export default function CatalogPageClient({
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(initialError);
   const [reloadToken, setReloadToken] = useState(0);
+  const [sortKey, setSortKey] = useState<SortKey>("newest");
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const shouldSkipInitialRequestRef = useRef(initialPage.items.length > 0 && !initialError);
 
@@ -156,6 +165,27 @@ export default function CatalogPageClient({
   const activeSearchQuery = debouncedSearchQuery.trim();
   const visibleBottleCount = liquors.length;
 
+  // 정렬은 클라이언트에서 처리 (서버는 항상 updated_at desc로 내려옴 = newest 기본).
+  // 가격 0(미수집)은 정렬 끝으로 밀어서 진짜 가격 있는 상품이 먼저 보이게.
+  const sortedLiquors = useMemo(() => {
+    if (sortKey === "newest") return liquors;
+    const arr = liquors.slice();
+    if (sortKey === "lowest") {
+      arr.sort((a, b) => {
+        const ap = a.lowest_price > 0 ? a.lowest_price : Number.POSITIVE_INFINITY;
+        const bp = b.lowest_price > 0 ? b.lowest_price : Number.POSITIVE_INFINITY;
+        return ap - bp;
+      });
+    } else {
+      arr.sort((a, b) => {
+        const ap = a.lowest_price > 0 ? a.lowest_price : Number.NEGATIVE_INFINITY;
+        const bp = b.lowest_price > 0 ? b.lowest_price : Number.NEGATIVE_INFINITY;
+        return bp - ap;
+      });
+    }
+    return arr;
+  }, [liquors, sortKey]);
+
   function handleLogoClick() {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   }
@@ -173,19 +203,22 @@ export default function CatalogPageClient({
 
   return (
     <main className="catalog-shell min-h-screen pb-24 md:pb-20">
-      <header className="catalog-glass sticky top-0 z-20 border-b border-[color:rgba(216,195,180,0.34)]">
-        <div className="mx-auto flex max-w-[96rem] flex-col gap-4 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+      <header className="catalog-glass sticky top-0 z-20">
+        <div className="mx-auto flex max-w-[96rem] flex-col gap-4 px-5 py-4 sm:px-8 lg:flex-row lg:items-center lg:justify-between">
           <button
             type="button"
             onClick={handleLogoClick}
-            className="catalog-editorial text-left text-[2.2rem] font-medium italic leading-none tracking-[-0.04em] text-[color:var(--catalog-ink)]"
+            className="group flex items-center gap-2.5 text-left transition-opacity hover:opacity-80"
             aria-label="위스키다모아"
             title="페이지 상단으로 이동"
           >
-            위스키다모아
+            <span className="h-2.5 w-2.5 rounded-full bg-[color:var(--catalog-primary)]" />
+            <span className="text-[1.4rem] font-bold leading-none tracking-[-0.02em] text-[color:var(--catalog-ink)]">
+              위스키다모아
+            </span>
           </button>
 
-          <div className="w-full lg:max-w-xs">
+          <div className="w-full lg:max-w-md">
             <div className="relative group">
               <svg
                 className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--catalog-soft)] transition-colors group-focus-within:text-[color:var(--catalog-primary)]"
@@ -202,10 +235,10 @@ export default function CatalogPageClient({
               </svg>
               <input
                 type="text"
-                placeholder="위스키 이름, 브랜드로 검색..."
+                placeholder="위스키 · 브랜드 검색"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
-                className="w-full rounded-full border border-[color:rgba(216,195,180,0.52)] bg-[rgba(247,243,234,0.82)] py-2 pl-10 pr-10 text-sm text-[color:var(--catalog-ink)] shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] outline-none transition placeholder:text-[color:rgba(82,68,57,0.62)] focus:border-[color:rgba(139,74,44,0.52)] focus:bg-white focus:ring-1 focus:ring-[color:rgba(139,74,44,0.16)]"
+                className="w-full rounded-full border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] py-2.5 pl-11 pr-10 text-sm text-[color:var(--catalog-ink)] outline-none transition placeholder:text-[color:var(--catalog-soft)] focus:border-[color:var(--catalog-primary)] focus:ring-2 focus:ring-[color:var(--catalog-primary-soft)]"
               />
               {searchQuery && (
                 <button
@@ -224,40 +257,72 @@ export default function CatalogPageClient({
         </div>
       </header>
 
-      <section className="mx-auto max-w-[96rem] px-4 pt-8 sm:px-6 lg:px-8">
-        <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="space-y-1">
-            <p className="catalog-editorial text-sm italic text-[color:var(--catalog-muted)]">
-              Displaying{" "}
-              <span className="font-semibold not-italic text-[color:var(--catalog-ink)]">
-                {formatCount(visibleBottleCount)}
-              </span>{" "}
-              curated collectibles
-            </p>
-            {activeSearchQuery && (
-              <p className="text-sm text-[color:var(--catalog-muted)]">
-                &quot;{activeSearchQuery}&quot; 검색 결과:{" "}
-                <span className="font-semibold text-[color:var(--catalog-ink)]">
-                  현재 {formatCount(visibleBottleCount)}개 표시
-                </span>
+      {/* HERO band */}
+      <section className="mx-auto max-w-[96rem] px-5 pt-14 sm:px-8 md:pt-24">
+        <span className="catalog-kicker">
+          <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--catalog-primary)]" />
+          CURATED MARKET · 2026
+        </span>
+        <h1 className="mt-5 text-[2.6rem] font-bold leading-[0.98] tracking-[-0.035em] text-[color:var(--catalog-ink)] sm:text-[3.8rem] md:text-[5rem]">
+          오늘 가장 합리적인<br />
+          <span className="catalog-editorial italic font-medium text-[color:var(--catalog-primary)]">한 병</span>의 가격.
+        </h1>
+        <p className="mt-6 max-w-xl text-base leading-8 text-[color:var(--catalog-muted)] md:text-[1.05rem]">
+          국내 주요 쇼핑몰의 위스키 가격을 매일 갱신해 한눈에 비교합니다.
+          최저가 · 판매처 · 시세 변동을 한곳에 정리했습니다.
+        </p>
+      </section>
+
+      <section className="mx-auto max-w-[96rem] px-5 pt-14 sm:px-8 md:pt-16">
+        <div className="mb-8 flex flex-col gap-4 border-t border-[color:var(--catalog-hairline)] pt-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-baseline gap-3">
+            <span className="text-[2.2rem] font-bold leading-none tracking-[-0.02em] text-[color:var(--catalog-ink)]">
+              {formatCount(visibleBottleCount)}
+            </span>
+            <div>
+              <p className="catalog-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--catalog-primary)]">
+                Bottles
               </p>
-            )}
+              {activeSearchQuery && (
+                <p className="mt-0.5 text-xs text-[color:var(--catalog-muted)]">
+                  &quot;{activeSearchQuery}&quot; 검색
+                </p>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-[color:var(--catalog-muted)]">
-            <span>Sort:</span>
-            <button type="button" className="flex items-center gap-1 text-[color:var(--catalog-primary)]" disabled>
-              Newest Arrivals
-              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+          <div className="flex items-center gap-2 text-sm text-[color:var(--catalog-muted)]">
+            <span className="catalog-mono text-[11px] font-semibold uppercase tracking-[0.22em]">Sort</span>
+            <div
+              role="group"
+              aria-label="정렬"
+              className="flex items-center gap-0.5 rounded-full border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] p-0.5"
+            >
+              {SORT_OPTIONS.map((opt) => {
+                const active = sortKey === opt.key;
+                return (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => setSortKey(opt.key)}
+                    aria-pressed={active}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                      active
+                        ? "bg-[color:var(--catalog-ink)] text-white"
+                        : "text-[color:var(--catalog-muted)] hover:text-[color:var(--catalog-ink)]"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
         <div>
           <LiquorGrid
             searchQuery={activeSearchQuery}
-            liquors={liquors}
+            liquors={sortedLiquors}
             loading={loading}
             loadingMore={loadingMore}
             hasNext={hasNextLiquorPage}
@@ -269,46 +334,47 @@ export default function CatalogPageClient({
 
         {!loading && !error && visibleBottleCount > 0 && !hasNextLiquorPage && (
           <div className="mt-16 flex flex-col items-center gap-4">
-            <div className="h-px w-32 bg-[linear-gradient(90deg,transparent,rgba(216,195,180,0.8),transparent)]" />
-            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[color:rgba(82,68,57,0.62)]">
+            <div className="h-px w-32 bg-[linear-gradient(90deg,transparent,var(--catalog-outline-strong),transparent)]" />
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[color:var(--catalog-soft)]">
               End of records ({formatCount(visibleBottleCount)})
             </p>
           </div>
         )}
 
-        <footer className="mt-16 bg-[rgba(241,238,229,0.78)] px-5 py-10 ring-1 ring-[color:rgba(216,195,180,0.28)] sm:px-8">
+        <footer className="mt-20 rounded-3xl border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] px-6 py-10 sm:px-10">
           <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
-            <div className="max-w-sm space-y-5">
-              <p className="catalog-editorial text-3xl font-medium italic text-[color:var(--catalog-ink)]">위스키다모아</p>
-              <p className="text-sm leading-6 text-[color:var(--catalog-muted)]">
-                The global authority for spirits valuation and historical provenance data. Empowering collectors with transparency since 2018.
-              </p>
-              <div className="flex items-center gap-4 text-[color:var(--catalog-primary)]">
-                <span className="h-3 w-3 rounded-full bg-current" />
-                <span className="h-3 w-3 rounded-full bg-current opacity-70" />
+            <div className="max-w-md space-y-5">
+              <div className="flex items-center gap-2.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-[color:var(--catalog-primary)]" />
+                <p className="text-xl font-bold tracking-[-0.02em] text-[color:var(--catalog-ink)]">
+                  위스키다모아
+                </p>
               </div>
+              <p className="text-sm leading-7 text-[color:var(--catalog-muted)]">
+                국내 주요 쇼핑몰의 위스키 가격을 매일 갱신해 비교하는 큐레이션 인덱스.
+              </p>
             </div>
             <div className="space-y-4">
-              <p className="catalog-kicker text-[color:var(--catalog-ink)]">Legal</p>
-              <ul className="space-y-2 text-sm text-[color:var(--catalog-muted)]">
-                <li>Terms</li>
-                <li>Privacy</li>
+              <p className="catalog-kicker">Legal</p>
+              <ul className="space-y-2 text-sm font-medium text-[color:var(--catalog-ink)]">
+                <li className="transition hover:text-[color:var(--catalog-primary)]">Terms</li>
+                <li className="transition hover:text-[color:var(--catalog-primary)]">Privacy</li>
               </ul>
             </div>
           </div>
-          <div className="mt-10 border-t border-[color:rgba(216,195,180,0.18)] pt-6">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[color:rgba(82,68,57,0.62)]">
-              © 2024 위스키다모아 Digital Connoisseur. Professional market data for informational purposes.
+          <div className="mt-10 border-t border-[color:var(--catalog-hairline)] pt-6">
+            <p className="catalog-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--catalog-muted)]">
+              © 2026 위스키다모아 · 정보 제공 목적의 가격 데이터
             </p>
           </div>
         </footer>
       </section>
 
-      <nav className="catalog-glass fixed inset-x-0 bottom-0 z-20 flex items-center justify-around border-t border-[color:rgba(216,195,180,0.28)] px-4 py-3 md:hidden">
-        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[color:var(--catalog-primary)]">Market</span>
-        <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-[color:var(--catalog-muted)]">Search</span>
-        <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-[color:var(--catalog-muted)]">Vault</span>
-        <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-[color:var(--catalog-muted)]">Profile</span>
+      <nav className="catalog-glass fixed inset-x-0 bottom-0 z-20 flex items-center justify-around border-t border-[color:var(--catalog-hairline)] px-4 py-3 md:hidden">
+        <span className="text-[11px] font-bold text-[color:var(--catalog-primary)]">Market</span>
+        <span className="text-[11px] font-medium text-[color:var(--catalog-muted)]">Search</span>
+        <span className="text-[11px] font-medium text-[color:var(--catalog-muted)]">Vault</span>
+        <span className="text-[11px] font-medium text-[color:var(--catalog-muted)]">Profile</span>
       </nav>
     </main>
   );

@@ -1,162 +1,193 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { CatalogCardItem, CatalogCardVendor } from "../model/catalog";
-
-type LiquorDetailItem = CatalogCardItem & {
-    sweet?: number;
-    smoky?: number;
-    fruity?: number;
-    body?: number;
-};
+import type { PriceHistoryPoint } from "../api/catalog-server";
+import PriceTrendChart from "./PriceTrendChart";
 
 interface Props {
-    liquor: LiquorDetailItem;
+    liquor: any;
+    priceHistory?: PriceHistoryPoint[];
 }
 
-function isKnownMetaValue(value: string) {
-    return Boolean(value && value !== "Unknown");
+function formatPrice(price: number) {
+    if (typeof price !== "number" || !Number.isFinite(price) || price <= 0) return "—";
+    return price.toLocaleString("ko-KR") + "원";
 }
 
-export default function LiquorDetailView({liquor}: Props) {
-    const formatPrice = (price: number) => price.toLocaleString("ko-KR") + "원";
-    const headerMeta = [liquor.category, liquor.sub_category, liquor.country]
-        .filter(isKnownMetaValue)
-        .join(" · ");
-
-    // 테이스팅 노트 그래프용 데이터
-    const profiles = [
-        {label: "Sweet", value: liquor.sweet || 0, color: "bg-pink-400"},
-        {label: "Smoky", value: liquor.smoky || 0, color: "bg-stone-600"},
-        {label: "Fruity", value: liquor.fruity || 0, color: "bg-orange-400"},
-        {label: "Body", value: liquor.body || 0, color: "bg-slate-800"},
-    ];
+export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
+    const sortedVendors = (liquor.vendors ?? []).slice().sort((a: any, b: any) => a.current_price - b.current_price);
+    const bestVendor = sortedVendors[0];
 
     return (
-        <div className="min-h-screen bg-[#FDFCFB]">
-            {/* 1. 상단 네비게이션 */}
-            <nav className="sticky top-0 z-50 flex items-center justify-between bg-white/80 px-4 py-3 backdrop-blur-md">
-                <Link href="/" className="p-2">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path d="M15 19l-7-7 7-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                </Link>
-                <h1 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">{liquor.brand}</h1>
-                <div className="w-10"/>
+        <div className="min-h-screen bg-[color:var(--catalog-bg-solid)] text-[color:var(--catalog-ink)]">
+            {/* nav */}
+            <nav className="catalog-glass sticky top-0 z-50">
+                <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
+                    <Link
+                        href="/"
+                        className="flex items-center gap-2 rounded-full px-3 py-1.5 text-[color:var(--catalog-ink)] transition hover:bg-[color:var(--catalog-bg-secondary)]"
+                    >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M15 19l-7-7 7-7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span className="text-sm font-semibold">Back</span>
+                    </Link>
+                    <span className="catalog-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--catalog-muted)]">
+                        {liquor.brand}
+                    </span>
+                    <div className="w-12" />
+                </div>
             </nav>
 
-            <main className="mx-auto max-w-5xl pb-20">
-                <div className="flex flex-col md:flex-row md:gap-12 md:pt-10">
-
-                    {/* 2. 제품 이미지 섹션 */}
-                    <section
-                        className="relative aspect-square w-full bg-white md:w-1/2 md:rounded-3xl md:shadow-sm overflow-hidden">
+            <main className="mx-auto max-w-6xl px-5 pb-32 sm:px-8">
+                {/* HERO */}
+                <section className="grid grid-cols-1 gap-8 pt-10 md:grid-cols-[1.05fr_1fr] md:gap-12 md:pt-16">
+                    <div className="catalog-bottle-well relative aspect-[4/5] overflow-hidden rounded-3xl border border-[color:var(--catalog-outline)]">
                         <Image
                             src={liquor.image_url || "/default.webp"}
                             alt={liquor.name}
                             fill
-                            className="object-contain p-12 transition-transform duration-700 hover:scale-110"
+                            sizes="(max-width: 768px) 100vw, 55vw"
+                            className="object-contain p-12 transition-transform duration-500 hover:scale-[1.04]"
                             priority
                         />
-                    </section>
+                    </div>
 
-                    {/* 3. 정보 섹션 */}
-                    <section className="flex-1 px-5 pt-8 md:pt-0">
-                        <header className="mb-10">
-                            {headerMeta && (
-                                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#A96242]">
-                                    {headerMeta}
-                                </p>
+                    <div className="flex flex-col">
+                        <span className="catalog-kicker">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--catalog-primary)]" />
+                            {liquor.category} · {liquor.country}
+                        </span>
+
+                        <h1 className="mt-5 text-[2.4rem] font-bold leading-[1.05] tracking-[-0.025em] text-[color:var(--catalog-ink)] md:text-[3.2rem]">
+                            {liquor.name}
+                        </h1>
+
+                        <div className="mt-6 flex flex-wrap items-center gap-2">
+                            <span className="catalog-chip catalog-chip-ink">
+                                {liquor.alcohol_percent}% ABV
+                            </span>
+                            <span className="catalog-chip">
+                                {liquor.volume}ml
+                            </span>
+                            {liquor.vendors?.length > 0 && (
+                                <span className="catalog-chip catalog-chip-soft">
+                                    {liquor.vendors.length} vendors
+                                </span>
                             )}
-                            <h2 className="catalog-editorial text-4xl font-medium italic leading-tight text-[#1C1C17] md:text-5xl">
-                                {liquor.name}
-                            </h2>
-                            <div className="mt-6 flex items-center gap-3">
-                <span
-                    className="rounded-full bg-[#1C1C17] px-3 py-1 text-[9px] font-black text-white uppercase tracking-tighter">
-                  {liquor.alcohol_percent}% ABV
-                </span>
-                                <span className="text-sm text-gray-400 font-medium">{liquor.volume}ml</span>
-                            </div>
-                        </header>
+                        </div>
 
-                        {/* 가격 카드 (데일리샷 스타일) */}
-                        <div
-                            className="mb-12 rounded-3xl bg-white p-8 shadow-[0_20px_48px_rgba(0,0,0,0.05)] ring-1 ring-black/[0.03]">
-                            <div className="flex items-end justify-between">
+                        {/* 가격 카드 */}
+                        <div className="mt-8 rounded-3xl border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] p-7 shadow-[var(--catalog-shadow-md)]">
+                            <div className="flex items-end justify-between gap-4">
                                 <div>
-                                    <p className="mb-1 text-[9px] font-black uppercase tracking-widest text-gray-400">Lowest
-                                        Price</p>
-                                    <p className="catalog-editorial text-4xl font-bold italic text-[#A96242]">
+                                    <p className="catalog-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--catalog-primary)]">
+                                        Lowest Price
+                                    </p>
+                                    <p className="mt-2 text-[2.6rem] font-bold leading-none tracking-tight text-[color:var(--catalog-ink)]">
                                         {formatPrice(liquor.lowest_price)}
                                     </p>
-                                </div>
-                                <div className="text-right text-[10px] font-bold text-gray-300">
-                                    {liquor.vendors?.length} Vendors Comparison
+                                    {bestVendor && (
+                                        <p className="mt-2 catalog-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--catalog-muted)]">
+                                            via {bestVendor.source}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
-                            <button
-                                className="mt-8 w-full rounded-2xl bg-[#A96242] py-5 text-sm font-bold text-white transition hover:brightness-105 active:scale-[0.98]">
-                                판매처 비교하고 구매하기
-                            </button>
-                        </div>
 
-                        {/* 테이스팅 프로필 */}
-                        <div className="mb-12">
-                            <h3 className="mb-8 text-[11px] font-black uppercase tracking-[0.2em] text-gray-800">Tasting
-                                Profile</h3>
-                            <div className="grid grid-cols-2 gap-x-12 gap-y-8">
-                                {profiles.map((p) => (
-                                    <div key={p.label}>
-                                        <div
-                                            className="mb-2 flex justify-between text-[10px] font-bold uppercase text-gray-400 tracking-wider">
-                                            <span>{p.label}</span>
-                                            <span className="text-gray-800">{Math.round(p.value * 100)}%</span>
-                                        </div>
-                                        <div className="h-0.5 w-full bg-gray-100">
-                                            <div
-                                                className={`h-full ${p.color} transition-all duration-1000`}
-                                                style={{width: `${p.value * 100}%`}}
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                            {bestVendor?.product_url && (
+                                <a
+                                    href={bestVendor.product_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="catalog-btn catalog-btn-pop mt-7 w-full"
+                                >
+                                    최저가로 구매하기
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path d="M14 5l7 7m0 0l-7 7m7-7H3" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </a>
+                            )}
                         </div>
+                    </div>
+                </section>
 
-                        {/* 판매처 리스트 */}
-                        <div>
-                            <h3 className="mb-6 border-b border-black/5 pb-4 text-[11px] font-black uppercase tracking-[0.2em] text-gray-800">Vendors
-                                List</h3>
-                            <div className="space-y-3">
-                                {liquor.vendors?.map((v: CatalogCardVendor) => (
-                                    <a
-                                        key={v.source}
-                                        href={v.product_url}
-                                        target="_blank"
-                                        className="flex items-center justify-between rounded-2xl bg-white p-5 ring-1 ring-black/[0.03] transition hover:ring-[#A96242]/20 hover:shadow-md"
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div
-                                                className="h-10 w-10 flex items-center justify-center rounded-full bg-gray-50 text-[9px] font-black tracking-tighter text-gray-400 border border-black/5">
+                {/* 가격 추이 그래프 */}
+                <section className="mt-20">
+                    <div className="mb-6 flex items-end justify-between">
+                        <h2 className="text-2xl font-bold tracking-[-0.015em] text-[color:var(--catalog-ink)]">
+                            가격 추이
+                        </h2>
+                        <span className="catalog-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--catalog-muted)]">
+                            최근 90일
+                        </span>
+                    </div>
+                    <PriceTrendChart points={priceHistory} />
+                </section>
+
+                {/* 판매처 리스트 */}
+                <section className="mt-20">
+                    <div className="mb-6 flex items-end justify-between">
+                        <h2 className="text-2xl font-bold tracking-[-0.015em] text-[color:var(--catalog-ink)]">
+                            모든 판매처
+                        </h2>
+                        <span className="catalog-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--catalog-muted)]">
+                            {sortedVendors.length} listed
+                        </span>
+                    </div>
+
+                    <ul className="space-y-2">
+                        {sortedVendors.map((v: any, idx: number) => (
+                            <li key={v.source}>
+                                <a
+                                    href={v.product_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="group flex items-center justify-between gap-4 rounded-2xl border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] px-5 py-4 transition hover:border-[color:var(--catalog-outline-strong)] hover:shadow-[var(--catalog-shadow-md)]"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <span className="catalog-mono text-[12px] font-bold tracking-[0.14em] text-[color:var(--catalog-soft)]">
+                                            {String(idx + 1).padStart(2, "0")}
+                                        </span>
+                                        <div className="flex h-10 w-14 items-center justify-center rounded-lg bg-[color:var(--catalog-bg-secondary)]">
+                                            <span className="catalog-mono text-[11px] font-bold uppercase tracking-[0.14em] text-[color:var(--catalog-ink)]">
+                                                {v.source.slice(0, 4)}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <p className="text-[0.95rem] font-semibold tracking-tight text-[color:var(--catalog-ink)]">
                                                 {v.source}
-                                            </div>
-                                            <span className="text-sm font-bold text-gray-700">{v.source}</span>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-base font-black text-[#1C1C17]">{formatPrice(v.current_price)}</p>
-                                            {v.discount_percent > 0 && (
-                                                <p className="text-[9px] font-bold text-gray-400">
-                                                    {v.discount_percent}% off · {formatPrice(v.original_price)}
+                                            </p>
+                                            {v.original_price > v.current_price && (
+                                                <p className="mt-0.5 catalog-mono text-[11px] text-[color:var(--catalog-soft)] line-through">
+                                                    {formatPrice(v.original_price)}
                                                 </p>
                                             )}
-                                            <p className="text-[9px] font-bold text-[#A96242]">상세보기 〉</p>
                                         </div>
-                                    </a>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-                </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <span
+                                            className={`text-[1.05rem] font-bold ${
+                                                idx === 0
+                                                    ? "text-[color:var(--catalog-primary)]"
+                                                    : "text-[color:var(--catalog-ink)]"
+                                            }`}
+                                        >
+                                            {formatPrice(v.current_price)}
+                                        </span>
+                                        <svg
+                                            className="h-3.5 w-3.5 text-[color:var(--catalog-soft)] transition group-hover:translate-x-1 group-hover:text-[color:var(--catalog-primary)]"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path d="M9 5l7 7-7 7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    </div>
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
             </main>
         </div>
     );

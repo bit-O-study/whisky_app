@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import LiquorDetailView from "@/features/catalog/ui/LiquorDetailView";
-import { fetchLiquorDetailFromServer } from "@/features/catalog/api/catalog-server";
+import {
+    fetchLiquorDetailFromServer,
+    fetchLiquorPriceHistoryFromServer,
+} from "@/features/catalog/api/catalog-server";
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -14,13 +17,16 @@ export default async function LiquorDetailPage({ params }: PageProps) {
     const { id } = await params;
 
     let liquorData: Awaited<ReturnType<typeof fetchLiquorDetailFromServer>> | null = null;
+    let priceHistory;
     let fetchError: HttpError | null = null;
 
     try {
-        liquorData = await fetchLiquorDetailFromServer(id);
+        [liquorData, priceHistory] = await Promise.all([
+            fetchLiquorDetailFromServer(id),
+            fetchLiquorPriceHistoryFromServer(id, 90),
+        ]);
     } catch (error: unknown) {
         console.error("Liquor fetch error:", error);
-
         fetchError = error as HttpError;
     }
 
@@ -40,5 +46,6 @@ export default async function LiquorDetailPage({ params }: PageProps) {
         notFound();
     }
 
-    return <LiquorDetailView liquor={liquorData} />;
+    // return <LiquorDetailView liquor={liquorData} />;
+    return <LiquorDetailView liquor={liquorData} priceHistory={priceHistory ?? []} />;
 }

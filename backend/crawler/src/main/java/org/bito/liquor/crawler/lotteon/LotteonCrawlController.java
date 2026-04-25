@@ -1,9 +1,8 @@
-package org.bito.liquor.controller;
+package org.bito.liquor.crawler.lotteon;
 
 import lombok.RequiredArgsConstructor;
 import org.bito.liquor.common.dto.LiquorDto;
 import org.bito.liquor.common.model.LiquorPrice;
-import org.bito.liquor.service.LotteonCrawlService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

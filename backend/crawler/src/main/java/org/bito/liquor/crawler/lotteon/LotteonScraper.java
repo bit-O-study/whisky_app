@@ -1,4 +1,4 @@
-package org.bito.liquor.scraper;
+package org.bito.liquor.crawler.lotteon;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

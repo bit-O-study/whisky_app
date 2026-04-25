@@ -329,14 +329,16 @@ export async function fetchLiquorDetailFromServer(id: string): Promise<CatalogCa
   const { data: liquors, error: liquorError } = await supabase
       .from("liquor")
       .select(`
-        id, 
-        normalized_name, 
-        brand, 
-        category, 
-        country, 
-        product_code, 
-        product_name, 
-        image_url, 
+        id,
+        normalized_name,
+        brand,
+        category,
+        country,
+        volume_ml,
+        alcohol_percent,
+        product_code,
+        product_name,
+        image_url,
         updated_at,
         liquor_info!fk_liquor_info (volume_ml, alcohol_percent, sub_category),
         liquor_url!fk_liquor_url_liquor (source, product_url)
@@ -355,6 +357,15 @@ export async function fetchLiquorDetailFromServer(id: string): Promise<CatalogCa
 
   if (priceError) throw priceError;
 
+  // const pricesWithUrl = (priceRows ?? []).map((p: any) => {
+  //   const safeSearchKey = String(p.source).trim().toUpperCase();
+  //   const matchedUrl = urlMap.get(safeSearchKey) || "";
+  //   return {
+  //     ...p,
+  //     product_url: matchedUrl
+  //   };
+  // });
+
   const liquorRow: LiquorRow = {
     ...rawLiquor,
     volume_ml: rawLiquor.liquor_info?.volume_ml ?? null,
@@ -366,4 +377,84 @@ export async function fetchLiquorDetailFromServer(id: string): Promise<CatalogCa
   const mappedItem = mapLiquorRowToCatalogItem(liquorRow, vendorLookup.get(liquorRow.id) ?? []);
 
   return mappedItem;
+}
+
+export interface PriceHistoryPoint {
+  /** ISO date (YYYY-MM-DD) */
+  date: string;
+  /** lowest current_price across all sources for that day */
+  lowest: number;
+}
+
+interface RawHistoryRow {
+  source: string | null;
+  current_price: number | null;
+  crawled_at: string | null;
+}
+
+/**
+ * 특정 liquor의 가격 히스토리를 일자별로 집계해 반환.
+ * 각 날짜의 모든 소스의 current_price 중 MIN을 사용해 "그 날의 최저가"를 만든다.
+ */
+export async function fetchLiquorPriceHistoryFromServer(
+    id: string,
+    days: number = 90,
+): Promise<PriceHistoryPoint[]> {
+  const supabase = getSupabaseClient() as any;
+  const liquorId = parseInt(id, 10);
+  if (!Number.isFinite(liquorId)) return [];
+
+  const since = new Date();
+  since.setUTCDate(since.getUTCDate() - days);
+
+  const { data, error } = await supabase
+      .from("liquor_price_history")
+      .select("source, current_price, crawled_at")
+      .eq("liquor_id", liquorId)
+      .gte("crawled_at", since.toISOString())
+      .order("crawled_at", { ascending: true });
+
+  if (error) {
+    console.error("history fetch error", error);
+    return [];
+  }
+
+  // 1) 유효한 행만 골라서 시간순 정렬
+  const rows = ((data ?? []) as RawHistoryRow[])
+      .filter((r) => typeof r.current_price === "number" && r.current_price > 0 && !!r.crawled_at)
+      .map((r) => ({
+        source: (r.source ?? "UNKNOWN").toUpperCase(),
+        price: r.current_price as number,
+        ts: new Date(r.crawled_at as string),
+      }))
+      .filter((r) => !Number.isNaN(r.ts.getTime()))
+      .sort((a, b) => a.ts.getTime() - b.ts.getTime());
+
+  if (rows.length === 0) return [];
+
+  // 2) 일자별로 그룹
+  const byDay = new Map<string, typeof rows>();
+  for (const r of rows) {
+    const day = r.ts.toISOString().slice(0, 10);
+    const bucket = byDay.get(day);
+    if (bucket) bucket.push(r);
+    else byDay.set(day, [r]);
+  }
+
+  // 3) forward-fill: 각 source의 마지막 알려진 가격을 carry-forward.
+  //    그날의 최저가 = 그 시점에 알려진 모든 source 가격 중 MIN.
+  //    한 source가 다른 날 안 크롤되어도 직전 알려진 값을 살려서 비교.
+  const sortedDays = Array.from(byDay.keys()).sort();
+  const sourceLatest = new Map<string, number>();
+  const points: PriceHistoryPoint[] = [];
+  for (const day of sortedDays) {
+    for (const r of byDay.get(day)!) {
+      sourceLatest.set(r.source, r.price);
+    }
+    if (sourceLatest.size === 0) continue;
+    const lowest = Math.min(...sourceLatest.values());
+    points.push({ date: day, lowest });
+  }
+
+  return points;
 }

@@ -1,16 +1,17 @@
-package org.bito.liquor.service;
+package org.bito.liquor.crawler.lotteon;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bito.liquor.common.model.Liquor;
 import org.bito.liquor.common.model.LiquorInfo;
 import org.bito.liquor.common.model.LiquorPrice;
+import org.bito.liquor.common.model.LiquorPriceHistory;
 import org.bito.liquor.common.model.LiquorUrl;
 import org.bito.liquor.common.repository.LiquorInfoRepository;
+import org.bito.liquor.common.repository.LiquorPriceHistoryRepository;
 import org.bito.liquor.common.repository.LiquorRepository;
 import org.bito.liquor.common.repository.LiquorPriceRepository;
 import org.bito.liquor.common.repository.LiquorUrlRepository;
-import org.bito.liquor.scraper.LotteonScraper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,7 @@ public class LotteonCrawlService {
     private final LiquorUrlRepository liquorUrlRepository;
     private final LiquorRepository liquorRepository;
     private final LiquorPriceRepository liquorPriceRepository;
+    private final LiquorPriceHistoryRepository liquorPriceHistoryRepository;
     private final LiquorInfoRepository liquorInfoRepository;
     private final LotteonScraper lotteonScraper;
 
@@ -55,6 +57,9 @@ public class LotteonCrawlService {
 
             boolean existed = liquorPriceRepository.findByLiquorIdAndSource(liquor.getId(), NORMALIZED_SOURCE).isPresent();
             upsertLiquorPrice(liquor, scraped);
+
+            // 가격 이력 적재 (시계열)
+            appendLiquorPriceHistory(liquor, scraped);
 
             if (existed) {
                 updateCount++;
@@ -162,6 +167,19 @@ public class LotteonCrawlService {
         newLiquor.setLiquorInfo(scraped.getLiquorInfo());
 
         return liquorRepository.save(newLiquor);
+    }
+
+    private void appendLiquorPriceHistory(Liquor liquor, Liquor scraped) {
+        if (scraped.getCurrentPrice() == null && scraped.getOriginalPrice() == null) {
+            return;
+        }
+        LiquorPriceHistory history = LiquorPriceHistory.builder()
+                .liquor(liquor)
+                .source(NORMALIZED_SOURCE)
+                .currentPrice(scraped.getCurrentPrice())
+                .originalPrice(scraped.getOriginalPrice())
+                .build();
+        liquorPriceHistoryRepository.save(history);
     }
 
     private LiquorPrice upsertLiquorPrice(Liquor liquor, Liquor scraped) {
