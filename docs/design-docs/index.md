@@ -14,3 +14,5 @@
   현재 카탈로그 디자인 시스템의 북극성
 - `catalog-vendor-pricing-contract.md`
   주류 1건 + 벤더 가격 목록 계약
+- `playwright-crawler-pilot.md`
+  Selenium과 병행하는 Node + Playwright 크롤러 파일럿 경계와 초기 범위

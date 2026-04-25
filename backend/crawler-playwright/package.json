@@ -1,0 +1,28 @@
+{
+  "name": "bito-liquor-crawler-playwright",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "crawl:emart": "npm run build && node dist/cli/run-emart.js",
+    "install:browsers": "playwright install chromium",
+    "crawl:lotteon": "npm run build && node dist/cli/run-lotteon.js",
+    "preview:emart": "npm run build && node dist/cli/preview-emart.js",
+    "preview:emart:batch": "npm run build && node dist/cli/batch-preview-emart.js",
+    "preview:lotteon": "npm run build && node dist/cli/preview-lotteon.js",
+    "preview:lotteon:batch": "npm run build && node dist/cli/batch-preview-lotteon.js",
+    "ingest:emart": "npm run build && node dist/cli/ingest-emart.js",
+    "ingest:emart:batch": "npm run build && node dist/cli/batch-ingest-emart.js",
+    "ingest:lotteon": "npm run build && node dist/cli/ingest-lotteon.js",
+    "ingest:lotteon:batch": "npm run build && node dist/cli/batch-ingest-lotteon.js"
+  },
+  "dependencies": {
+    "playwright": "^1.58.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "~5.9.3"
+  }
+}

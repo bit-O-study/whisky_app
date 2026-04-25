@@ -16,7 +16,7 @@ interface HttpError extends Error {
 export default async function LiquorDetailPage({ params }: PageProps) {
     const { id } = await params;
 
-    let liquorData;
+    let liquorData: Awaited<ReturnType<typeof fetchLiquorDetailFromServer>> | null = null;
     let priceHistory;
     let fetchError: HttpError | null = null;
 
@@ -42,5 +42,10 @@ export default async function LiquorDetailPage({ params }: PageProps) {
         );
     }
 
+    if (!liquorData) {
+        notFound();
+    }
+
+    // return <LiquorDetailView liquor={liquorData} />;
     return <LiquorDetailView liquor={liquorData} priceHistory={priceHistory ?? []} />;
 }

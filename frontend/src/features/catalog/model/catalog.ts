@@ -3,6 +3,8 @@ export interface CatalogCardVendor {
   current_price: number;
   original_price: number;
   product_url: string;
+  discount_percent: number;
+  crawled_at: string;
 }
 
 export interface CatalogCardItem {
@@ -11,6 +13,7 @@ export interface CatalogCardItem {
   name: string;
   brand: string;
   category: string;
+  sub_category: string;
   country: string;
   alcohol_percent: number;
   volume: number;

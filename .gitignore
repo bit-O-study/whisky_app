@@ -65,6 +65,8 @@ out/
 ### Environment ###
 .env
 .mcp.json
+.playwright-mcp/
+backend/crawler-playwright/artifacts/
 application-local.properties
 backend/api/src/main/resources/application-local.properties
 backend/crawler/src/main/resources/application-local.properties
