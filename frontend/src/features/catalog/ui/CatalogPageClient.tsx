@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchCatalogPage } from "../api/catalog-client";
 import {
   getCatalogLoadErrorMessage,
@@ -10,6 +10,14 @@ import {
   type CatalogCardItem,
 } from "../model/catalog";
 import LiquorGrid from "./LiquorGrid";
+
+type SortKey = "newest" | "lowest" | "highest";
+
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: "newest", label: "Newest" },
+  { key: "lowest", label: "Lowest" },
+  { key: "highest", label: "Highest" },
+];
 
 interface CatalogPageClientProps {
   initialError?: string | null;
@@ -41,6 +49,7 @@ export default function CatalogPageClient({
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(initialError);
   const [reloadToken, setReloadToken] = useState(0);
+  const [sortKey, setSortKey] = useState<SortKey>("newest");
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const shouldSkipInitialRequestRef = useRef(initialPage.items.length > 0 && !initialError);
 
@@ -156,6 +165,27 @@ export default function CatalogPageClient({
   const activeSearchQuery = debouncedSearchQuery.trim();
   const visibleBottleCount = liquors.length;
 
+  // 정렬은 클라이언트에서 처리 (서버는 항상 updated_at desc로 내려옴 = newest 기본).
+  // 가격 0(미수집)은 정렬 끝으로 밀어서 진짜 가격 있는 상품이 먼저 보이게.
+  const sortedLiquors = useMemo(() => {
+    if (sortKey === "newest") return liquors;
+    const arr = liquors.slice();
+    if (sortKey === "lowest") {
+      arr.sort((a, b) => {
+        const ap = a.lowest_price > 0 ? a.lowest_price : Number.POSITIVE_INFINITY;
+        const bp = b.lowest_price > 0 ? b.lowest_price : Number.POSITIVE_INFINITY;
+        return ap - bp;
+      });
+    } else {
+      arr.sort((a, b) => {
+        const ap = a.lowest_price > 0 ? a.lowest_price : Number.NEGATIVE_INFINITY;
+        const bp = b.lowest_price > 0 ? b.lowest_price : Number.NEGATIVE_INFINITY;
+        return bp - ap;
+      });
+    }
+    return arr;
+  }, [liquors, sortKey]);
+
   function handleLogoClick() {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   }
@@ -262,23 +292,37 @@ export default function CatalogPageClient({
           </div>
           <div className="flex items-center gap-2 text-sm text-[color:var(--catalog-muted)]">
             <span className="catalog-mono text-[11px] font-semibold uppercase tracking-[0.22em]">Sort</span>
-            <button
-              type="button"
-              className="flex items-center gap-1.5 rounded-full border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] px-3.5 py-1.5 text-sm font-semibold text-[color:var(--catalog-ink)]"
-              disabled
+            <div
+              role="group"
+              aria-label="정렬"
+              className="flex items-center gap-0.5 rounded-full border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] p-0.5"
             >
-              Newest
-              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+              {SORT_OPTIONS.map((opt) => {
+                const active = sortKey === opt.key;
+                return (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => setSortKey(opt.key)}
+                    aria-pressed={active}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                      active
+                        ? "bg-[color:var(--catalog-ink)] text-white"
+                        : "text-[color:var(--catalog-muted)] hover:text-[color:var(--catalog-ink)]"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
         <div>
           <LiquorGrid
             searchQuery={activeSearchQuery}
-            liquors={liquors}
+            liquors={sortedLiquors}
             loading={loading}
             loadingMore={loadingMore}
             hasNext={hasNextLiquorPage}

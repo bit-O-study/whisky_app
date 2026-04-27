@@ -11,6 +11,7 @@
 - `backend/common`: 공통 엔티티, DTO, Repository
 - `backend/api`: 보조 관리/업로드 성격의 Spring 애플리케이션 (`:8080`)
 - `backend/crawler`: 크롤링 및 적재 애플리케이션 (`:8081`)
+- `backend/crawler-playwright`: Node + Playwright 기반 파일럿 크롤러 런타임
 
 문서 구조:
 - `CONSTITUTION.md`: 저장소 전체를 지배하는 최상위 규범
@@ -33,6 +34,7 @@
 - Gradle 멀티모듈
 - PostgreSQL (Supabase)
 - Selenium WebDriver + Jsoup
+- Playwright (crawler pilot)
 - Next.js + React 19 + TypeScript + Tailwind CSS v4
 
 ## 빠른 시작
@@ -95,8 +97,10 @@ SUPABASE_SERVICE_ROLE_KEY=...
 ## MCP 메모
 
 - 저장소 로컬 MCP 설정은 `.mcp.json`을 사용합니다.
-- Supabase MCP는 `bitO` 프로젝트 ref `jeqvxzkvumkiraclauvo` 기준으로 고정해 사용합니다.
-- Supabase MCP personal access token은 파일에 직접 넣지 않고 셸 환경변수 `SUPABASE_ACCESS_TOKEN`으로 주입합니다.
+- `.mcp.json`에는 이 저장소 전용 `supabase`, `playwright` MCP를 둡니다.
+- Supabase MCP는 `bitO` 프로젝트 ref `jeqvxzkvumkiraclauvo` 기준으로 고정하고, 기본값은 `--read-only`입니다.
+- Supabase MCP access token은 파일에 직접 넣지 않고 셸 환경변수 `SUPABASE_ACCESS_TOKEN`으로 주입합니다.
+- Playwright MCP는 headless + isolated 기본값으로 두고 출력 디렉터리는 `.playwright-mcp/`를 사용합니다.
 
 ## 주요 명령어
 
@@ -108,6 +112,28 @@ SUPABASE_SERVICE_ROLE_KEY=...
 ./gradlew :crawler:bootRun
 ./gradlew :api:bootRun
 ```
+
+Playwright 파일럿 크롤러 (`backend/crawler-playwright/`):
+
+```bash
+npm install
+npm run install:browsers
+npm run crawl:emart -- --keyword "산토리 가쿠빈 700ml"
+npm run preview:emart -- --keyword "산토리 가쿠빈 700ml"
+npm run ingest:emart -- --keyword "산토리 가쿠빈 700ml"
+npm run preview:emart:batch
+npm run ingest:emart:batch
+npm run crawl:lotteon -- --keyword "조니워커 블랙 라벨 700ml"
+npm run preview:lotteon -- --keyword "조니워커 블랙 라벨 700ml"
+npm run ingest:lotteon -- --keyword "조니워커 블랙 라벨 700ml"
+npm run preview:lotteon:batch
+npm run ingest:lotteon:batch
+```
+
+preview CLI는 서버 전용 Supabase 자격증명이 필요하며,
+`backend/crawler-playwright/.env` → `backend/.env` → `frontend/.env.local` 순서로 자동 탐색합니다.
+preview 결과에는 `confidence`, `reviewNeeded`, `blockReason`, `autoWriteAllowed`가 포함되어 자동 적재 위험도를 먼저 볼 수 있습니다. 매칭 성공 시 `liquor_info.sub_category` 기반 세부 분류(예: `Blended`, `Single Malt`, `Bourbon`)도 함께 포함됩니다.
+ingest CLI는 같은 safety gate를 통과한 건만 실제 upsert를 수행하고, 차단된 건은 write artifact에 block reason만 남깁니다. Emart는 신규 master insert를 review 대상으로 차단하고 기존 `liquor` reuse/update 중심으로 운영합니다.
 
 프론트엔드 (`frontend/`):
 
@@ -146,6 +172,7 @@ curl -X POST http://localhost:8081/api/crawl/emart
 ## 주의사항
 
 - Selenium 사용을 위해 로컬 Chrome 설치가 필요합니다.
+- `backend/crawler-playwright`는 Selenium을 대체하지 않는 병행 런타임이며, 현재는 Emart/Lotteon preview와 safety gate 통과 건의 실제 upsert를 제공합니다.
 - 사이트 구조 변경 시 크롤러 파서 수정이 필요합니다.
 - `backend/crawler`는 `spring.jpa.hibernate.ddl-auto=validate`이므로 대상 DB에 스키마가 먼저 있어야 실행됩니다.
 - 기본 이미지는 현재 Supabase Storage 공개 경로 fallback을 유지합니다.

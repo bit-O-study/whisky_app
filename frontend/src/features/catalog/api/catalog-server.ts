@@ -12,6 +12,11 @@ interface LiquorRow {
   normalized_name: string | null;
   brand: string | null;
   category: string | null;
+  liquor_info?: {
+    sub_category?: string | null;
+    volume_ml?: number | null;
+    alcohol_percent?: number | null;
+  } | null;
   volume_ml: number | null;
   alcohol_percent: number | null;
   country: string | null;
@@ -20,6 +25,7 @@ interface LiquorRow {
   product_url: string | null;
   image_url: string | null;
   updated_at: string | null;
+  liquor_url?: LiquorUrlRow[] | null;
 }
 
 interface LiquorPriceRow {
@@ -28,6 +34,11 @@ interface LiquorPriceRow {
   current_price: number | null;
   original_price: number | null;
   crawled_at: string | null;
+}
+
+interface LiquorUrlRow {
+  source: string | null;
+  product_url: string | null;
 }
 
 type CatalogSearchMode = "none" | "short" | "trigram";
@@ -133,7 +144,15 @@ function normalizePrice(value: number | null | undefined) {
   return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : 0;
 }
 
-function buildVendorLookup(rows: LiquorPriceRow[], liquorRows: any[]) {
+function calculateDiscountPercent(currentPrice: number, originalPrice: number) {
+  if (currentPrice <= 0 || originalPrice <= currentPrice) {
+    return 0;
+  }
+
+  return Math.round((1 - currentPrice / originalPrice) * 100);
+}
+
+function buildVendorLookup(rows: LiquorPriceRow[], liquorRows: LiquorRow[]) {
   // 1. 기존: liquor_id -> URL 매핑
   // 변경: liquor_id + source -> URL 매핑 (예: "864:LOTTEON" -> "롯데온 URL")
   const urlLookupByLiquorAndSource = new Map<string, string>();
@@ -181,13 +200,19 @@ function buildVendorLookup(rows: LiquorPriceRow[], liquorRows: any[]) {
 
     const source = normalizeText(row.source, "UNKNOWN");
     const searchKey = `${row.liquor_id}:${source.toUpperCase()}`; // URL 맵에서 찾을 키 생성
+    const fallbackSearchKey = `${row.liquor_id}:UNKNOWN`;
+
+    const currentPrice = normalizePrice(row.current_price);
+    const originalPrice = normalizePrice(row.original_price);
 
     vendors.push({
       source: source,
-      current_price: normalizePrice(row.current_price),
-      original_price: normalizePrice(row.original_price),
+      current_price: currentPrice,
+      original_price: originalPrice,
       // 방금 만든 복합 키로 각 벤더의 고유 URL을 찾아 주입!
-      product_url: urlLookupByLiquorAndSource.get(searchKey) ?? "",
+      product_url: urlLookupByLiquorAndSource.get(searchKey) ?? urlLookupByLiquorAndSource.get(fallbackSearchKey) ?? "",
+      discount_percent: calculateDiscountPercent(currentPrice, originalPrice),
+      crawled_at: normalizeText(row.crawled_at),
     });
     vendorLookup.set(row.liquor_id, vendors);
   }
@@ -210,9 +235,10 @@ function mapLiquorRowToCatalogItem(row: LiquorRow, vendors: CatalogCardVendor[])
     name: normalizeText(row.product_name) || normalizeText(row.normalized_name, "Unknown"),
     brand: normalizeText(row.brand, "Unknown"),
     category: normalizeText(row.category, "Unknown"),
+    sub_category: normalizeText(row.liquor_info?.sub_category),
     volume: typeof row.volume_ml === "number" ? row.volume_ml : 700,
     alcohol_percent: typeof row.alcohol_percent === "number" ? row.alcohol_percent : 0,
-    country: normalizeText(row.country, "Unknown"),
+    country: normalizeText(row.country),
     image_url: normalizeText(row.image_url),
     vendors,
     lowest_price: Number.isFinite(lowestPrice) ? lowestPrice : 0,
@@ -227,7 +253,7 @@ export async function fetchCatalogPageFromServerWithClient(
   let query = supabase
       .from("liquor")
       .select(
-          "id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at",
+          "id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at, liquor_info!fk_liquor_info (sub_category), liquor_url!fk_liquor_url_liquor (source, product_url)",
       )
       .order("updated_at", { ascending: false })
       .range(plan.from, plan.to) as AwaitableQuery<LiquorRow>;
@@ -314,51 +340,121 @@ export async function fetchLiquorDetailFromServer(id: string): Promise<CatalogCa
         product_name,
         image_url,
         updated_at,
-        liquor_info!fk_liquor_info (volume_ml, alcohol_percent),
+        liquor_info!fk_liquor_info (volume_ml, alcohol_percent, sub_category),
         liquor_url!fk_liquor_url_liquor (source, product_url)
       `)
-      .in("id", [liquorId]);
+      .in("id", [liquorId]) as QueryResponse<LiquorRow>;
 
   if (liquorError || !liquors?.[0]) throw liquorError || new Error("Not Found");
 
-  const rawLiquor = liquors[0] as any;
-
-  const urlMap = new Map<string, string>();
-  if (Array.isArray(rawLiquor.liquor_url)) {
-    rawLiquor.liquor_url.forEach((u: any) => {
-      if (u.source && u.product_url) {
-        const safeKey = String(u.source).trim().toUpperCase();
-        urlMap.set(safeKey, u.product_url);
-      }
-    });
-  }
+  const rawLiquor = liquors[0];
 
   const { data: priceRows, error: priceError } = await supabase
       .from("liquor_price")
       .select("liquor_id, source, current_price, original_price, crawled_at")
       .in("liquor_id", [liquorId])
-      .order("crawled_at", { ascending: false });
+      .order("crawled_at", { ascending: false }) as QueryResponse<LiquorPriceRow>;
 
   if (priceError) throw priceError;
 
-  const pricesWithUrl = (priceRows ?? []).map((p: any) => {
-    const safeSearchKey = String(p.source).trim().toUpperCase();
-    const matchedUrl = urlMap.get(safeSearchKey) || "";
-    return {
-      ...p,
-      product_url: matchedUrl
-    };
-  });
+  // const pricesWithUrl = (priceRows ?? []).map((p: any) => {
+  //   const safeSearchKey = String(p.source).trim().toUpperCase();
+  //   const matchedUrl = urlMap.get(safeSearchKey) || "";
+  //   return {
+  //     ...p,
+  //     product_url: matchedUrl
+  //   };
+  // });
 
-  const liquorRow: any = {
+  const liquorRow: LiquorRow = {
     ...rawLiquor,
-    volume_ml: rawLiquor.liquor_info?.volume_ml ?? rawLiquor.volume_ml,
-    alcohol_percent: rawLiquor.liquor_info?.alcohol_percent ?? rawLiquor.alcohol_percent,
+    volume_ml: rawLiquor.liquor_info?.volume_ml ?? null,
+    alcohol_percent: rawLiquor.liquor_info?.alcohol_percent ?? null,
   };
 
   // 4. 조립 및 반환
-  const vendorLookup = buildVendorLookup(pricesWithUrl, [liquorRow]);
+  const vendorLookup = buildVendorLookup(priceRows ?? [], [liquorRow]);
   const mappedItem = mapLiquorRowToCatalogItem(liquorRow, vendorLookup.get(liquorRow.id) ?? []);
 
   return mappedItem;
+}
+
+export interface PriceHistoryPoint {
+  /** ISO date (YYYY-MM-DD) */
+  date: string;
+  /** lowest current_price across all sources for that day */
+  lowest: number;
+}
+
+interface RawHistoryRow {
+  source: string | null;
+  current_price: number | null;
+  crawled_at: string | null;
+}
+
+/**
+ * 특정 liquor의 가격 히스토리를 일자별로 집계해 반환.
+ * 각 날짜의 모든 소스의 current_price 중 MIN을 사용해 "그 날의 최저가"를 만든다.
+ */
+export async function fetchLiquorPriceHistoryFromServer(
+    id: string,
+    days: number = 90,
+): Promise<PriceHistoryPoint[]> {
+  const supabase = getSupabaseClient() as any;
+  const liquorId = parseInt(id, 10);
+  if (!Number.isFinite(liquorId)) return [];
+
+  const since = new Date();
+  since.setUTCDate(since.getUTCDate() - days);
+
+  const { data, error } = await supabase
+      .from("liquor_price_history")
+      .select("source, current_price, crawled_at")
+      .eq("liquor_id", liquorId)
+      .gte("crawled_at", since.toISOString())
+      .order("crawled_at", { ascending: true });
+
+  if (error) {
+    console.error("history fetch error", error);
+    return [];
+  }
+
+  // 1) 유효한 행만 골라서 시간순 정렬
+  const rows = ((data ?? []) as RawHistoryRow[])
+      .filter((r) => typeof r.current_price === "number" && r.current_price > 0 && !!r.crawled_at)
+      .map((r) => ({
+        source: (r.source ?? "UNKNOWN").toUpperCase(),
+        price: r.current_price as number,
+        ts: new Date(r.crawled_at as string),
+      }))
+      .filter((r) => !Number.isNaN(r.ts.getTime()))
+      .sort((a, b) => a.ts.getTime() - b.ts.getTime());
+
+  if (rows.length === 0) return [];
+
+  // 2) 일자별로 그룹
+  const byDay = new Map<string, typeof rows>();
+  for (const r of rows) {
+    const day = r.ts.toISOString().slice(0, 10);
+    const bucket = byDay.get(day);
+    if (bucket) bucket.push(r);
+    else byDay.set(day, [r]);
+  }
+
+  // 3) forward-fill: 각 source의 마지막 알려진 가격을 carry-forward.
+  //    그날의 최저가 = 그 시점에 알려진 모든 source 가격 중 MIN.
+  //    한 source가 다른 날 안 크롤되어도 직전 알려진 값을 살려서 비교.
+  const sortedDays = Array.from(byDay.keys()).sort();
+  const sourceLatest = new Map<string, number>();
+  const points: PriceHistoryPoint[] = [];
+  for (const day of sortedDays) {
+    for (const r of byDay.get(day)!) {
+      sourceLatest.set(r.source, r.price);
+    }
+    if (sourceLatest.size === 0) continue;
+    const lowest = Math.min(...sourceLatest.values());
+    points.push({ date: day, lowest });
+  }
+
+  return points;
 }

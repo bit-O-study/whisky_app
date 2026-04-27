@@ -11,8 +11,8 @@ function formatPrice(price: number) {
   return normalized.toLocaleString("ko-KR") + "원";
 }
 
-function formatMetaValue(value: string, fallback: string) {
-  return value && value !== "Unknown" ? value : fallback;
+function isKnownMetaValue(value: string) {
+  return Boolean(value && value !== "Unknown");
 }
 
 function getCardSignal(liquor: CatalogCardItem) {
@@ -31,8 +31,8 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
   const sortedVendors = liquor.vendors.slice().sort((a, b) => a.current_price - b.current_price);
   const bestVendor = sortedVendors[0];
   const signal = getCardSignal(liquor);
-  const metaLine = [liquor.brand, formatMetaValue(liquor.country, "Unknown")]
-    .filter(Boolean)
+  const metaLine = [liquor.brand, liquor.sub_category || liquor.category, liquor.country]
+    .filter(isKnownMetaValue)
     .join(" · ");
 
   return (
@@ -122,14 +122,19 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
                           {formatPrice(vendor.original_price)}
                         </span>
                       )}
-                      <span
-                        className={`catalog-mono text-sm font-bold ${
-                          bestVendor?.source === vendor.source
-                            ? "text-[color:var(--catalog-primary)]"
-                            : "text-[color:var(--catalog-ink)]"
-                        }`}
-                      >
-                        {vendor.current_price > 0 ? formatPrice(vendor.current_price) : "—"}
+                          {vendor.discount_percent > 0 && (
+                              <span className="text-[10px] font-bold text-[color:var(--catalog-primary)]">
+                                {vendor.discount_percent}%
+                              </span>
+                          )}
+                          <span
+                              className={`catalog-mono text-sm font-bold ${
+                                  bestVendor?.source === vendor.source
+                                      ? "text-[color:var(--catalog-primary)]"
+                                      : "text-[color:var(--catalog-ink)]"
+                              }`}
+                          >
+                        {vendor.current_price > 0 ? formatPrice(vendor.current_price) : "가격 확인 중"}
                       </span>
                     </span>
                   </a>
@@ -165,14 +170,19 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
                         {formatPrice(vendor.original_price)}
                       </span>
                     )}
-                    <span
-                      className={`catalog-mono text-sm font-bold ${
-                        bestVendor?.source === vendor.source
-                          ? "text-[color:var(--catalog-primary)]"
-                          : "text-[color:var(--catalog-ink)]"
-                      }`}
-                    >
-                      {vendor.current_price > 0 ? formatPrice(vendor.current_price) : "—"}
+                        {vendor.discount_percent > 0 && (
+                            <span className="text-[10px] font-bold text-white/80">
+                              {vendor.discount_percent}%
+                            </span>
+                        )}
+                      <span
+                          className={`catalog-mono text-sm font-bold ${
+                              bestVendor?.source === vendor.source
+                                  ? "text-[color:var(--catalog-primary)]"
+                                  : "text-[color:var(--catalog-ink)]"
+                          }`}
+                      >
+                      {vendor.current_price > 0 ? formatPrice(vendor.current_price) : "가격 확인 중"}
                     </span>
                   </span>
                 </a>
