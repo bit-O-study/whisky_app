@@ -1,4 +1,4 @@
-# 022.admin-image-storage-upload / brief
+# 036.admin-image-storage-upload / brief
 
 ## 요청
 - 관리자 상품 정보 수정 화면에서 이미지 URL 직접 입력 대신 사진 파일을 올리면 Supabase Storage에 업로드하고 `liquor.image_url`을 자동 갱신한다.

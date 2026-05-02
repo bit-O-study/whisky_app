@@ -1,4 +1,4 @@
-# 022.admin-image-storage-upload / progress
+# 036.admin-image-storage-upload / progress
 
 ## 로그
 - 2026-05-02: Supabase 공식 문서에서 Storage `.upload(...)` 후 public bucket은 `.getPublicUrl(...)`로 공개 URL을 만들 수 있음을 확인했다.

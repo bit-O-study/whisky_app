@@ -1,4 +1,4 @@
-# 022.admin-image-storage-upload / plan
+# 036.admin-image-storage-upload / plan
 
 ## 단계
 - [x] Supabase Storage 업로드 API와 bucket 기준을 확인한다.
