@@ -156,6 +156,7 @@ function buildVendorLookup(rows: LiquorPriceRow[], liquorRows: LiquorRow[]) {
   // 1. 기존: liquor_id -> URL 매핑
   // 변경: liquor_id + source -> URL 매핑 (예: "864:LOTTEON" -> "롯데온 URL")
   const urlLookupByLiquorAndSource = new Map<string, string>();
+  const fallbackUrlByLiquor = new Map<number, string>();
 
   for (const liquor of liquorRows) {
     // liquor.liquor_url 배열을 순회하면서 source별로 URL을 맵에 저장합니다.
@@ -166,9 +167,7 @@ function buildVendorLookup(rows: LiquorPriceRow[], liquorRows: LiquorRow[]) {
         urlLookupByLiquorAndSource.set(key, normalizeText(urlData.product_url));
       }
     } else if (liquor.product_url) {
-      // 만약 조인이 안된 단일 객체 구조가 섞여 들어올 경우를 대비한 방어 코드
-      const key = `${liquor.id}:UNKNOWN`;
-      urlLookupByLiquorAndSource.set(key, normalizeText(liquor.product_url));
+      fallbackUrlByLiquor.set(liquor.id, normalizeText(liquor.product_url));
     }
   }
 
@@ -210,7 +209,11 @@ function buildVendorLookup(rows: LiquorPriceRow[], liquorRows: LiquorRow[]) {
       current_price: currentPrice,
       original_price: originalPrice,
       // 방금 만든 복합 키로 각 벤더의 고유 URL을 찾아 주입!
-      product_url: urlLookupByLiquorAndSource.get(searchKey) ?? urlLookupByLiquorAndSource.get(fallbackSearchKey) ?? "",
+      product_url:
+        urlLookupByLiquorAndSource.get(searchKey) ??
+        urlLookupByLiquorAndSource.get(fallbackSearchKey) ??
+        fallbackUrlByLiquor.get(row.liquor_id) ??
+        "",
       discount_percent: calculateDiscountPercent(currentPrice, originalPrice),
       crawled_at: normalizeText(row.crawled_at),
     });
@@ -338,6 +341,7 @@ export async function fetchLiquorDetailFromServer(id: string): Promise<CatalogCa
         alcohol_percent,
         product_code,
         product_name,
+        product_url,
         image_url,
         updated_at,
         liquor_info!fk_liquor_info (volume_ml, alcohol_percent, sub_category),
@@ -357,19 +361,10 @@ export async function fetchLiquorDetailFromServer(id: string): Promise<CatalogCa
 
   if (priceError) throw priceError;
 
-  // const pricesWithUrl = (priceRows ?? []).map((p: any) => {
-  //   const safeSearchKey = String(p.source).trim().toUpperCase();
-  //   const matchedUrl = urlMap.get(safeSearchKey) || "";
-  //   return {
-  //     ...p,
-  //     product_url: matchedUrl
-  //   };
-  // });
-
   const liquorRow: LiquorRow = {
     ...rawLiquor,
-    volume_ml: rawLiquor.liquor_info?.volume_ml ?? null,
-    alcohol_percent: rawLiquor.liquor_info?.alcohol_percent ?? null,
+    volume_ml: rawLiquor.liquor_info?.volume_ml ?? rawLiquor.volume_ml,
+    alcohol_percent: rawLiquor.liquor_info?.alcohol_percent ?? rawLiquor.alcohol_percent,
   };
 
   // 4. 조립 및 반환
@@ -392,6 +387,17 @@ interface RawHistoryRow {
   crawled_at: string | null;
 }
 
+interface PriceHistoryQuery<T> extends PromiseLike<QueryResponse<T>> {
+  select(columns: string): PriceHistoryQuery<T>;
+  eq(column: string, value: number): PriceHistoryQuery<T>;
+  gte(column: string, value: string): PriceHistoryQuery<T>;
+  order(column: string, options: { ascending: boolean }): PriceHistoryQuery<T>;
+}
+
+interface PriceHistorySupabaseClient {
+  from(table: "liquor_price_history"): PriceHistoryQuery<RawHistoryRow>;
+}
+
 /**
  * 특정 liquor의 가격 히스토리를 일자별로 집계해 반환.
  * 각 날짜의 모든 소스의 current_price 중 MIN을 사용해 "그 날의 최저가"를 만든다.
@@ -400,7 +406,7 @@ export async function fetchLiquorPriceHistoryFromServer(
     id: string,
     days: number = 90,
 ): Promise<PriceHistoryPoint[]> {
-  const supabase = getSupabaseClient() as any;
+  const supabase = getSupabaseClient() as unknown as PriceHistorySupabaseClient;
   const liquorId = parseInt(id, 10);
   if (!Number.isFinite(liquorId)) return [];
 

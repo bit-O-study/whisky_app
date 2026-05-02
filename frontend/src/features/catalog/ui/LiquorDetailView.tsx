@@ -1,10 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { PriceHistoryPoint } from "../api/catalog-server";
+import type { CatalogCardItem, CatalogCardVendor } from "../model/catalog";
 import PriceTrendChart from "./PriceTrendChart";
 
 interface Props {
-    liquor: any;
+    liquor: CatalogCardItem;
     priceHistory?: PriceHistoryPoint[];
 }
 
@@ -14,7 +15,9 @@ function formatPrice(price: number) {
 }
 
 export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
-    const sortedVendors = (liquor.vendors ?? []).slice().sort((a: any, b: any) => a.current_price - b.current_price);
+    const sortedVendors = (liquor.vendors ?? [])
+        .slice()
+        .sort((a: CatalogCardVendor, b: CatalogCardVendor) => a.current_price - b.current_price);
     const bestVendor = sortedVendors[0];
 
     return (
@@ -136,7 +139,7 @@ export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
                     </div>
 
                     <ul className="space-y-2">
-                        {sortedVendors.map((v: any, idx: number) => (
+                        {sortedVendors.map((v, idx) => (
                             <li key={v.source}>
                                 <a
                                     href={v.product_url}
