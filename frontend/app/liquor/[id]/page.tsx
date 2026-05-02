@@ -46,6 +46,5 @@ export default async function LiquorDetailPage({ params }: PageProps) {
         notFound();
     }
 
-    // return <LiquorDetailView liquor={liquorData} />;
     return <LiquorDetailView liquor={liquorData} priceHistory={priceHistory ?? []} />;
 }
