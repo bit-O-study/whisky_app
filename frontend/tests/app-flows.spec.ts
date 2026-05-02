@@ -158,7 +158,7 @@ test("catalog search shows filtered result count", async ({ page }) => {
   await mockLiquorApis(page);
   await page.goto("/");
 
-  await expect(page.getByRole("button", { name: "위스키다모아" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "위스키다모아" })).toHaveAttribute("href", "/");
 
   const searchBox = page.getByPlaceholder(SEARCH_PLACEHOLDER);
   await searchBox.fill("Macallan");
