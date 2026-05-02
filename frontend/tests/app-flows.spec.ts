@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
+const SEARCH_PLACEHOLDER = "위스키 · 브랜드 검색";
+
 const baseLiquorList = [
   {
     id: 1,
@@ -158,10 +160,10 @@ test("catalog search shows filtered result count", async ({ page }) => {
 
   await expect(page.getByRole("button", { name: "위스키다모아" })).toBeVisible();
 
-  const searchBox = page.getByPlaceholder("위스키 이름, 브랜드로 검색...");
+  const searchBox = page.getByPlaceholder(SEARCH_PLACEHOLDER);
   await searchBox.fill("Macallan");
 
-  await expect(page.getByText('"Macallan" 검색 결과:')).toBeVisible();
+  await expect(page.getByText('"Macallan" 검색')).toBeVisible();
   await expect(page.getByText("Macallan 12")).toBeVisible();
   await expect(page.getByText("Talisker 10")).toHaveCount(0);
   await expect(page.getByText("상세 보기")).toHaveCount(0);
@@ -176,7 +178,7 @@ test("catalog loads next page on scroll", async ({ page }) => {
   });
   await page.goto("/");
 
-  const searchBox = page.getByPlaceholder("위스키 이름, 브랜드로 검색...");
+  const searchBox = page.getByPlaceholder(SEARCH_PLACEHOLDER);
   await searchBox.fill("Bottle");
   await expect(page.getByText(/^Bottle 1$/).first()).toBeVisible();
   await expect(page.getByText("Bottle 30")).toHaveCount(0);
@@ -198,11 +200,11 @@ test("catalog shows empty search result state", async ({ page }) => {
   await mockLiquorApis(page);
   await page.goto("/");
 
-  const searchBox = page.getByPlaceholder("위스키 이름, 브랜드로 검색...");
+  const searchBox = page.getByPlaceholder(SEARCH_PLACEHOLDER);
   await searchBox.fill("Lagavulin");
 
-  await expect(page.getByText('"Lagavulin"에 대한 검색 결과가 없습니다')).toBeVisible();
-  await expect(page.getByText("다른 검색어로 시도해보세요")).toBeVisible();
+  await expect(page.getByText('"Lagavulin" 결과가 없습니다')).toBeVisible();
+  await expect(page.getByText("다른 검색어를 시도해보세요")).toBeVisible();
 });
 
 test("catalog keeps current items when loading the next page fails and recovers on retry", async ({ page }) => {
@@ -213,7 +215,7 @@ test("catalog keeps current items when loading the next page fails and recovers 
   });
   await page.goto("/");
 
-  const searchBox = page.getByPlaceholder("위스키 이름, 브랜드로 검색...");
+  const searchBox = page.getByPlaceholder(SEARCH_PLACEHOLDER);
   await searchBox.fill("Bottle");
   await expect(page.getByText(/^Bottle 1$/).first()).toBeVisible();
 
