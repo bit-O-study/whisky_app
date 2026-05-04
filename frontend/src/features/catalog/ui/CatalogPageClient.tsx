@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { fetchCatalogPage } from "../api/catalog-client";
 import type { TodaysRecommendation } from "../api/catalog-server";
 import {
@@ -208,10 +209,6 @@ export default function CatalogPageClient({
     return arr;
   }, [liquors, sortKey]);
 
-  function handleLogoClick() {
-    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-  }
-
   function handleRetry() {
     setError(null);
     if (liquorPage === 0) {
@@ -227,18 +224,17 @@ export default function CatalogPageClient({
     <main className="catalog-shell min-h-screen pb-24 md:pb-20">
       <header className="catalog-glass sticky top-0 z-20">
         <div className="mx-auto flex max-w-[96rem] flex-col gap-4 px-5 py-4 sm:px-8 lg:flex-row lg:items-center lg:justify-between">
-          <button
-            type="button"
-            onClick={handleLogoClick}
+          <Link
+            href="/"
             className="group flex items-center gap-2.5 text-left transition-opacity hover:opacity-80"
             aria-label="위스키다모아"
-            title="페이지 상단으로 이동"
+            title="메인 페이지로 이동"
           >
             <span className="h-2.5 w-2.5 rounded-full bg-[color:var(--catalog-primary)]" />
             <span className="text-[1.4rem] font-bold leading-none tracking-[-0.02em] text-[color:var(--catalog-ink)]">
               위스키다모아
             </span>
-          </button>
+          </Link>
 
           <div className="w-full lg:max-w-md">
             <div className="relative group">
