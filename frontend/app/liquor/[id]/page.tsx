@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import LiquorDetailView from "@/features/catalog/ui/LiquorDetailView";
+import ViewTracker from "@/features/catalog/ui/ViewTracker";
 import {
     fetchLiquorDetailFromServer,
     fetchLiquorPriceHistoryFromServer,
@@ -46,5 +47,10 @@ export default async function LiquorDetailPage({ params }: PageProps) {
         notFound();
     }
 
-    return <LiquorDetailView liquor={liquorData} priceHistory={priceHistory ?? []} />;
+    return (
+        <>
+            <ViewTracker liquorId={liquorData.id} />
+            <LiquorDetailView liquor={liquorData} priceHistory={priceHistory ?? []} />
+        </>
+    );
 }
