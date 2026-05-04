@@ -11,10 +11,11 @@ import {
 } from "../model/catalog";
 import LiquorGrid from "./LiquorGrid";
 
-type SortKey = "newest" | "lowest" | "highest";
+type SortKey = "newest" | "popular" | "lowest" | "highest";
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: "newest", label: "Newest" },
+  { key: "popular", label: "Popular" },
   { key: "lowest", label: "Lowest" },
   { key: "highest", label: "Highest" },
 ];
@@ -167,10 +168,20 @@ export default function CatalogPageClient({
 
   // 정렬은 클라이언트에서 처리 (서버는 항상 updated_at desc로 내려옴 = newest 기본).
   // 가격 0(미수집)은 정렬 끝으로 밀어서 진짜 가격 있는 상품이 먼저 보이게.
+  // popular = 등록된 vendor 수가 많은 순(여러 채널에 노출 = 더 인기), 동률 시 최저가 낮은 순.
   const sortedLiquors = useMemo(() => {
     if (sortKey === "newest") return liquors;
     const arr = liquors.slice();
-    if (sortKey === "lowest") {
+    if (sortKey === "popular") {
+      arr.sort((a, b) => {
+        const av = a.vendors?.length ?? 0;
+        const bv = b.vendors?.length ?? 0;
+        if (bv !== av) return bv - av;
+        const ap = a.lowest_price > 0 ? a.lowest_price : Number.POSITIVE_INFINITY;
+        const bp = b.lowest_price > 0 ? b.lowest_price : Number.POSITIVE_INFINITY;
+        return ap - bp;
+      });
+    } else if (sortKey === "lowest") {
       arr.sort((a, b) => {
         const ap = a.lowest_price > 0 ? a.lowest_price : Number.POSITIVE_INFINITY;
         const bp = b.lowest_price > 0 ? b.lowest_price : Number.POSITIVE_INFINITY;

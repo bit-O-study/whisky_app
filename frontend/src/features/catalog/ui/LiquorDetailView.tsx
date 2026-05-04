@@ -1,10 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { PriceHistoryPoint } from "../api/catalog-server";
+import type { CatalogCardItem, CatalogCardVendor } from "../model/catalog";
 import PriceTrendChart from "./PriceTrendChart";
 
 interface Props {
-    liquor: any;
+    liquor: CatalogCardItem;
     priceHistory?: PriceHistoryPoint[];
 }
 
@@ -13,9 +14,46 @@ function formatPrice(price: number) {
     return price.toLocaleString("ko-KR") + "원";
 }
 
+function formatRelativeFromNow(value?: string | null) {
+    if (!value) return null;
+    const ts = new Date(value).getTime();
+    if (!Number.isFinite(ts)) return null;
+    const diffMs = Date.now() - ts;
+    if (diffMs < 0) return "방금";
+    const minutes = Math.floor(diffMs / 60_000);
+    if (minutes < 1) return "방금";
+    if (minutes < 60) return `${minutes}분 전`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}시간 전`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days}일 전`;
+    const months = Math.floor(days / 30);
+    if (months < 12) return `${months}개월 전`;
+    return `${Math.floor(months / 12)}년 전`;
+}
+
+function formatDateShort(value?: string | null) {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" });
+}
+
 export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
-    const sortedVendors = (liquor.vendors ?? []).slice().sort((a: any, b: any) => a.current_price - b.current_price);
+    const sortedVendors = (liquor.vendors ?? [])
+        .slice()
+        .sort((a: CatalogCardVendor, b: CatalogCardVendor) => a.current_price - b.current_price);
     const bestVendor = sortedVendors[0];
+
+    let latestCrawledAt: string | null = null;
+    for (const vendor of liquor.vendors ?? []) {
+        if (!vendor?.crawled_at) continue;
+        if (!latestCrawledAt || new Date(vendor.crawled_at).getTime() > new Date(latestCrawledAt).getTime()) {
+            latestCrawledAt = vendor.crawled_at;
+        }
+    }
+    const latestRelative = formatRelativeFromNow(latestCrawledAt);
+    const latestExact = formatDateShort(latestCrawledAt);
 
     return (
         <div className="min-h-screen bg-[color:var(--catalog-bg-solid)] text-[color:var(--catalog-ink)]">
@@ -91,6 +129,15 @@ export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
                                             via {bestVendor.source}
                                         </p>
                                     )}
+                                    {latestRelative && (
+                                        <p
+                                            className="mt-3 text-[11px] text-[color:var(--catalog-soft)]"
+                                            title={latestExact ?? undefined}
+                                        >
+                                            가격 갱신: {latestRelative}
+                                            {latestExact ? ` · ${latestExact}` : ""}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
@@ -136,7 +183,7 @@ export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
                     </div>
 
                     <ul className="space-y-2">
-                        {sortedVendors.map((v: any, idx: number) => (
+                        {sortedVendors.map((v, idx) => (
                             <li key={v.source}>
                                 <a
                                     href={v.product_url}
@@ -160,6 +207,14 @@ export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
                                             {v.original_price > v.current_price && (
                                                 <p className="mt-0.5 catalog-mono text-[11px] text-[color:var(--catalog-soft)] line-through">
                                                     {formatPrice(v.original_price)}
+                                                </p>
+                                            )}
+                                            {v.crawled_at && (
+                                                <p
+                                                    className="mt-0.5 catalog-mono text-[10px] text-[color:var(--catalog-soft)]"
+                                                    title={formatDateShort(v.crawled_at) ?? undefined}
+                                                >
+                                                    {formatRelativeFromNow(v.crawled_at)}
                                                 </p>
                                             )}
                                         </div>
