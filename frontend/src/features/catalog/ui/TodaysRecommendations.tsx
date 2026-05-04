@@ -16,21 +16,16 @@ export default function TodaysRecommendations({ recommendations }: Props) {
   return (
     <section className="mx-auto max-w-[96rem] px-5 pt-12 sm:px-8 md:pt-20">
       <div className="mb-6 flex items-end justify-between">
-        <div>
-          <span className="catalog-kicker">
-            <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--catalog-primary)]" />
-            오늘의 추천
-          </span>
-          <h2 className="mt-3 text-2xl font-bold tracking-[-0.02em] text-[color:var(--catalog-ink)] md:text-[1.7rem]">
-            역대 최저가 + 최근 가격 하락
-          </h2>
-        </div>
+        <span className="catalog-kicker">
+          <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--catalog-primary)]" />
+          오늘의 추천
+        </span>
         <span className="catalog-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--catalog-muted)]">
           BUY NOW
         </span>
       </div>
 
-      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid grid-cols-1 gap-4">
         {recommendations.map((rec) => {
           const dropPct = Math.round(rec.dropRatio * 100);
           return (
