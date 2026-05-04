@@ -16,7 +16,7 @@ export default async function HomePage() {
     try {
         [initialPage, recommendations] = await Promise.all([
             fetchCatalogPageFromServer({ page: 0, size: INITIAL_PAGE_SIZE }),
-            fetchTodaysRecommendationsFromServer(3),
+            fetchTodaysRecommendationsFromServer(1),
         ]);
     } catch (error) {
         console.error("Failed to preload home content", error);
