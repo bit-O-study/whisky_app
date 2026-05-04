@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { fetchCatalogPage } from "../api/catalog-client";
+import type { TodaysRecommendation } from "../api/catalog-server";
 import {
   getCatalogLoadErrorMessage,
   mergeCatalogPageItems,
@@ -11,18 +12,21 @@ import {
   type CatalogCardItem,
 } from "../model/catalog";
 import LiquorGrid from "./LiquorGrid";
+import TodaysRecommendations from "./TodaysRecommendations";
 
-type SortKey = "newest" | "lowest" | "highest";
+type SortKey = "newest" | "popular" | "lowest" | "highest";
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: "newest", label: "Newest" },
-  { key: "lowest", label: "Lowest" },
-  { key: "highest", label: "Highest" },
+  { key: "newest", label: "최신순" },
+  { key: "popular", label: "인기순" },
+  { key: "lowest", label: "가격낮은순" },
+  { key: "highest", label: "가격높은순" },
 ];
 
 interface CatalogPageClientProps {
   initialError?: string | null;
   initialPage?: CatalogPage;
+  recommendations?: TodaysRecommendation[];
 }
 
 const EMPTY_CATALOG_PAGE: CatalogPage = {
@@ -39,6 +43,7 @@ function formatCount(value: number) {
 export default function CatalogPageClient({
   initialError = null,
   initialPage = EMPTY_CATALOG_PAGE,
+  recommendations = [],
 }: CatalogPageClientProps) {
   const initialItemCount = initialPage.items.length;
   const [searchQuery, setSearchQuery] = useState("");
@@ -168,10 +173,27 @@ export default function CatalogPageClient({
 
   // 정렬은 클라이언트에서 처리 (서버는 항상 updated_at desc로 내려옴 = newest 기본).
   // 가격 0(미수집)은 정렬 끝으로 밀어서 진짜 가격 있는 상품이 먼저 보이게.
+  // popular = view_count(0.7) + vendor 수(0.3) 정규화 합산. 둘 다 max 기준으로 정규화해
+  // 한쪽 값이 폭주해도 비율이 무너지지 않게 한다. 같은 점수면 최저가 낮은 순으로 결정.
   const sortedLiquors = useMemo(() => {
     if (sortKey === "newest") return liquors;
     const arr = liquors.slice();
-    if (sortKey === "lowest") {
+    if (sortKey === "popular") {
+      const maxView = Math.max(1, ...arr.map((item) => item.view_count ?? 0));
+      const maxVendor = Math.max(1, ...arr.map((item) => item.vendors?.length ?? 0));
+      const score = (item: CatalogCardItem) => {
+        const view = (item.view_count ?? 0) / maxView;
+        const vendor = (item.vendors?.length ?? 0) / maxVendor;
+        return view * 0.7 + vendor * 0.3;
+      };
+      arr.sort((a, b) => {
+        const diff = score(b) - score(a);
+        if (diff !== 0) return diff;
+        const ap = a.lowest_price > 0 ? a.lowest_price : Number.POSITIVE_INFINITY;
+        const bp = b.lowest_price > 0 ? b.lowest_price : Number.POSITIVE_INFINITY;
+        return ap - bp;
+      });
+    } else if (sortKey === "lowest") {
       arr.sort((a, b) => {
         const ap = a.lowest_price > 0 ? a.lowest_price : Number.POSITIVE_INFINITY;
         const bp = b.lowest_price > 0 ? b.lowest_price : Number.POSITIVE_INFINITY;
@@ -268,6 +290,8 @@ export default function CatalogPageClient({
           최저가 · 판매처 · 시세 변동을 한곳에 정리했습니다.
         </p>
       </section>
+
+      <TodaysRecommendations recommendations={recommendations} />
 
       <section className="mx-auto max-w-[96rem] px-5 pt-14 sm:px-8 md:pt-16">
         <div className="mb-8 flex flex-col gap-4 border-t border-[color:var(--catalog-hairline)] pt-8 lg:flex-row lg:items-center lg:justify-between">
