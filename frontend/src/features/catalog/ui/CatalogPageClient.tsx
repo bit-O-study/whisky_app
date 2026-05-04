@@ -277,21 +277,24 @@ export default function CatalogPageClient({
 
       {/* HERO band */}
       <section className="mx-auto max-w-[96rem] px-5 pt-14 sm:px-8 md:pt-24">
-        <span className="catalog-kicker">
-          <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--catalog-primary)]" />
-          CURATED MARKET · 2026
-        </span>
-        <h1 className="mt-5 text-[2.6rem] font-bold leading-[0.98] tracking-[-0.035em] text-[color:var(--catalog-ink)] sm:text-[3.8rem] md:text-[5rem]">
-          오늘 가장 합리적인<br />
-          <span className="catalog-editorial italic font-medium text-[color:var(--catalog-primary)]">한 병</span>의 가격.
-        </h1>
-        <p className="mt-6 max-w-xl text-base leading-8 text-[color:var(--catalog-muted)] md:text-[1.05rem]">
-          국내 주요 쇼핑몰의 위스키 가격을 매일 갱신해 한눈에 비교합니다.
-          최저가 · 판매처 · 시세 변동을 한곳에 정리했습니다.
-        </p>
+        <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between md:gap-12">
+          <div className="flex-1">
+            <span className="catalog-kicker">
+              <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--catalog-primary)]" />
+              CURATED MARKET · 2026
+            </span>
+            <h1 className="mt-5 text-[2.6rem] font-bold leading-[0.98] tracking-[-0.035em] text-[color:var(--catalog-ink)] sm:text-[3.8rem] md:text-[5rem]">
+              오늘 가장 합리적인<br />
+              <span className="catalog-editorial italic font-medium text-[color:var(--catalog-primary)]">한 병</span>의 가격.
+            </h1>
+            <p className="mt-6 max-w-xl text-base leading-8 text-[color:var(--catalog-muted)] md:text-[1.05rem]">
+              국내 주요 쇼핑몰의 위스키 가격을 매일 갱신해 한눈에 비교합니다.
+              최저가 · 판매처 · 시세 변동을 한곳에 정리했습니다.
+            </p>
+          </div>
+          <TodaysRecommendations recommendations={recommendations} />
+        </div>
       </section>
-
-      <TodaysRecommendations recommendations={recommendations} />
 
       <section className="mx-auto max-w-[96rem] px-5 pt-14 sm:px-8 md:pt-16">
         <div className="mb-8 flex flex-col gap-4 border-t border-[color:var(--catalog-hairline)] pt-8 lg:flex-row lg:items-center lg:justify-between">
