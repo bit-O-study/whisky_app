@@ -296,8 +296,6 @@ export default function CatalogPageClient({
         </div>
       </section>
 
-      <TodaysRecommendations recommendations={recommendations} />
-
       <section className="mx-auto max-w-[96rem] px-5 pt-14 sm:px-8 md:pt-16">
         <div className="mb-8 flex flex-col gap-4 border-t border-[color:var(--catalog-hairline)] pt-8 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-baseline gap-3">
