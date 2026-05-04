@@ -19,6 +19,7 @@ const macallanCard = {
   country: "Scotland",
   image_url: "https://example.com/macallan.jpg",
   lowest_price: 94000,
+  view_count: 0,
   vendors: [
     {
       source: "LOTTEON",

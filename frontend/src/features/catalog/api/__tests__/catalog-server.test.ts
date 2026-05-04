@@ -69,6 +69,7 @@ class FakeSupabaseClient {
       product_url: string | null;
       image_url: string | null;
       updated_at: string | null;
+      view_count?: number | null;
       liquor_info?: { sub_category?: string | null } | null;
       liquor_url?: Array<{ source: string | null; product_url: string | null }> | null;
     }>,

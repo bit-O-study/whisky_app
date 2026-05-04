@@ -20,6 +20,7 @@ export interface CatalogCardItem {
   image_url: string;
   vendors: CatalogCardVendor[];
   lowest_price: number;
+  view_count: number;
 }
 
 export interface CatalogPage {

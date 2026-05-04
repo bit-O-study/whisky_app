@@ -25,6 +25,7 @@ interface LiquorRow {
   product_url: string | null;
   image_url: string | null;
   updated_at: string | null;
+  view_count?: number | null;
   liquor_url?: LiquorUrlRow[] | null;
 }
 
@@ -242,6 +243,7 @@ function mapLiquorRowToCatalogItem(row: LiquorRow, vendors: CatalogCardVendor[])
     image_url: normalizeText(row.image_url),
     vendors,
     lowest_price: Number.isFinite(lowestPrice) ? lowestPrice : 0,
+    view_count: typeof row.view_count === "number" ? row.view_count : 0,
   };
 }
 
@@ -253,7 +255,7 @@ export async function fetchCatalogPageFromServerWithClient(
   let query = supabase
       .from("liquor")
       .select(
-          "id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at, liquor_info!fk_liquor_info (sub_category), liquor_url!fk_liquor_url_liquor (source, product_url)",
+          "id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at, view_count, liquor_info!fk_liquor_info (sub_category), liquor_url!fk_liquor_url_liquor (source, product_url)",
       )
       .order("updated_at", { ascending: false })
       .range(plan.from, plan.to) as AwaitableQuery<LiquorRow>;
@@ -340,6 +342,7 @@ export async function fetchLiquorDetailFromServer(id: string): Promise<CatalogCa
         product_name,
         image_url,
         updated_at,
+        view_count,
         liquor_info!fk_liquor_info (volume_ml, alcohol_percent, sub_category),
         liquor_url!fk_liquor_url_liquor (source, product_url)
       `)
@@ -379,6 +382,189 @@ export async function fetchLiquorDetailFromServer(id: string): Promise<CatalogCa
   return mappedItem;
 }
 
+export interface TodaysRecommendation {
+  liquor: CatalogCardItem;
+  /** 역대 최저가 (= 현재가) */
+  allTimeLow: number;
+  /** 7일 전 평균가 */
+  sevenDayAvg: number;
+  /** 절대 하락폭 (7d_avg - current) */
+  dropAmount: number;
+  /** 하락 비율 (0~1) */
+  dropRatio: number;
+}
+
+interface RecommendationHistoryRow {
+  liquor_id: number;
+  source: string | null;
+  current_price: number | null;
+  crawled_at: string | null;
+}
+
+/**
+ * 오늘의 추천 = "역대 최저가에 해당하면서 최근 7일 평균보다 떨어진 상품" top N.
+ * - 후보 풀: 최근 90일 history.
+ * - 현재가는 각 liquor의 가장 최근 source별 가격 중 최저값(= 카탈로그 카드의 lowest_price 와 동일 의미).
+ * - ATL 비교는 history 전체 기간(있는 만큼)의 최소 current_price.
+ * - 하락 신호는 [현재로부터 8~1일 전] 윈도우의 평균 가격을 기준선으로 사용 (오늘 데이터 노이즈 피하려고 어제까지로 컷).
+ */
+export async function fetchTodaysRecommendationsFromServer(limit = 3): Promise<TodaysRecommendation[]> {
+  const supabase = getSupabaseClient() as unknown as {
+    from(table: "liquor_price_history" | "liquor"): {
+      select(columns: string): {
+        gte(column: string, value: string): {
+          order(column: string, opts: { ascending: boolean }): Promise<{ data: RecommendationHistoryRow[] | null; error: { message?: string } | null }>;
+        };
+        in(column: string, values: number[]): Promise<{ data: LiquorRow[] | null; error: { message?: string } | null }>;
+      };
+    };
+  };
+
+  const ninetyDaysAgo = new Date();
+  ninetyDaysAgo.setUTCDate(ninetyDaysAgo.getUTCDate() - 90);
+
+  const { data: rawHistory, error: historyError } = await supabase
+    .from("liquor_price_history")
+    .select("liquor_id, source, current_price, crawled_at")
+    .gte("crawled_at", ninetyDaysAgo.toISOString())
+    .order("crawled_at", { ascending: true });
+
+  if (historyError) {
+    console.error("recommendation history fetch error", historyError);
+    return [];
+  }
+
+  const rows = (rawHistory ?? []).filter(
+    (row): row is { liquor_id: number; source: string | null; current_price: number; crawled_at: string } =>
+      typeof row.current_price === "number" &&
+      row.current_price > 0 &&
+      typeof row.crawled_at === "string" &&
+      typeof row.liquor_id === "number",
+  );
+  if (rows.length === 0) return [];
+
+  // 시간순 정렬 보장 후 source별 마지막 가격을 가져와 그 중 최저값을 "현재가"로 친다.
+  rows.sort((a, b) => new Date(a.crawled_at).getTime() - new Date(b.crawled_at).getTime());
+
+  const eightDaysAgo = Date.now() - 8 * 86_400_000;
+  const oneDayAgo = Date.now() - 86_400_000;
+
+  interface Aggregated {
+    liquorId: number;
+    allTimeLow: number;
+    currentBySource: Map<string, { price: number; ts: number }>;
+    baselineSamples: number[];
+  }
+
+  const aggMap = new Map<number, Aggregated>();
+  for (const row of rows) {
+    const ts = new Date(row.crawled_at).getTime();
+    const source = (row.source ?? "UNKNOWN").toUpperCase();
+    let agg = aggMap.get(row.liquor_id);
+    if (!agg) {
+      agg = {
+        liquorId: row.liquor_id,
+        allTimeLow: row.current_price,
+        currentBySource: new Map(),
+        baselineSamples: [],
+      };
+      aggMap.set(row.liquor_id, agg);
+    }
+    if (row.current_price < agg.allTimeLow) agg.allTimeLow = row.current_price;
+    const existing = agg.currentBySource.get(source);
+    if (!existing || ts >= existing.ts) {
+      agg.currentBySource.set(source, { price: row.current_price, ts });
+    }
+    if (ts >= eightDaysAgo && ts < oneDayAgo) {
+      agg.baselineSamples.push(row.current_price);
+    }
+  }
+
+  interface Candidate {
+    liquorId: number;
+    currentPrice: number;
+    allTimeLow: number;
+    sevenDayAvg: number;
+    dropAmount: number;
+    dropRatio: number;
+  }
+
+  const candidates: Candidate[] = [];
+  for (const agg of aggMap.values()) {
+    if (agg.currentBySource.size === 0 || agg.baselineSamples.length === 0) continue;
+    let currentPrice = Number.POSITIVE_INFINITY;
+    for (const value of agg.currentBySource.values()) {
+      if (value.price < currentPrice) currentPrice = value.price;
+    }
+    if (!Number.isFinite(currentPrice)) continue;
+    if (currentPrice > agg.allTimeLow) continue; // 역대 최저가가 아니면 제외
+    const sevenDayAvg = agg.baselineSamples.reduce((s, v) => s + v, 0) / agg.baselineSamples.length;
+    if (currentPrice >= sevenDayAvg) continue; // 최근 평균보다 떨어졌어야 함
+    const dropAmount = sevenDayAvg - currentPrice;
+    candidates.push({
+      liquorId: agg.liquorId,
+      currentPrice,
+      allTimeLow: agg.allTimeLow,
+      sevenDayAvg,
+      dropAmount,
+      dropRatio: dropAmount / sevenDayAvg,
+    });
+  }
+
+  if (candidates.length === 0) return [];
+
+  candidates.sort((a, b) => b.dropAmount - a.dropAmount);
+  const topIds = candidates.slice(0, Math.max(1, limit)).map((c) => c.liquorId);
+
+  // 카드에 필요한 메타데이터를 한 번에 채우기: liquor + 같은 mapping 재사용.
+  const { data: liquorRowsRaw, error: liquorError } = await supabase
+    .from("liquor")
+    .select(
+      "id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at, view_count, liquor_info!fk_liquor_info (sub_category), liquor_url!fk_liquor_url_liquor (source, product_url)",
+    )
+    .in("id", topIds);
+
+  if (liquorError) {
+    console.error("recommendation liquor fetch error", liquorError);
+    return [];
+  }
+
+  const liquorRows = (liquorRowsRaw ?? []) as LiquorRow[];
+  const supabaseForPrices = getSupabaseClient() as unknown as CatalogSupabaseClient;
+  const { data: priceRowsRaw, error: priceError } = await supabaseForPrices
+    .from("liquor_price")
+    .select("liquor_id, source, current_price, original_price, crawled_at")
+    .in("liquor_id", topIds)
+    .order("crawled_at", { ascending: false });
+
+  if (priceError) {
+    console.error("recommendation price fetch error", priceError);
+    return [];
+  }
+
+  const priceRows = (priceRowsRaw ?? []) as LiquorPriceRow[];
+  const vendorLookup = buildVendorLookup(priceRows, liquorRows);
+  const itemsById = new Map<number, CatalogCardItem>();
+  for (const row of liquorRows) {
+    itemsById.set(row.id, mapLiquorRowToCatalogItem(row, vendorLookup.get(row.id) ?? []));
+  }
+
+  const result: TodaysRecommendation[] = [];
+  for (const candidate of candidates) {
+    const liquor = itemsById.get(candidate.liquorId);
+    if (!liquor) continue;
+    result.push({
+      liquor,
+      allTimeLow: candidate.allTimeLow,
+      sevenDayAvg: Math.round(candidate.sevenDayAvg),
+      dropAmount: Math.round(candidate.dropAmount),
+      dropRatio: candidate.dropRatio,
+    });
+    if (result.length >= limit) break;
+  }
+  return result;
+}
+
 export interface PriceHistoryPoint {
   /** ISO date (YYYY-MM-DD) */
   date: string;
@@ -400,6 +586,7 @@ export async function fetchLiquorPriceHistoryFromServer(
     id: string,
     days: number = 90,
 ): Promise<PriceHistoryPoint[]> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = getSupabaseClient() as any;
   const liquorId = parseInt(id, 10);
   if (!Number.isFinite(liquorId)) return [];
