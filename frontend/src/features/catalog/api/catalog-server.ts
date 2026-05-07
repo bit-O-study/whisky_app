@@ -1,5 +1,14 @@
 import { getSupabaseClient } from "../../../lib/supabase";
-import type { CatalogCardItem, CatalogCardVendor, CatalogPage } from "../model/catalog";
+import {
+  FLAVOR_AXES,
+  type CatalogCardItem,
+  type CatalogCardVendor,
+  type CatalogPage,
+  type FlavorAxis,
+} from "../model/catalog";
+
+export { FLAVOR_AXES, FLAVOR_AXIS_LABELS } from "../model/catalog";
+export type { FlavorAxis } from "../model/catalog";
 
 interface FetchCatalogPageFromServerParams {
   keyword?: string;
@@ -576,6 +585,49 @@ export async function fetchTodaysRecommendationsFromServer(limit = 3): Promise<T
       dropRatio: candidate.dropRatio,
     });
     if (result.length >= limit) break;
+  }
+  return result;
+}
+
+export async function fetchFlavorRecommendationsFromServer(
+  perAxis: number = 4,
+): Promise<Record<FlavorAxis, CatalogCardItem[]>> {
+  const supabase = getSupabaseClient() as unknown as CatalogSupabaseClient;
+  const result = {} as Record<FlavorAxis, CatalogCardItem[]>;
+
+  for (const axis of FLAVOR_AXES) {
+    try {
+      const { data: rows } = (await supabase
+        .from("liquor")
+        .select(
+          "id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at, view_count, sweet, smoky, fruity, spicy, woody, body, liquor_info!fk_liquor_info (sub_category), liquor_url!fk_liquor_url_liquor (source, product_url)",
+        )
+        .order(axis, { ascending: false })
+        .limit(perAxis * 2)) as QueryResponse<LiquorRow>;
+
+      const liquorRows = ((rows ?? []) as LiquorRow[]).filter((r) => {
+        const v = (r as unknown as Record<string, unknown>)[axis];
+        return typeof v === "number" && Number.isFinite(v) && v > 0;
+      });
+      const top = liquorRows.slice(0, perAxis);
+      const ids = top.map((r) => r.id);
+      if (ids.length === 0) {
+        result[axis] = [];
+        continue;
+      }
+
+      const { data: priceRows } = (await supabase
+        .from("liquor_price")
+        .select("liquor_id, source, current_price, original_price, crawled_at")
+        .in("liquor_id", ids)
+        .order("crawled_at", { ascending: false })) as QueryResponse<LiquorPriceRow>;
+
+      const vendorLookup = buildVendorLookup(priceRows ?? [], top);
+      result[axis] = top.map((row) => mapLiquorRowToCatalogItem(row, vendorLookup.get(row.id) ?? []));
+    } catch (err) {
+      console.error(`fetchFlavorRecommendations ${axis} failed`, err);
+      result[axis] = [];
+    }
   }
   return result;
 }
