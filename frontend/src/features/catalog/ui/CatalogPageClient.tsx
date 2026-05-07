@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { fetchCatalogPage } from "../api/catalog-client";
-import type { SourceKey, TodaysRecommendation } from "../api/catalog-server";
+import type { FlavorAxis, SourceKey, TodaysRecommendation } from "../api/catalog-server";
 import {
   getCatalogLoadErrorMessage,
   mergeCatalogPageItems,
@@ -11,6 +11,7 @@ import {
   type CatalogPage,
   type CatalogCardItem,
 } from "../model/catalog";
+import FlavorRecommendations from "./FlavorRecommendations";
 import LiquorGrid from "./LiquorGrid";
 import SourceRecommendations from "./SourceRecommendations";
 import TodaysRecommendations from "./TodaysRecommendations";
@@ -30,6 +31,7 @@ interface CatalogPageClientProps {
   initialPage?: CatalogPage;
   recommendations?: TodaysRecommendation[];
   sourceRecommendations?: Record<SourceKey, CatalogCardItem[]>;
+  flavorRecommendations?: Record<FlavorAxis, CatalogCardItem[]>;
 }
 
 const EMPTY_SOURCE_RECS: Record<SourceKey, CatalogCardItem[]> = {
@@ -37,6 +39,13 @@ const EMPTY_SOURCE_RECS: Record<SourceKey, CatalogCardItem[]> = {
   EMART: [],
   EMART_TRADERS: [],
   COSTCO: [],
+};
+
+const EMPTY_FLAVOR_RECS: Record<FlavorAxis, CatalogCardItem[]> = {
+  sweet: [],
+  smoky: [],
+  fruity: [],
+  body: [],
 };
 
 const EMPTY_CATALOG_PAGE: CatalogPage = {
@@ -55,6 +64,7 @@ export default function CatalogPageClient({
   initialPage = EMPTY_CATALOG_PAGE,
   recommendations = [],
   sourceRecommendations = EMPTY_SOURCE_RECS,
+  flavorRecommendations = EMPTY_FLAVOR_RECS,
 }: CatalogPageClientProps) {
   const initialItemCount = initialPage.items.length;
   const [searchQuery, setSearchQuery] = useState("");
@@ -307,6 +317,7 @@ export default function CatalogPageClient({
               최저가 · 판매처 · 시세 변동을 한곳에 정리했습니다.
             </p>
             <SourceRecommendations recommendations={sourceRecommendations} />
+            <FlavorRecommendations recommendations={flavorRecommendations} />
           </div>
           <TodaysRecommendations recommendations={recommendations} />
         </div>

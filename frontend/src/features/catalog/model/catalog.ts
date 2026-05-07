@@ -29,6 +29,16 @@ export interface CatalogCardItem {
   body: number | null;
 }
 
+export const FLAVOR_AXES = ["sweet", "smoky", "fruity", "body"] as const;
+export type FlavorAxis = (typeof FLAVOR_AXES)[number];
+
+export const FLAVOR_AXIS_LABELS: Record<FlavorAxis, { label: string; tagline: string }> = {
+  sweet: { label: "달콤한 한 잔", tagline: "달콤함이 풍부한 양주" },
+  smoky: { label: "스모키한 한 잔", tagline: "피트와 스모크가 강한 양주" },
+  fruity: { label: "과일향 풍부한 한 잔", tagline: "신선한 과일 노트가 가득한 양주" },
+  body: { label: "묵직한 한 잔", tagline: "바디감이 묵직한 양주" },
+};
+
 export interface CatalogPage {
   items: CatalogCardItem[];
   page: number;
