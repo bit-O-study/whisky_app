@@ -11,6 +11,12 @@ export interface AdminLiquorInfoItem {
   alcohol_percent: number | null;
   image_url: string;
   updated_at: string;
+  sweet: number | null;
+  smoky: number | null;
+  fruity: number | null;
+  spicy: number | null;
+  woody: number | null;
+  body: number | null;
 }
 
 export interface AdminLiquorInfoPage {
@@ -30,6 +36,12 @@ export interface AdminLiquorInfoFormState {
   volume_ml: string;
   alcohol_percent: string;
   image_url: string;
+  sweet: string;
+  smoky: string;
+  fruity: string;
+  spicy: string;
+  woody: string;
+  body: string;
 }
 
 export const EMPTY_ADMIN_LIQUOR_INFO_FORM: AdminLiquorInfoFormState = {
@@ -42,6 +54,24 @@ export const EMPTY_ADMIN_LIQUOR_INFO_FORM: AdminLiquorInfoFormState = {
   volume_ml: "",
   alcohol_percent: "",
   image_url: "",
+  sweet: "",
+  smoky: "",
+  fruity: "",
+  spicy: "",
+  woody: "",
+  body: "",
+};
+
+export const FLAVOR_AXIS_KEYS = ["sweet", "smoky", "fruity", "spicy", "woody", "body"] as const;
+export type FlavorAxisKey = (typeof FLAVOR_AXIS_KEYS)[number];
+
+export const FLAVOR_AXIS_LABELS: Record<FlavorAxisKey, string> = {
+  sweet: "단맛",
+  smoky: "스모키",
+  fruity: "과일",
+  spicy: "스파이시",
+  woody: "우디",
+  body: "바디",
 };
 
 export const COMMON_WHISKY_TYPES = [
@@ -71,6 +101,12 @@ export function buildAdminLiquorInfoFormState(item: AdminLiquorInfoItem): AdminL
     volume_ml: formatNumberInput(item.volume_ml),
     alcohol_percent: formatNumberInput(item.alcohol_percent),
     image_url: item.image_url,
+    sweet: formatNumberInput(item.sweet),
+    smoky: formatNumberInput(item.smoky),
+    fruity: formatNumberInput(item.fruity),
+    spicy: formatNumberInput(item.spicy),
+    woody: formatNumberInput(item.woody),
+    body: formatNumberInput(item.body),
   };
 }
 

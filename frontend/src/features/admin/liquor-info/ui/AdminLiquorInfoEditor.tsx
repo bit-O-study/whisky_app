@@ -7,11 +7,15 @@ import {
   buildAdminLiquorInfoFormState,
   COMMON_WHISKY_TYPES,
   EMPTY_ADMIN_LIQUOR_INFO_FORM,
+  FLAVOR_AXIS_KEYS,
+  FLAVOR_AXIS_LABELS,
   formatAdminLiquorSummary,
   type AdminLiquorInfoFormState,
   type AdminLiquorInfoItem,
   type AdminLiquorInfoPage,
+  type FlavorAxisKey,
 } from "../model/admin-liquor-info";
+import FlavorRadarChart, { type FlavorRadarValues } from "../../../catalog/ui/FlavorRadarChart";
 
 const PAGE_SIZE = 20;
 const DEFAULT_IMAGE_URL =
@@ -194,6 +198,22 @@ export default function AdminLiquorInfoEditor() {
   const previewImageUrl = useMemo(() => {
     return isHttpImageUrl(form.image_url) ? form.image_url : DEFAULT_IMAGE_URL;
   }, [form.image_url]);
+
+  const flavorRadarValues = useMemo<FlavorRadarValues>(() => {
+    const parse = (raw: string) => {
+      if (!raw) return null;
+      const n = Number(raw);
+      return Number.isFinite(n) ? n : null;
+    };
+    return {
+      sweet: parse(form.sweet),
+      smoky: parse(form.smoky),
+      fruity: parse(form.fruity),
+      spicy: parse(form.spicy),
+      woody: parse(form.woody),
+      body: parse(form.body),
+    };
+  }, [form.sweet, form.smoky, form.fruity, form.spicy, form.woody, form.body]);
 
   function handleSelect(item: AdminLiquorInfoItem) {
     setSelectedItem(item);
@@ -472,6 +492,59 @@ export default function AdminLiquorInfoEditor() {
                       >
                         {form.image_url || "기본 이미지"}
                       </a>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 rounded-xl border border-[color:rgba(216,195,180,0.42)] bg-[color:var(--catalog-bg-secondary)] p-4">
+                    <div className="mb-3 flex items-center justify-between">
+                      <h3 className="text-sm font-bold text-[color:var(--catalog-ink)]">맛 프로필</h3>
+                      <span className="text-[11px] font-semibold text-[color:var(--catalog-muted)]">
+                        0.0 ~ 5.0 (비워두면 미입력)
+                      </span>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(10rem,12rem)] md:items-center">
+                      <div className="space-y-2">
+                        {FLAVOR_AXIS_KEYS.map((key) => {
+                          const value = form[key as FlavorAxisKey];
+                          const numeric = value === "" ? 0 : Number(value);
+                          return (
+                            <div key={key} className="flex items-center gap-3">
+                              <label
+                                htmlFor={`flavor-${key}`}
+                                className="w-14 shrink-0 text-xs font-bold text-[color:var(--catalog-ink)]"
+                              >
+                                {FLAVOR_AXIS_LABELS[key as FlavorAxisKey]}
+                              </label>
+                              <input
+                                id={`flavor-${key}`}
+                                type="range"
+                                min={0}
+                                max={5}
+                                step={0.5}
+                                value={Number.isFinite(numeric) ? numeric : 0}
+                                onChange={(event) =>
+                                  handleFieldChange(key as FlavorAxisKey, event.target.value)
+                                }
+                                className="h-1.5 flex-1 cursor-pointer accent-[color:var(--catalog-primary)]"
+                              />
+                              <span className="w-10 shrink-0 text-right text-xs font-bold tabular-nums text-[color:var(--catalog-ink)]">
+                                {value === "" ? "—" : Number(value).toFixed(1)}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleFieldChange(key as FlavorAxisKey, "")}
+                                className="text-[10px] font-bold text-[color:var(--catalog-muted)] hover:text-[color:var(--catalog-primary)]"
+                                aria-label={`${FLAVOR_AXIS_LABELS[key as FlavorAxisKey]} 비우기`}
+                              >
+                                지우기
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="mx-auto aspect-square w-full max-w-[12rem]">
+                        <FlavorRadarChart values={flavorRadarValues} size={200} />
+                      </div>
                     </div>
                   </div>
 

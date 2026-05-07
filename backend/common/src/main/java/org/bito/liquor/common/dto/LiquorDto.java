@@ -27,6 +27,12 @@ public class LiquorDto {
     private String source;
     private String fullname;
     private String clazz;
+    private Double sweet;
+    private Double smoky;
+    private Double fruity;
+    private Double spicy;
+    private Double woody;
+    private Double body;
     private LocalDateTime updatedAt;
 
     public static LiquorDto from(LiquorPrice price) {
@@ -48,6 +54,12 @@ public class LiquorDto {
                 .source(price.getSource())
                 .fullname(liquor.getProductName())
                 .clazz(liquor.getClazz())
+                .sweet(liquor.getSweet())
+                .smoky(liquor.getSmoky())
+                .fruity(liquor.getFruity())
+                .spicy(liquor.getSpicy())
+                .woody(liquor.getWoody())
+                .body(liquor.getBody())
                 .updatedAt(price.getCrawledAt())
                 .build();
     }
@@ -96,6 +108,12 @@ public class LiquorDto {
                 .source(matchedPrice == null || matchedPrice.getSource() == null ? "LIQUOR_DB" : matchedPrice.getSource()) // WHISKY_DB -> LIQUOR_DB
                 .fullname(productName)
                 .clazz(liquor.getClazz() == null && matchedLiquor != null ? matchedLiquor.getClazz() : liquor.getClazz())
+                .sweet(liquor.getSweet())
+                .smoky(liquor.getSmoky())
+                .fruity(liquor.getFruity())
+                .spicy(liquor.getSpicy())
+                .woody(liquor.getWoody())
+                .body(liquor.getBody())
                 .updatedAt(matchedPrice == null ? liquor.getUpdatedAt() : matchedPrice.getCrawledAt())
                 .build();
     }

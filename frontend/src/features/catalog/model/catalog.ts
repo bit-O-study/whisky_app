@@ -21,6 +21,12 @@ export interface CatalogCardItem {
   vendors: CatalogCardVendor[];
   lowest_price: number;
   view_count: number;
+  sweet: number | null;
+  smoky: number | null;
+  fruity: number | null;
+  spicy: number | null;
+  woody: number | null;
+  body: number | null;
 }
 
 export interface CatalogPage {

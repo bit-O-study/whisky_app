@@ -20,6 +20,12 @@ const macallanCard = {
   image_url: "https://example.com/macallan.jpg",
   lowest_price: 94000,
   view_count: 0,
+  sweet: null,
+  smoky: null,
+  fruity: null,
+  spicy: null,
+  woody: null,
+  body: null,
   vendors: [
     {
       source: "LOTTEON",

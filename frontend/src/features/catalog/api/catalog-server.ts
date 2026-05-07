@@ -27,6 +27,12 @@ interface LiquorRow {
   updated_at: string | null;
   view_count?: number | null;
   liquor_url?: LiquorUrlRow[] | null;
+  sweet?: number | null;
+  smoky?: number | null;
+  fruity?: number | null;
+  spicy?: number | null;
+  woody?: number | null;
+  body?: number | null;
 }
 
 interface LiquorPriceRow {
@@ -73,6 +79,8 @@ interface AwaitableQuery<T> extends PromiseLike<QueryResponse<T>> {
   range(from: number, to: number): AwaitableQuery<T>;
   or(filter: string): AwaitableQuery<T>;
   in(column: string, values: number[]): AwaitableQuery<T>;
+  eq(column: string, value: string | number): AwaitableQuery<T>;
+  limit(count: number): AwaitableQuery<T>;
 }
 
 interface CatalogSupabaseClient {
@@ -247,6 +255,12 @@ function mapLiquorRowToCatalogItem(row: LiquorRow, vendors: CatalogCardVendor[])
     vendors,
     lowest_price: Number.isFinite(lowestPrice) ? lowestPrice : 0,
     view_count: typeof row.view_count === "number" ? row.view_count : 0,
+    sweet: typeof row.sweet === "number" && Number.isFinite(row.sweet) ? row.sweet : null,
+    smoky: typeof row.smoky === "number" && Number.isFinite(row.smoky) ? row.smoky : null,
+    fruity: typeof row.fruity === "number" && Number.isFinite(row.fruity) ? row.fruity : null,
+    spicy: typeof row.spicy === "number" && Number.isFinite(row.spicy) ? row.spicy : null,
+    woody: typeof row.woody === "number" && Number.isFinite(row.woody) ? row.woody : null,
+    body: typeof row.body === "number" && Number.isFinite(row.body) ? row.body : null,
   };
 }
 
@@ -258,9 +272,9 @@ export async function fetchCatalogPageFromServerWithClient(
   let query = supabase
       .from("liquor")
       .select(
-          "id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at, view_count, liquor_info!fk_liquor_info (sub_category), liquor_url!fk_liquor_url_liquor (source, product_url)",
+          "id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at, view_count, sweet, smoky, fruity, spicy, woody, body, liquor_info!fk_liquor_info (sub_category), liquor_url!fk_liquor_url_liquor (source, product_url)",
       )
-      .order("updated_at", { ascending: false })
+      .order("id", { ascending: true })
       .range(plan.from, plan.to) as AwaitableQuery<LiquorRow>;
 
   if (plan.mode !== "none") {
@@ -347,6 +361,12 @@ export async function fetchLiquorDetailFromServer(id: string): Promise<CatalogCa
         image_url,
         updated_at,
         view_count,
+        sweet,
+        smoky,
+        fruity,
+        spicy,
+        woody,
+        body,
         liquor_info!fk_liquor_info (volume_ml, alcohol_percent, sub_category),
         liquor_url!fk_liquor_url_liquor (source, product_url)
       `)
@@ -557,6 +577,65 @@ export async function fetchTodaysRecommendationsFromServer(limit = 3): Promise<T
     });
     if (result.length >= limit) break;
   }
+  return result;
+}
+
+export interface SourceRecommendation {
+  source: string;
+  liquor: CatalogCardItem;
+}
+
+const SOURCE_KEYS = ["LOTTEON", "EMART", "EMART_TRADERS", "COSTCO"] as const;
+export type SourceKey = (typeof SOURCE_KEYS)[number];
+
+export async function fetchSourceRecommendationsFromServer(
+  perSource: number = 6,
+): Promise<Record<SourceKey, CatalogCardItem[]>> {
+  const supabase = getSupabaseClient() as unknown as CatalogSupabaseClient;
+  const result = {} as Record<SourceKey, CatalogCardItem[]>;
+
+  for (const source of SOURCE_KEYS) {
+    try {
+      const { data: priceRows } = (await supabase
+        .from("liquor_price")
+        .select("liquor_id, source, current_price, original_price, crawled_at")
+        .eq("source", source)
+        .order("crawled_at", { ascending: false })
+        .limit(perSource * 4)) as QueryResponse<LiquorPriceRow>;
+
+      const seen = new Set<number>();
+      const ids: number[] = [];
+      for (const r of priceRows ?? []) {
+        if (seen.has(r.liquor_id)) continue;
+        if (typeof r.current_price !== "number" || r.current_price <= 0) continue;
+        seen.add(r.liquor_id);
+        ids.push(r.liquor_id);
+        if (ids.length >= perSource) break;
+      }
+
+      if (ids.length === 0) {
+        result[source] = [];
+        continue;
+      }
+
+      const { data: liquorRows } = (await supabase
+        .from("liquor")
+        .select(
+          "id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at, view_count, sweet, smoky, fruity, spicy, woody, body, liquor_info!fk_liquor_info (sub_category), liquor_url!fk_liquor_url_liquor (source, product_url)",
+        )
+        .in("id", ids)) as QueryResponse<LiquorRow>;
+
+      const vendorLookup = buildVendorLookup(priceRows ?? [], (liquorRows ?? []) as LiquorRow[]);
+      const items = ((liquorRows ?? []) as LiquorRow[])
+        .map((row) => mapLiquorRowToCatalogItem(row, vendorLookup.get(row.id) ?? []))
+        .sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
+      result[source] = items;
+    } catch (err) {
+      console.error(`fetchSourceRecommendations ${source} failed`, err);
+      result[source] = [];
+    }
+  }
+
   return result;
 }
 

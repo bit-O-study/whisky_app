@@ -17,6 +17,12 @@ export interface AdminLiquorInfoUpdateInput {
   volume_ml?: unknown;
   alcohol_percent?: unknown;
   image_url?: unknown;
+  sweet?: unknown;
+  smoky?: unknown;
+  fruity?: unknown;
+  spicy?: unknown;
+  woody?: unknown;
+  body?: unknown;
 }
 
 export interface AdminLiquorImageUploadFile {
@@ -39,6 +45,12 @@ interface AdminLiquorInfoRow {
   alcohol_percent: number | null;
   image_url: string | null;
   updated_at: string | null;
+  sweet: number | null;
+  smoky: number | null;
+  fruity: number | null;
+  spicy: number | null;
+  woody: number | null;
+  body: number | null;
 }
 
 interface QueryError {
@@ -92,7 +104,7 @@ interface AdminLiquorImageStorageClient extends AdminLiquorInfoSupabaseClient {
 }
 
 const ADMIN_LIQUOR_SELECT =
-  "id, product_code, product_name, normalized_name, brand, category, class, country, volume_ml, alcohol_percent, image_url, updated_at";
+  "id, product_code, product_name, normalized_name, brand, category, class, country, volume_ml, alcohol_percent, image_url, updated_at, sweet, smoky, fruity, spicy, woody, body";
 const DEFAULT_ADMIN_IMAGE_BUCKET = "whisky-images";
 const MAX_ADMIN_IMAGE_BYTES = 6 * 1024 * 1024;
 const ADMIN_IMAGE_EXTENSION_BY_TYPE: Record<string, string> = {
@@ -148,6 +160,12 @@ export function mapAdminLiquorInfoRow(row: AdminLiquorInfoRow): AdminLiquorInfoI
       typeof row.alcohol_percent === "number" && Number.isFinite(row.alcohol_percent) ? row.alcohol_percent : null,
     image_url: normalizeText(row.image_url),
     updated_at: normalizeText(row.updated_at),
+    sweet: typeof row.sweet === "number" && Number.isFinite(row.sweet) ? row.sweet : null,
+    smoky: typeof row.smoky === "number" && Number.isFinite(row.smoky) ? row.smoky : null,
+    fruity: typeof row.fruity === "number" && Number.isFinite(row.fruity) ? row.fruity : null,
+    spicy: typeof row.spicy === "number" && Number.isFinite(row.spicy) ? row.spicy : null,
+    woody: typeof row.woody === "number" && Number.isFinite(row.woody) ? row.woody : null,
+    body: typeof row.body === "number" && Number.isFinite(row.body) ? row.body : null,
   };
 }
 
@@ -278,6 +296,12 @@ export function buildAdminLiquorInfoUpdatePatch(input: AdminLiquorInfoUpdateInpu
     volume_ml: normalizeOptionalNumber(input.volume_ml, "용량", 10000),
     alcohol_percent: normalizeOptionalNumber(input.alcohol_percent, "도수", 100),
     image_url: normalizeImageUrl(input.image_url),
+    sweet: normalizeOptionalNumber(input.sweet, "단맛", 5),
+    smoky: normalizeOptionalNumber(input.smoky, "스모키", 5),
+    fruity: normalizeOptionalNumber(input.fruity, "과일", 5),
+    spicy: normalizeOptionalNumber(input.spicy, "스파이시", 5),
+    woody: normalizeOptionalNumber(input.woody, "우디", 5),
+    body: normalizeOptionalNumber(input.body, "바디", 5),
   };
 }
 
