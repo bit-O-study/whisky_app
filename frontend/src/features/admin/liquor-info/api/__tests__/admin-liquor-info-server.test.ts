@@ -32,6 +32,12 @@ interface FakeRow {
   alcohol_percent: number | null;
   image_url: string | null;
   updated_at: string | null;
+  sweet: number | null;
+  smoky: number | null;
+  fruity: number | null;
+  spicy: number | null;
+  woody: number | null;
+  body: number | null;
 }
 
 class FakeListQuery<T> {
@@ -93,6 +99,12 @@ const baseRows: FakeRow[] = [
     alcohol_percent: 40,
     image_url: "https://example.com/macallan.jpg",
     updated_at: "2026-05-01T00:00:00.000Z",
+    sweet: null,
+    smoky: null,
+    fruity: null,
+    spicy: null,
+    woody: null,
+    body: null,
   },
   {
     id: 2,
@@ -107,6 +119,12 @@ const baseRows: FakeRow[] = [
     alcohol_percent: 40,
     image_url: null,
     updated_at: "2026-04-30T00:00:00.000Z",
+    sweet: null,
+    smoky: null,
+    fruity: null,
+    spicy: null,
+    woody: null,
+    body: null,
   },
   {
     id: 3,
@@ -121,6 +139,12 @@ const baseRows: FakeRow[] = [
     alcohol_percent: 45,
     image_url: null,
     updated_at: "2026-04-29T00:00:00.000Z",
+    sweet: null,
+    smoky: null,
+    fruity: null,
+    spicy: null,
+    woody: null,
+    body: null,
   },
 ];
 
@@ -163,6 +187,12 @@ describe("admin liquor info server helpers", () => {
       volume_ml: 700,
       alcohol_percent: 40,
       image_url: "https://example.com/macallan.webp",
+      sweet: null,
+      smoky: null,
+      fruity: null,
+      spicy: null,
+      woody: null,
+      body: null,
     });
     expect(patch).not.toHaveProperty("current_price");
   });

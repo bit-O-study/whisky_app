@@ -1,22 +1,34 @@
 import {
     fetchCatalogPageFromServer,
+    fetchSourceRecommendationsFromServer,
     fetchTodaysRecommendationsFromServer,
+    type SourceKey,
 } from "../src/features/catalog/api/catalog-server";
+import type { CatalogCardItem } from "../src/features/catalog/model/catalog";
 import CatalogPageClient from "../src/features/catalog/ui/CatalogPageClient";
 
 const INITIAL_PAGE_SIZE = 24;
 
 export const dynamic = "force-dynamic";
 
+const EMPTY_SOURCE_RECS: Record<SourceKey, CatalogCardItem[]> = {
+    LOTTEON: [],
+    EMART: [],
+    EMART_TRADERS: [],
+    COSTCO: [],
+};
+
 export default async function HomePage() {
     let initialError: string | null = null;
     let initialPage;
     let recommendations: Awaited<ReturnType<typeof fetchTodaysRecommendationsFromServer>> = [];
+    let sourceRecommendations: Record<SourceKey, CatalogCardItem[]> = EMPTY_SOURCE_RECS;
 
     try {
-        [initialPage, recommendations] = await Promise.all([
+        [initialPage, recommendations, sourceRecommendations] = await Promise.all([
             fetchCatalogPageFromServer({ page: 0, size: INITIAL_PAGE_SIZE }),
             fetchTodaysRecommendationsFromServer(1),
+            fetchSourceRecommendationsFromServer(1),
         ]);
     } catch (error) {
         console.error("Failed to preload home content", error);
@@ -28,6 +40,7 @@ export default async function HomePage() {
             initialPage={initialPage}
             initialError={initialError}
             recommendations={recommendations}
+            sourceRecommendations={sourceRecommendations}
         />
     );
 }

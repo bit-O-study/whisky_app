@@ -3,10 +3,20 @@ import Link from "next/link";
 import type { PriceHistoryPoint } from "../api/catalog-server";
 import type { CatalogCardItem, CatalogCardVendor } from "../model/catalog";
 import PriceTrendChart from "./PriceTrendChart";
+import FlavorRadarChart, { hasAnyFlavorValue, type FlavorRadarValues } from "./FlavorRadarChart";
+import {
+    FLAVOR_AXIS_KEYS,
+    FLAVOR_AXIS_LABELS,
+    type FlavorAxisKey,
+} from "../../admin/liquor-info/model/admin-liquor-info";
 
 interface Props {
     liquor: CatalogCardItem;
     priceHistory?: PriceHistoryPoint[];
+}
+
+function isCostcoVendor(source: string) {
+    return source.trim().toUpperCase() === "COSTCO";
 }
 
 function formatPrice(price: number) {
@@ -54,6 +64,16 @@ export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
     }
     const latestRelative = formatRelativeFromNow(latestCrawledAt);
     const latestExact = formatDateShort(latestCrawledAt);
+
+    const flavorValues: FlavorRadarValues = {
+        sweet: liquor.sweet,
+        smoky: liquor.smoky,
+        fruity: liquor.fruity,
+        spicy: liquor.spicy,
+        woody: liquor.woody,
+        body: liquor.body,
+    };
+    const showFlavor = hasAnyFlavorValue(flavorValues);
 
     return (
         <div className="min-h-screen bg-[color:var(--catalog-bg-solid)] text-[color:var(--catalog-ink)]">
@@ -141,22 +161,76 @@ export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
                                 </div>
                             </div>
 
-                            {bestVendor?.product_url && (
-                                <a
-                                    href={bestVendor.product_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="catalog-btn catalog-btn-pop mt-7 w-full"
-                                >
-                                    최저가로 구매하기
-                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path d="M14 5l7 7m0 0l-7 7m7-7H3" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </a>
+                            {bestVendor && isCostcoVendor(bestVendor.source) ? (
+                                <div className="mt-7 rounded-2xl border border-dashed border-[color:var(--catalog-outline)] bg-[color:var(--catalog-bg-secondary)] px-5 py-4 text-center">
+                                    <p className="text-sm font-bold text-[color:var(--catalog-ink)]">
+                                        코스트코는 매장 구매 전용 가격입니다
+                                    </p>
+                                    <p className="mt-1 text-xs text-[color:var(--catalog-muted)]">
+                                        외부 상품 페이지로 연결되지 않으니 매장에서 확인해 주세요.
+                                    </p>
+                                </div>
+                            ) : (
+                                bestVendor?.product_url && (
+                                    <a
+                                        href={bestVendor.product_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="catalog-btn catalog-btn-pop mt-7 w-full"
+                                    >
+                                        최저가로 구매하기
+                                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path d="M14 5l7 7m0 0l-7 7m7-7H3" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    </a>
+                                )
                             )}
                         </div>
                     </div>
                 </section>
+
+                {/* 맛 프로필 */}
+                {showFlavor && (
+                    <section className="mt-20">
+                        <div className="mb-6 flex items-end justify-between">
+                            <h2 className="text-2xl font-bold tracking-[-0.015em] text-[color:var(--catalog-ink)]">
+                                맛 프로필
+                            </h2>
+                            <span className="catalog-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--catalog-muted)]">
+                                0 ~ 5
+                            </span>
+                        </div>
+                        <div className="grid gap-8 rounded-3xl border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] p-8 shadow-[var(--catalog-shadow-md)] md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-center">
+                            <div className="mx-auto aspect-square w-full max-w-[20rem]">
+                                <FlavorRadarChart values={flavorValues} size={320} />
+                            </div>
+                            <ul className="space-y-3">
+                                {FLAVOR_AXIS_KEYS.map((key) => {
+                                    const value = flavorValues[key as FlavorAxisKey];
+                                    const numeric =
+                                        typeof value === "number" && Number.isFinite(value) ? value : null;
+                                    const ratio = numeric === null ? 0 : Math.max(0, Math.min(1, numeric / 5));
+                                    return (
+                                        <li key={key} className="flex items-center gap-4">
+                                            <span className="w-14 shrink-0 text-sm font-bold text-[color:var(--catalog-ink)]">
+                                                {FLAVOR_AXIS_LABELS[key as FlavorAxisKey]}
+                                            </span>
+                                            <div className="h-2 flex-1 overflow-hidden rounded-full bg-[color:var(--catalog-bg-secondary)]">
+                                                <div
+                                                    className="h-full rounded-full bg-[color:var(--catalog-primary)] transition-[width]"
+                                                    style={{ width: `${ratio * 100}%` }}
+                                                />
+                                            </div>
+                                            <span className="w-12 shrink-0 text-right text-sm font-bold tabular-nums text-[color:var(--catalog-ink)]">
+                                                {numeric === null ? "—" : numeric.toFixed(1)}
+                                            </span>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    </section>
+                )}
 
                 {/* 가격 추이 그래프 */}
                 <section className="mt-20">
@@ -183,14 +257,10 @@ export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
                     </div>
 
                     <ul className="space-y-2">
-                        {sortedVendors.map((v, idx) => (
-                            <li key={v.source}>
-                                <a
-                                    href={v.product_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="group flex items-center justify-between gap-4 rounded-2xl border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] px-5 py-4 transition hover:border-[color:var(--catalog-outline-strong)] hover:shadow-[var(--catalog-shadow-md)]"
-                                >
+                        {sortedVendors.map((v, idx) => {
+                            const isCostco = isCostcoVendor(v.source);
+                            const innerContent = (
+                                <>
                                     <div className="flex items-center gap-4">
                                         <span className="catalog-mono text-[12px] font-bold tracking-[0.14em] text-[color:var(--catalog-soft)]">
                                             {String(idx + 1).padStart(2, "0")}
@@ -204,6 +274,11 @@ export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
                                             <p className="text-[0.95rem] font-semibold tracking-tight text-[color:var(--catalog-ink)]">
                                                 {v.source}
                                             </p>
+                                            {isCostco && (
+                                                <p className="mt-0.5 text-[11px] font-semibold text-[color:var(--catalog-primary)]">
+                                                    매장 전용 · 외부 페이지 없음
+                                                </p>
+                                            )}
                                             {v.original_price > v.current_price && (
                                                 <p className="mt-0.5 catalog-mono text-[11px] text-[color:var(--catalog-soft)] line-through">
                                                     {formatPrice(v.original_price)}
@@ -229,18 +304,42 @@ export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
                                         >
                                             {formatPrice(v.current_price)}
                                         </span>
-                                        <svg
-                                            className="h-3.5 w-3.5 text-[color:var(--catalog-soft)] transition group-hover:translate-x-1 group-hover:text-[color:var(--catalog-primary)]"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path d="M9 5l7 7-7 7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
+                                        {!isCostco && (
+                                            <svg
+                                                className="h-3.5 w-3.5 text-[color:var(--catalog-soft)] transition group-hover:translate-x-1 group-hover:text-[color:var(--catalog-primary)]"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path d="M9 5l7 7-7 7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        )}
                                     </div>
-                                </a>
-                            </li>
-                        ))}
+                                </>
+                            );
+
+                            return (
+                                <li key={v.source}>
+                                    {isCostco || !v.product_url ? (
+                                        <div
+                                            className="flex items-center justify-between gap-4 rounded-2xl border border-dashed border-[color:var(--catalog-outline)] bg-[color:var(--catalog-bg-secondary)] px-5 py-4"
+                                            aria-label={`${v.source} - 외부 페이지 없음`}
+                                        >
+                                            {innerContent}
+                                        </div>
+                                    ) : (
+                                        <a
+                                            href={v.product_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="group flex items-center justify-between gap-4 rounded-2xl border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] px-5 py-4 transition hover:border-[color:var(--catalog-outline-strong)] hover:shadow-[var(--catalog-shadow-md)]"
+                                        >
+                                            {innerContent}
+                                        </a>
+                                    )}
+                                </li>
+                            );
+                        })}
                     </ul>
                 </section>
             </main>

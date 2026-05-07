@@ -46,6 +46,16 @@ class FakeQuery<T extends { id?: number; liquor_id?: number }> {
     return this;
   }
 
+  eq(column: string, value: string | number) {
+    this.calls.push({ method: "eq", args: [column, value] });
+    return this;
+  }
+
+  limit(count: number) {
+    this.calls.push({ method: "limit", args: [count] });
+    return this;
+  }
+
   then<TResult1 = { data: T[] | null; error: FakeError | null; status?: number }, TResult2 = never>(
     onfulfilled?: ((value: { data: T[] | null; error: FakeError | null; status?: number }) => TResult1 | PromiseLike<TResult1>) | null,
     onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,

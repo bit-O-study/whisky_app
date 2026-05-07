@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { fetchCatalogPage } from "../api/catalog-client";
-import type { TodaysRecommendation } from "../api/catalog-server";
+import type { SourceKey, TodaysRecommendation } from "../api/catalog-server";
 import {
   getCatalogLoadErrorMessage,
   mergeCatalogPageItems,
@@ -12,11 +12,13 @@ import {
   type CatalogCardItem,
 } from "../model/catalog";
 import LiquorGrid from "./LiquorGrid";
+import SourceRecommendations from "./SourceRecommendations";
 import TodaysRecommendations from "./TodaysRecommendations";
 
-type SortKey = "newest" | "popular" | "lowest" | "highest";
+type SortKey = "oldest" | "newest" | "popular" | "lowest" | "highest";
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: "oldest", label: "기본" },
   { key: "newest", label: "최신순" },
   { key: "popular", label: "인기순" },
   { key: "lowest", label: "가격낮은순" },
@@ -27,7 +29,15 @@ interface CatalogPageClientProps {
   initialError?: string | null;
   initialPage?: CatalogPage;
   recommendations?: TodaysRecommendation[];
+  sourceRecommendations?: Record<SourceKey, CatalogCardItem[]>;
 }
+
+const EMPTY_SOURCE_RECS: Record<SourceKey, CatalogCardItem[]> = {
+  LOTTEON: [],
+  EMART: [],
+  EMART_TRADERS: [],
+  COSTCO: [],
+};
 
 const EMPTY_CATALOG_PAGE: CatalogPage = {
   items: [],
@@ -44,6 +54,7 @@ export default function CatalogPageClient({
   initialError = null,
   initialPage = EMPTY_CATALOG_PAGE,
   recommendations = [],
+  sourceRecommendations = EMPTY_SOURCE_RECS,
 }: CatalogPageClientProps) {
   const initialItemCount = initialPage.items.length;
   const [searchQuery, setSearchQuery] = useState("");
@@ -55,7 +66,7 @@ export default function CatalogPageClient({
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(initialError);
   const [reloadToken, setReloadToken] = useState(0);
-  const [sortKey, setSortKey] = useState<SortKey>("newest");
+  const [sortKey, setSortKey] = useState<SortKey>("oldest");
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const shouldSkipInitialRequestRef = useRef(initialPage.items.length > 0 && !initialError);
 
@@ -159,14 +170,14 @@ export default function CatalogPageClient({
           setLiquorPage((current) => current + 1);
         }
       },
-      { rootMargin: "200px 0px" },
+      { rootMargin: "400px 0px" },
     );
 
     observer.observe(target);
     return () => {
       observer.disconnect();
     };
-  }, [error, hasNextLiquorPage, loading, loadingMore]);
+  }, [error, hasNextLiquorPage, loading, loadingMore, liquorPage, liquors.length]);
 
   const activeSearchQuery = debouncedSearchQuery.trim();
   const visibleBottleCount = liquors.length;
@@ -176,8 +187,12 @@ export default function CatalogPageClient({
   // popular = view_count(0.7) + vendor 수(0.3) 정규화 합산. 둘 다 max 기준으로 정규화해
   // 한쪽 값이 폭주해도 비율이 무너지지 않게 한다. 같은 점수면 최저가 낮은 순으로 결정.
   const sortedLiquors = useMemo(() => {
-    if (sortKey === "newest") return liquors;
+    if (sortKey === "oldest") return liquors;
     const arr = liquors.slice();
+    if (sortKey === "newest") {
+      arr.reverse();
+      return arr;
+    }
     if (sortKey === "popular") {
       const maxView = Math.max(1, ...arr.map((item) => item.view_count ?? 0));
       const maxVendor = Math.max(1, ...arr.map((item) => item.vendors?.length ?? 0));
@@ -291,6 +306,7 @@ export default function CatalogPageClient({
               국내 주요 쇼핑몰의 위스키 가격을 매일 갱신해 한눈에 비교합니다.
               최저가 · 판매처 · 시세 변동을 한곳에 정리했습니다.
             </p>
+            <SourceRecommendations recommendations={sourceRecommendations} />
           </div>
           <TodaysRecommendations recommendations={recommendations} />
         </div>
