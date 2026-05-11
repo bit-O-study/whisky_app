@@ -124,7 +124,7 @@ export default function CatalogPageClient({
         const data = await fetchCatalogPage({
           searchQuery: debouncedSearchQuery,
           page: liquorPage,
-          size: 24,
+          size: initialPage.size || 500,
           signal: controller.signal,
         });
 
@@ -162,15 +162,9 @@ export default function CatalogPageClient({
     };
   }, [debouncedSearchQuery, initialError, initialItemCount, initialPage.page, liquorPage, reloadToken]);
 
-  // 정렬은 클라이언트에서 처리되므로 "기본" 외 정렬을 고른 경우
-  // 부분 집합만 가지고 정렬하면 다음 페이지가 들어올 때마다 순위가 바뀐다.
-  // 그래서 정렬 선택 시 hasNextPage가 false가 될 때까지 페이지를 자동 진행한다.
-  useEffect(() => {
-    if (sortKey === "oldest") return;
-    if (loading || loadingMore || error) return;
-    if (!hasNextLiquorPage) return;
-    setLiquorPage((p) => p + 1);
-  }, [sortKey, hasNextLiquorPage, loading, loadingMore, error]);
+  // 정렬은 순수 클라이언트에서 sortedLiquors useMemo 만으로 처리.
+  // SSR이 양주 전체(size=500)를 한 번에 가져오므로 페이지를 자동으로 더 진행할 필요가 없다.
+  // (예전에는 client refetch가 size=24로 잘려 hasNext=true가 되며 cascade가 발생했다.)
 
   useEffect(() => {
     const target = loadMoreRef.current;
