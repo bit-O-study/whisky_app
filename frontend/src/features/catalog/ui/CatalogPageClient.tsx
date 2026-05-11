@@ -190,7 +190,7 @@ export default function CatalogPageClient({
           setLiquorPage((current) => current + 1);
         }
       },
-      { rootMargin: "400px 0px" },
+      { rootMargin: "100px 0px" },
     );
 
     observer.observe(target);

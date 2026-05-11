@@ -593,43 +593,42 @@ export async function fetchFlavorRecommendationsFromServer(
   perAxis: number = 4,
 ): Promise<Record<FlavorAxis, CatalogCardItem[]>> {
   const supabase = getSupabaseClient() as unknown as CatalogSupabaseClient;
-  const result = {} as Record<FlavorAxis, CatalogCardItem[]>;
 
-  for (const axis of FLAVOR_AXES) {
-    try {
-      const { data: rows } = (await supabase
-        .from("liquor")
-        .select(
-          "id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at, view_count, sweet, smoky, fruity, spicy, woody, body, liquor_info!fk_liquor_info (sub_category), liquor_url!fk_liquor_url_liquor (source, product_url)",
-        )
-        .order(axis, { ascending: false })
-        .limit(perAxis * 2)) as QueryResponse<LiquorRow>;
+  const perAxisResults = await Promise.all(
+    FLAVOR_AXES.map(async (axis): Promise<[FlavorAxis, CatalogCardItem[]]> => {
+      try {
+        const { data: rows } = (await supabase
+          .from("liquor")
+          .select(
+            "id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at, view_count, sweet, smoky, fruity, spicy, woody, body, liquor_info!fk_liquor_info (sub_category), liquor_url!fk_liquor_url_liquor (source, product_url)",
+          )
+          .order(axis, { ascending: false })
+          .limit(perAxis * 2)) as QueryResponse<LiquorRow>;
 
-      const liquorRows = ((rows ?? []) as LiquorRow[]).filter((r) => {
-        const v = (r as unknown as Record<string, unknown>)[axis];
-        return typeof v === "number" && Number.isFinite(v) && v > 0;
-      });
-      const top = liquorRows.slice(0, perAxis);
-      const ids = top.map((r) => r.id);
-      if (ids.length === 0) {
-        result[axis] = [];
-        continue;
+        const liquorRows = ((rows ?? []) as LiquorRow[]).filter((r) => {
+          const v = (r as unknown as Record<string, unknown>)[axis];
+          return typeof v === "number" && Number.isFinite(v) && v > 0;
+        });
+        const top = liquorRows.slice(0, perAxis);
+        const ids = top.map((r) => r.id);
+        if (ids.length === 0) return [axis, []];
+
+        const { data: priceRows } = (await supabase
+          .from("liquor_price")
+          .select("liquor_id, source, current_price, original_price, crawled_at")
+          .in("liquor_id", ids)
+          .order("crawled_at", { ascending: false })) as QueryResponse<LiquorPriceRow>;
+
+        const vendorLookup = buildVendorLookup(priceRows ?? [], top);
+        return [axis, top.map((row) => mapLiquorRowToCatalogItem(row, vendorLookup.get(row.id) ?? []))];
+      } catch (err) {
+        console.error(`fetchFlavorRecommendations ${axis} failed`, err);
+        return [axis, []];
       }
+    }),
+  );
 
-      const { data: priceRows } = (await supabase
-        .from("liquor_price")
-        .select("liquor_id, source, current_price, original_price, crawled_at")
-        .in("liquor_id", ids)
-        .order("crawled_at", { ascending: false })) as QueryResponse<LiquorPriceRow>;
-
-      const vendorLookup = buildVendorLookup(priceRows ?? [], top);
-      result[axis] = top.map((row) => mapLiquorRowToCatalogItem(row, vendorLookup.get(row.id) ?? []));
-    } catch (err) {
-      console.error(`fetchFlavorRecommendations ${axis} failed`, err);
-      result[axis] = [];
-    }
-  }
-  return result;
+  return Object.fromEntries(perAxisResults) as Record<FlavorAxis, CatalogCardItem[]>;
 }
 
 export interface SourceRecommendation {
@@ -644,51 +643,48 @@ export async function fetchSourceRecommendationsFromServer(
   perSource: number = 6,
 ): Promise<Record<SourceKey, CatalogCardItem[]>> {
   const supabase = getSupabaseClient() as unknown as CatalogSupabaseClient;
-  const result = {} as Record<SourceKey, CatalogCardItem[]>;
 
-  for (const source of SOURCE_KEYS) {
-    try {
-      const { data: priceRows } = (await supabase
-        .from("liquor_price")
-        .select("liquor_id, source, current_price, original_price, crawled_at")
-        .eq("source", source)
-        .order("crawled_at", { ascending: false })
-        .limit(perSource * 4)) as QueryResponse<LiquorPriceRow>;
+  const perSourceResults = await Promise.all(
+    SOURCE_KEYS.map(async (source): Promise<[SourceKey, CatalogCardItem[]]> => {
+      try {
+        const { data: priceRows } = (await supabase
+          .from("liquor_price")
+          .select("liquor_id, source, current_price, original_price, crawled_at")
+          .eq("source", source)
+          .order("crawled_at", { ascending: false })
+          .limit(perSource * 4)) as QueryResponse<LiquorPriceRow>;
 
-      const seen = new Set<number>();
-      const ids: number[] = [];
-      for (const r of priceRows ?? []) {
-        if (seen.has(r.liquor_id)) continue;
-        if (typeof r.current_price !== "number" || r.current_price <= 0) continue;
-        seen.add(r.liquor_id);
-        ids.push(r.liquor_id);
-        if (ids.length >= perSource) break;
+        const seen = new Set<number>();
+        const ids: number[] = [];
+        for (const r of priceRows ?? []) {
+          if (seen.has(r.liquor_id)) continue;
+          if (typeof r.current_price !== "number" || r.current_price <= 0) continue;
+          seen.add(r.liquor_id);
+          ids.push(r.liquor_id);
+          if (ids.length >= perSource) break;
+        }
+        if (ids.length === 0) return [source, []];
+
+        const { data: liquorRows } = (await supabase
+          .from("liquor")
+          .select(
+            "id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at, view_count, sweet, smoky, fruity, spicy, woody, body, liquor_info!fk_liquor_info (sub_category), liquor_url!fk_liquor_url_liquor (source, product_url)",
+          )
+          .in("id", ids)) as QueryResponse<LiquorRow>;
+
+        const vendorLookup = buildVendorLookup(priceRows ?? [], (liquorRows ?? []) as LiquorRow[]);
+        const items = ((liquorRows ?? []) as LiquorRow[])
+          .map((row) => mapLiquorRowToCatalogItem(row, vendorLookup.get(row.id) ?? []))
+          .sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
+        return [source, items];
+      } catch (err) {
+        console.error(`fetchSourceRecommendations ${source} failed`, err);
+        return [source, []];
       }
+    }),
+  );
 
-      if (ids.length === 0) {
-        result[source] = [];
-        continue;
-      }
-
-      const { data: liquorRows } = (await supabase
-        .from("liquor")
-        .select(
-          "id, normalized_name, brand, category, volume_ml, alcohol_percent, country, product_code, product_name, product_url, image_url, updated_at, view_count, sweet, smoky, fruity, spicy, woody, body, liquor_info!fk_liquor_info (sub_category), liquor_url!fk_liquor_url_liquor (source, product_url)",
-        )
-        .in("id", ids)) as QueryResponse<LiquorRow>;
-
-      const vendorLookup = buildVendorLookup(priceRows ?? [], (liquorRows ?? []) as LiquorRow[]);
-      const items = ((liquorRows ?? []) as LiquorRow[])
-        .map((row) => mapLiquorRowToCatalogItem(row, vendorLookup.get(row.id) ?? []))
-        .sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
-      result[source] = items;
-    } catch (err) {
-      console.error(`fetchSourceRecommendations ${source} failed`, err);
-      result[source] = [];
-    }
-  }
-
-  return result;
+  return Object.fromEntries(perSourceResults) as Record<SourceKey, CatalogCardItem[]>;
 }
 
 export interface PriceHistoryPoint {

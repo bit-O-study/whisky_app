@@ -9,7 +9,7 @@ import {
 import type { CatalogCardItem } from "../src/features/catalog/model/catalog";
 import CatalogPageClient from "../src/features/catalog/ui/CatalogPageClient";
 
-const INITIAL_PAGE_SIZE = 24;
+const INITIAL_PAGE_SIZE = 100;
 
 export const dynamic = "force-dynamic";
 
