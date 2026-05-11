@@ -162,6 +162,16 @@ export default function CatalogPageClient({
     };
   }, [debouncedSearchQuery, initialError, initialItemCount, initialPage.page, liquorPage, reloadToken]);
 
+  // 정렬은 클라이언트에서 처리되므로 "기본" 외 정렬을 고른 경우
+  // 부분 집합만 가지고 정렬하면 다음 페이지가 들어올 때마다 순위가 바뀐다.
+  // 그래서 정렬 선택 시 hasNextPage가 false가 될 때까지 페이지를 자동 진행한다.
+  useEffect(() => {
+    if (sortKey === "oldest") return;
+    if (loading || loadingMore || error) return;
+    if (!hasNextLiquorPage) return;
+    setLiquorPage((p) => p + 1);
+  }, [sortKey, hasNextLiquorPage, loading, loadingMore, error]);
+
   useEffect(() => {
     const target = loadMoreRef.current;
     if (!target) {
