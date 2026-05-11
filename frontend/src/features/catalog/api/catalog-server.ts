@@ -106,7 +106,9 @@ function clampSize(value: number) {
   if (!Number.isFinite(value) || value <= 0) {
     return 24;
   }
-  return Math.min(Math.floor(value), 100);
+  // 양주 전체를 한 번에 가져와 클라이언트에서 정렬만 바꿔 표시할 수 있도록
+  // size 상한을 넉넉히 둔다. 양주 수가 이 한계를 넘어서면 다시 페이지네이션을 검토.
+  return Math.min(Math.floor(value), 500);
 }
 
 export function normalizeCatalogSearchKeyword(keyword?: string) {
