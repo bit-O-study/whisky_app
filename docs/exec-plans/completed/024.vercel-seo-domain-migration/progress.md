@@ -7,3 +7,4 @@
 - 2026-05-27 14:17 KST: `npm run lint` 완료. 에러는 없고 기존 `CatalogPageClient.tsx` hook dependency 경고 1개가 남아 있다.
 - 2026-05-27 14:17 KST: `npm run build` 통과. Next.js 프로덕션 빌드와 `/robots.txt`, `/sitemap.xml` route 생성을 확인했다.
 - 2026-05-27 14:18 KST: 대표 URL 우선순위 테스트를 추가하고 `npm run test -- src/shared/config/__tests__/site-url.test.ts` 통과를 확인했다. 4개 테스트가 통과했다.
+- 2026-05-27 14:21 KST: 현재 Vercel 주소가 `https://whisky-app-vert.vercel.app`로 확정되어 기본 fallback URL과 문서 설명을 갱신했다.

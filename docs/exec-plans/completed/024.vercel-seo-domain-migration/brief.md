@@ -7,6 +7,7 @@
 ## 목표
 - 사이트 대표 URL을 환경변수 기반으로 한 곳에서 결정한다.
 - `metadataBase`, robots sitemap URL, sitemap root URL이 같은 대표 URL을 사용한다.
+- 환경변수가 없는 배포에서도 현재 대표 Vercel 주소 `https://whisky-app-vert.vercel.app`를 fallback으로 사용한다.
 
 ## 비목표
 - Google Search Console, Vercel Dashboard, DNS 같은 외부 서비스 설정은 저장소에서 직접 변경하지 않는다.

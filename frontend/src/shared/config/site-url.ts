@@ -1,4 +1,4 @@
-const DEFAULT_SITE_URL = "https://bit-o-liquor.vercel.app";
+const DEFAULT_SITE_URL = "https://whisky-app-vert.vercel.app";
 
 function withProtocol(value: string): string {
   if (/^https?:\/\//i.test(value)) {
