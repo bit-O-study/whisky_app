@@ -3,6 +3,7 @@ import { Manrope, Newsreader, Noto_Sans_KR, Noto_Serif_KR } from "next/font/goog
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { getSiteUrl } from "@/shared/config/site-url";
 import "./globals.css";
 
 const newsreader = Newsreader({
@@ -35,9 +36,10 @@ const notoSerifKr = Noto_Serif_KR({
 });
 
 const GA_MEASUREMENT_ID = "G-VKN2T2NQX1";
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://bit-o-liquor.vercel.app"),
+  metadataBase: new URL(siteUrl),
   title: "위스키다모아 | 주류 가격 비교 사이트",
   description: "위스키다모아에서 위스키, 와인 등 주류 가격과 최저가를 검색하고 비교해보세요.",
   alternates: {
