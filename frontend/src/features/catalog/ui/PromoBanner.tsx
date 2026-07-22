@@ -16,7 +16,7 @@ const SLIDES: Slide[] = [
   {
     emoji: "🧠",
     headline: "내 아이큐 몇일까?",
-    sub: "멘사식 36문항 · 3분이면 결과 확인",
+    sub: "멘사식 36문항 정밀 지능검사",
     cta: "무료 테스트",
     url: "https://iq-test-fuyo-pi.vercel.app",
     grad: "from-indigo-500 to-violet-600",
