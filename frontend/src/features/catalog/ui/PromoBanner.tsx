@@ -1,51 +1,80 @@
-/** 자매 서비스 홍보 배너 — 위스키다모아 홈. 양주를 뺀 나머지(IQ·헬쑤)를 노출. */
-const OTHERS = [
+"use client";
+
+import { useEffect, useState } from "react";
+
+/** 광고 배너 슬라이드(양주를 뺀 나머지 서비스). 자동 롤링. */
+type Slide = {
+  emoji: string;
+  headline: string;
+  sub: string;
+  cta: string;
+  url: string;
+  grad: string;
+};
+
+const SLIDES: Slide[] = [
   {
     emoji: "🧠",
-    name: "IQ 테스트",
-    desc: "멘사식 36문항 지능검사",
+    headline: "내 아이큐 몇일까?",
+    sub: "멘사식 36문항 · 3분이면 결과 확인",
+    cta: "무료 테스트",
     url: "https://iq-test-fuyo-pi.vercel.app",
+    grad: "from-indigo-500 to-violet-600",
   },
   {
     emoji: "💪",
-    name: "헬쑤",
-    desc: "운동 루틴·식단 관리",
+    headline: "오늘 뭐 운동하지?",
+    sub: "맞춤 루틴·식단·펫까지 무료 관리",
+    cta: "헬쑤 시작",
     url: "https://health-app-five-iota.vercel.app",
+    grad: "from-emerald-500 to-teal-600",
   },
 ];
 
 export function PromoBanner() {
+  const [i, setI] = useState(0);
+
+  useEffect(() => {
+    if (SLIDES.length < 2) return;
+    const t = setInterval(() => setI((v) => (v + 1) % SLIDES.length), 4500);
+    return () => clearInterval(t);
+  }, []);
+
+  const s = SLIDES[i];
   return (
     <section className="mx-auto mt-16 w-full max-w-[96rem] px-5 sm:px-8">
-      <p className="catalog-mono mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--catalog-muted)]">
-        함께 해보세요
-      </p>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {OTHERS.map((a) => (
-          <a
-            key={a.url}
-            href={a.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-4 rounded-2xl border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] px-5 py-4 transition hover:opacity-90"
-          >
-            <span className="text-3xl" aria-hidden="true">
-              {a.emoji}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="font-bold text-[color:var(--catalog-primary)]">
-                {a.name}
-              </p>
-              <p className="truncate text-xs text-[color:var(--catalog-muted)]">
-                {a.desc}
-              </p>
-            </div>
-            <span className="text-[color:var(--catalog-muted)]" aria-hidden="true">
-              →
-            </span>
-          </a>
-        ))}
-      </div>
+      <a
+        href={s.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`relative flex items-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r ${s.grad} px-4 py-4 text-white shadow-lg transition active:scale-[0.99] sm:gap-4 sm:px-5`}
+      >
+        <span className="text-4xl drop-shadow-sm sm:text-5xl" aria-hidden="true">
+          {s.emoji}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-white/70">
+            AD
+          </p>
+          <p className="truncate text-base font-black leading-tight sm:text-lg">
+            {s.headline}
+          </p>
+          <p className="truncate text-xs text-white/85 sm:text-sm">{s.sub}</p>
+        </div>
+        <span className="shrink-0 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-zinc-900 sm:px-4 sm:py-2 sm:text-sm">
+          {s.cta} →
+        </span>
+        <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1">
+          {SLIDES.map((_, idx) => (
+            <span
+              key={idx}
+              className={`h-1.5 rounded-full transition-all ${
+                idx === i ? "w-4 bg-white" : "w-1.5 bg-white/50"
+              }`}
+            />
+          ))}
+        </div>
+      </a>
     </section>
   );
 }
