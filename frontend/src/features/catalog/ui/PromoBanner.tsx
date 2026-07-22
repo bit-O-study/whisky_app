@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-/** 광고 배너 슬라이드(양주를 뺀 나머지 서비스). 자동 롤링. */
+/** 광고 배너 슬라이드(양주를 뺀 나머지 서비스). 자동 롤링 · 직사각형 배너. */
 type Slide = {
   emoji: string;
   headline: string;
@@ -47,24 +47,29 @@ export function PromoBanner() {
         href={s.url}
         target="_blank"
         rel="noopener noreferrer"
-        className={`relative flex items-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r ${s.grad} px-4 py-4 text-white shadow-lg transition active:scale-[0.99] sm:gap-4 sm:px-5`}
+        className={`relative block overflow-hidden rounded-2xl bg-gradient-to-br ${s.grad} p-5 text-white shadow-lg transition active:scale-[0.99] sm:p-6`}
       >
-        <span className="text-4xl drop-shadow-sm sm:text-5xl" aria-hidden="true">
-          {s.emoji}
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-white/70">
-            AD
-          </p>
-          <p className="truncate text-base font-black leading-tight sm:text-lg">
-            {s.headline}
-          </p>
-          <p className="truncate text-xs text-white/85 sm:text-sm">{s.sub}</p>
+        <div className="flex min-h-[112px] items-center gap-4 sm:min-h-[128px]">
+          <span
+            className="shrink-0 text-6xl drop-shadow-sm sm:text-7xl"
+            aria-hidden="true"
+          >
+            {s.emoji}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-white/70">
+              AD · 함께하는 서비스
+            </p>
+            <p className="mt-1 text-xl font-black leading-tight sm:text-2xl">
+              {s.headline}
+            </p>
+            <p className="mt-1 text-sm text-white/85">{s.sub}</p>
+            <span className="mt-3 inline-flex rounded-full bg-white px-4 py-1.5 text-sm font-bold text-zinc-900">
+              {s.cta} →
+            </span>
+          </div>
         </div>
-        <span className="shrink-0 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-zinc-900 sm:px-4 sm:py-2 sm:text-sm">
-          {s.cta} →
-        </span>
-        <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1">
+        <div className="absolute bottom-3 right-4 flex gap-1">
           {SLIDES.map((_, idx) => (
             <span
               key={idx}
