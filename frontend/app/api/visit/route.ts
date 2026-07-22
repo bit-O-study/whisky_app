@@ -12,10 +12,27 @@ export async function POST(request: Request) {
     const path =
       typeof body.path === "string" ? body.path.slice(0, 300) : null;
     const supabase = getSupabaseClient();
-    await supabase.from("site_visit").insert({ path });
+    const { error } = await supabase.from("site_visit").insert({ path });
+    if (error) return NextResponse.json({ ok: false, error: error.message });
     return NextResponse.json({ ok: true });
-  } catch {
-    // 방문 기록 실패는 사용자 경험에 영향 없음 — 조용히 넘어간다.
-    return NextResponse.json({ ok: false });
+  } catch (e) {
+    return NextResponse.json({ ok: false, error: String(e) });
+  }
+}
+
+/**
+ * 진단용 — 브라우저로 이 주소를 열면 현재 방문수(및 에러)를 볼 수 있다.
+ * 기록이 안 될 때 원인(테이블 없음/env 없음 등)이 error 로 그대로 보인다.
+ */
+export async function GET() {
+  try {
+    const supabase = getSupabaseClient();
+    const { count, error } = await supabase
+      .from("site_visit")
+      .select("id", { count: "exact", head: true });
+    if (error) return NextResponse.json({ ok: false, error: error.message });
+    return NextResponse.json({ ok: true, count: count ?? 0 });
+  } catch (e) {
+    return NextResponse.json({ ok: false, error: String(e) });
   }
 }
