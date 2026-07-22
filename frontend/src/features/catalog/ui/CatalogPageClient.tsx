@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { fetchCatalogPage } from "../api/catalog-client";
+import { PromoBanner } from "./PromoBanner";
 import type { FlavorAxis, SourceKey, TodaysRecommendation } from "../api/catalog-server";
 import {
   getCatalogLoadErrorMessage,
@@ -394,6 +395,8 @@ export default function CatalogPageClient({
             </p>
           </div>
         )}
+
+        <PromoBanner />
 
         <footer className="mt-20 rounded-3xl border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] px-6 py-10 sm:px-10">
           <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
