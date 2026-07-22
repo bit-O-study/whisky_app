@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getSiteUrl } from "@/shared/config/site-url";
+import { VisitPing } from "@/shared/ui/VisitPing";
 import "./globals.css";
 
 const newsreader = Newsreader({
@@ -78,6 +79,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="ko" className={`${newsreader.variable} ${manrope.variable} ${notoSansKr.variable} ${notoSerifKr.variable}`}>
       <body>
         {children}
+        <VisitPing />
         <Analytics />
         <SpeedInsights />
         <Script
