@@ -65,9 +65,10 @@ export const metadata: Metadata = {
   verification: {
     google: "Q1ZqUu7wUCZLXs7p79KixvVCfUuXO5LrETv4OiNjS-w",
     other: {
-      // 네이버 웹마스터도구 소유확인 — env 로 토큰만 넣으면 반영(발급은 Search Advisor).
+      // 네이버 웹마스터도구 소유확인(사이트별 토큰). env 로 덮어쓸 수 있음.
       "naver-site-verification":
-        process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION ?? "",
+        process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION ??
+        "27a0d402ad2927f9b0b0e39d0cdd523c4924b261",
     },
   },
 };
