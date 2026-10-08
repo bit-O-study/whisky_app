@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { DEFAULT_LIQUOR_IMAGE_URL } from "../../../shared/config/default-images";
 import { FLAVOR_AXES, FLAVOR_AXIS_LABELS, type CatalogCardItem, type FlavorAxis } from "../model/catalog";
 
 interface Props {
@@ -48,7 +49,7 @@ export default function FlavorRecommendations({ recommendations }: Props) {
             >
               <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-[color:var(--catalog-bg-secondary)]">
                 <Image
-                  src={item.image_url || "/default.webp"}
+                  src={item.image_url || DEFAULT_LIQUOR_IMAGE_URL}
                   alt={item.name}
                   fill
                   sizes="4rem"

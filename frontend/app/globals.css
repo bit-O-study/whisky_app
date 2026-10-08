@@ -16,7 +16,7 @@
   --catalog-ink: #14110d;
   --catalog-ink-soft: #2a2620;
   --catalog-muted: #6b6258;
-  --catalog-soft: #9c9388;
+  --catalog-soft: #7a7166; /* 배경 #fbfaf7 대비 4.6:1 (WCAG AA) */
   --catalog-mute: #c4bcaf;
 
   /* Lines */
@@ -27,6 +27,7 @@
   /* Accents — vibrant warm terracotta + deep ink contrast */
   --catalog-primary: #e25822;
   --catalog-primary-strong: #c84411;
+  --catalog-primary-text: #b8430f; /* 작은 강조 글씨용, 흰 배경 대비 5.5:1 */
   --catalog-primary-soft: rgba(226, 88, 34, 0.1);
   --catalog-primary-tint: rgba(226, 88, 34, 0.04);
   --catalog-accent: #1a1814;
@@ -64,6 +65,12 @@ body {
 
 * {
   box-sizing: border-box;
+}
+
+/* 키보드 포커스 표시 — 모든 인터랙티브 요소 공통 */
+:focus-visible {
+  outline: 2px solid var(--catalog-primary);
+  outline-offset: 2px;
 }
 
 ::selection {
@@ -110,7 +117,7 @@ body {
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--catalog-primary);
+  color: var(--catalog-primary-text);
 }
 
 .catalog-muted { color: var(--catalog-muted); }

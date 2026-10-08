@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { DEFAULT_LIQUOR_IMAGE_URL } from "../../../shared/config/default-images";
 import type { CatalogCardItem } from "../model/catalog";
 
 function normalizePrice(value: number) {
@@ -43,10 +44,7 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
         className="catalog-bottle-well relative isolate z-10 block aspect-[4/5] overflow-hidden border-b border-[color:var(--catalog-hairline)]"
       >
         <Image
-          src={
-            liquor.image_url ||
-            "https://jeqvxzkvumkiraclauvo.supabase.co/storage/v1/object/public/whisky-images/default_whisky.webp"
-          }
+          src={liquor.image_url || DEFAULT_LIQUOR_IMAGE_URL}
           alt={liquor.name}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1536px) 33vw, 25vw"
@@ -99,8 +97,8 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
             </div>
           </div>
 
-          {/* 모바일 판매처 */}
-          <details className="catalog-details mt-3 md:hidden">
+          {/* 터치 기기 판매처 (hover 불가 기기) */}
+          <details className="catalog-details mt-3 [@media(hover:hover)_and_(pointer:fine)]:hidden">
             <summary className="cursor-pointer catalog-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--catalog-muted)] transition hover:text-[color:var(--catalog-primary)]">
               판매처 보기 ↓
             </summary>
@@ -123,7 +121,7 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
                         </span>
                       )}
                           {vendor.discount_percent > 0 && (
-                              <span className="text-[10px] font-bold text-[color:var(--catalog-primary)]">
+                              <span className="text-[10px] font-bold text-[color:var(--catalog-primary-text)]">
                                 {vendor.discount_percent}%
                               </span>
                           )}
@@ -145,8 +143,8 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
         </div>
       </div>
 
-      {/* 데스크톱 hover 오버레이 — 미니멀한 white sheet */}
-      <div className="pointer-events-none absolute inset-0 z-20 hidden flex-col justify-end p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100 md:flex">
+      {/* hover 가능 기기 오버레이 — 미니멀한 white sheet */}
+      <div className="pointer-events-none absolute inset-0 z-20 hidden flex-col justify-end p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:hover)_and_(pointer:fine)]:flex">
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0)_45%,rgba(255,255,255,0.96)_92%)]" />
         <div className="pointer-events-auto relative rounded-2xl border border-[color:var(--catalog-outline-strong)] bg-white/95 p-4 shadow-[var(--catalog-shadow-md)] backdrop-blur">
           <h4 className="mb-3 catalog-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--catalog-primary)]">
@@ -171,7 +169,7 @@ export default function LiquorCard({ liquor, prioritizeImage = false }: LiquorCa
                       </span>
                     )}
                         {vendor.discount_percent > 0 && (
-                            <span className="text-[10px] font-bold text-white/80">
+                            <span className="text-[10px] font-bold text-[color:var(--catalog-primary-text)]">
                               {vendor.discount_percent}%
                             </span>
                         )}

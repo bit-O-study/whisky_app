@@ -251,7 +251,7 @@ export default function CatalogPageClient({
   }
 
   return (
-    <main className="catalog-shell min-h-screen pb-24 md:pb-20">
+    <main className="catalog-shell min-h-screen pb-20">
       <header className="catalog-glass sticky top-0 z-20">
         <div className="mx-auto flex max-w-[96rem] flex-col gap-4 px-5 py-4 sm:px-8 lg:flex-row lg:items-center lg:justify-between">
           <Link
@@ -286,7 +286,7 @@ export default function CatalogPageClient({
                 placeholder="위스키 · 브랜드 검색"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
-                className="w-full rounded-full border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] py-2.5 pl-11 pr-10 text-sm text-[color:var(--catalog-ink)] outline-none transition placeholder:text-[color:var(--catalog-soft)] focus:border-[color:var(--catalog-primary)] focus:ring-2 focus:ring-[color:var(--catalog-primary-soft)]"
+                className="w-full rounded-full border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] py-2.5 pl-11 pr-10 text-sm text-[color:var(--catalog-ink)] transition placeholder:text-[color:var(--catalog-soft)] focus:border-[color:var(--catalog-primary)] focus:ring-2 focus:ring-[color:var(--catalog-primary-soft)]"
               />
               {searchQuery && (
                 <button
@@ -415,13 +415,6 @@ export default function CatalogPageClient({
                 국내 주요 쇼핑몰의 위스키 가격을 매일 갱신해 비교하는 큐레이션 인덱스.
               </p>
             </div>
-            <div className="space-y-4">
-              <p className="catalog-kicker">Legal</p>
-              <ul className="space-y-2 text-sm font-medium text-[color:var(--catalog-ink)]">
-                <li className="transition hover:text-[color:var(--catalog-primary)]">Terms</li>
-                <li className="transition hover:text-[color:var(--catalog-primary)]">Privacy</li>
-              </ul>
-            </div>
           </div>
           <div className="mt-10 border-t border-[color:var(--catalog-hairline)] pt-6">
             <p className="catalog-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--catalog-muted)]">
@@ -430,13 +423,6 @@ export default function CatalogPageClient({
           </div>
         </footer>
       </section>
-
-      <nav className="catalog-glass fixed inset-x-0 bottom-0 z-20 flex items-center justify-around border-t border-[color:var(--catalog-hairline)] px-4 py-3 md:hidden">
-        <span className="text-[11px] font-bold text-[color:var(--catalog-primary)]">Market</span>
-        <span className="text-[11px] font-medium text-[color:var(--catalog-muted)]">Search</span>
-        <span className="text-[11px] font-medium text-[color:var(--catalog-muted)]">Vault</span>
-        <span className="text-[11px] font-medium text-[color:var(--catalog-muted)]">Profile</span>
-      </nav>
     </main>
   );
 }

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { DEFAULT_LIQUOR_IMAGE_URL } from "../../../shared/config/default-images";
 import type { PriceHistoryPoint } from "../api/catalog-server";
 import type { CatalogCardItem, CatalogCardVendor } from "../model/catalog";
 import PriceTrendChart from "./PriceTrendChart";
@@ -101,7 +102,7 @@ export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
                 <section className="grid grid-cols-1 gap-8 pt-10 md:grid-cols-[1.05fr_1fr] md:gap-12 md:pt-16">
                     <div className="catalog-bottle-well relative aspect-[4/5] overflow-hidden rounded-3xl border border-[color:var(--catalog-outline)]">
                         <Image
-                            src={liquor.image_url || "/default.webp"}
+                            src={liquor.image_url || DEFAULT_LIQUOR_IMAGE_URL}
                             alt={liquor.name}
                             fill
                             sizes="(max-width: 768px) 100vw, 55vw"

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { DEFAULT_LIQUOR_IMAGE_URL } from "../../../shared/config/default-images";
 import type { TodaysRecommendation } from "../api/catalog-server";
 
 interface Props {
@@ -39,7 +40,7 @@ export default function TodaysRecommendations({ recommendations }: Props) {
         <div className="relative aspect-square w-full overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[color:var(--catalog-surface)] opacity-90" />
           <Image
-            src={rec.liquor.image_url || "/default.webp"}
+            src={rec.liquor.image_url || DEFAULT_LIQUOR_IMAGE_URL}
             alt={rec.liquor.name}
             fill
             sizes="(max-width: 768px) 100vw, 24rem"
