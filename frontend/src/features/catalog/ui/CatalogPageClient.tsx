@@ -305,6 +305,10 @@ export default function CatalogPageClient({
         </div>
       </header>
 
+      <div className="mx-auto max-w-[96rem] px-5 pt-5 sm:px-8">
+        <PromoBanner />
+      </div>
+
       {/* HERO band */}
       <section className="mx-auto max-w-[96rem] px-5 pt-14 sm:px-8 md:pt-24">
         <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between md:gap-12">
@@ -396,7 +400,7 @@ export default function CatalogPageClient({
           </div>
         )}
 
-        <PromoBanner />
+
 
         <footer className="mt-20 rounded-3xl border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] px-6 py-10 sm:px-10">
           <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
