@@ -12,3 +12,6 @@
 브라우저 테스트 7개 통과. 로컬 실제 DB 사전 로딩이 fixture 테스트를 오염시키는 문제를 발견해 Playwright 웹 서버만 Supabase 환경변수를 비우도록 격리했다. 운영 앱 환경은 변경하지 않았다. APK 서명 검증 통과, 기존 debug 인증서와 동일. 실제 기기 APK 설치 검증은 수행하지 않았다.
 
 사용자 요청으로 로고 이미지·디자인 의도·적용 위치·검증 결과·가격 검수 결과를 docs/reports/20261015-whisky-review.md 및 HTML에 정리했다.
+# README 버전 표기 후속 수정
+
+2026-10-15: 실제 APK와 루트 다운로드 URL은 1.0.2였으나 루트 README 링크 표시 문구와 downloads/README의 버전·해시가 1.0.1로 남아 있었다. 루트/Android/downloads README를 1.0.2로 통일하고 실제 APK SHA-256과 대조했다. 문서 변경이며 APK 재빌드는 필요하지 않다.
