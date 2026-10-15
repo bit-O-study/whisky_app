@@ -1,0 +1,13 @@
+apply plugin: 'com.android.application'
+android {
+    namespace 'kr.bito.whiskydamoa'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'kr.bito.whiskydamoa'
+        minSdk 26
+        targetSdk 36
+        versionCode 1
+        versionName '1.0.0'
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}

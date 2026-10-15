@@ -7,6 +7,8 @@
 - `backend/api`는 보조 관리/업로드 성격의 애플리케이션으로 유지한다.
 
 ## 시스템 경계
+- `android/`
+  공개 Next.js HTTPS 사이트를 표시하는 Android WebView 셸. DB/서비스 키를 포함하지 않으며 외부 서비스와 판매처 링크는 브라우저로 보낸다. APK는 웹 서버를 포함하지 않으므로 웹 UI 변경은 웹 배포 후 반영된다.
 - `frontend/`
   Next.js App Router 기반 UI, 서버 컴포넌트, 내부 API route, 카탈로그 화면
 - `backend/crawler/`

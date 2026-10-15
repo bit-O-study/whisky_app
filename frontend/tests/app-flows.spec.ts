@@ -2,6 +2,40 @@ import { expect, test, type Page } from "@playwright/test";
 
 const SEARCH_PLACEHOLDER = "위스키 · 브랜드 검색";
 
+test("completed first page does not request another page after the search debounce", async ({ page }) => {
+  const requests: number[] = [];
+  await page.setViewportSize({ width: 1440, height: 1200 });
+  await mockLiquorApis(page, baseLiquorList, { onCatalogPageRequested: value => requests.push(value) });
+  await page.goto("/");
+  await expect(page.locator(".compare-row")).toHaveCount(2);
+  // Let the 250 ms search debounce elapse; a completed page must stay complete.
+  await page.waitForTimeout(500);
+  expect(requests).toEqual([0]);
+  await expect(page.locator(".compare-row")).toHaveCount(2);
+});
+
+test("C comparison supports mobile filters, vendor prices and memo web link", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await mockLiquorApis(page, [baseLiquorList[0], { ...baseLiquorList[1], volume: 1000 }]);
+  await page.goto("/");
+  await expect(page.getByText("Macallan 12", { exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "프로젝트 메모" })).toHaveAttribute("href", "https://meeting-minutes-orcin.vercel.app");
+  await page.getByLabel("정렬", { exact: true }).selectOption("lowest");
+  await expect(page.locator(".compare-row").first()).toContainText("Talisker 10");
+  await page.getByRole("group", { name: "용량", exact: true }).getByText("700ml", { exact: true }).click();
+  await expect(page.locator(".compare-row")).toHaveCount(1);
+  await page.getByRole("group", { name: "판매처", exact: true }).getByText("이마트", { exact: true }).click();
+  await page.locator("summary", { hasText: "가격 비교" }).click();
+  const table = page.getByRole("table", { name: "Macallan 12 판매처별 가격" });
+  await expect(table).toBeVisible();
+  await expect(table.getByText("롯데온", { exact: true })).toBeVisible();
+  await expect(table.getByRole("link", { name: /이마트에서/ })).toHaveAttribute("target", "_blank");
+  await expect(table.getByRole("link", { name: /이마트에서/ })).toHaveAttribute("href", "https://example.com/macallan-12-emart");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.getByRole("button", { name: "초기화", exact: true }).click();
+  await expect(page.locator(".compare-row")).toHaveCount(2);
+});
+
 const baseLiquorList = [
   {
     id: 1,
@@ -164,7 +198,7 @@ test("catalog search shows filtered result count", async ({ page }) => {
   await searchBox.fill("Macallan");
 
   await expect(page.getByText('"Macallan" 검색')).toBeVisible();
-  await expect(page.getByText("Macallan 12")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Macallan 12", exact: true })).toBeVisible();
   await expect(page.getByText("Talisker 10")).toHaveCount(0);
   await expect(page.getByText("상세 보기")).toHaveCount(0);
 });
@@ -192,7 +226,7 @@ test("catalog loads next page on scroll", async ({ page }) => {
   });
 
   await nextPageResponse;
-  await expect(page.getByText("Bottle 30")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Bottle 30", exact: true })).toBeVisible();
   expect(requestedCatalogPages).not.toContain(1);
 });
 
@@ -228,7 +262,7 @@ test("catalog keeps current items when loading the next page fails and recovers 
   await failedPageResponse;
 
   await expect(page.getByText("추가 목록을 불러오지 못했습니다. 다시 시도해주세요.")).toBeVisible();
-  await expect(page.getByText("Bottle 24")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Bottle 24", exact: true })).toBeVisible();
   await expect(page.getByText("Bottle 25")).toHaveCount(0);
 
   const retriedPageResponse = page.waitForResponse((response) =>
@@ -237,5 +271,5 @@ test("catalog keeps current items when loading the next page fails and recovers 
   await page.getByRole("button", { name: "다시 시도" }).click();
   await retriedPageResponse;
 
-  await expect(page.getByText("Bottle 30")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Bottle 30", exact: true })).toBeVisible();
 });

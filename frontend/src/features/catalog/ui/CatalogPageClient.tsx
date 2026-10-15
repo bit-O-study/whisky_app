@@ -17,6 +17,9 @@ import LiquorGrid from "./LiquorGrid";
 import SourceRecommendations from "./SourceRecommendations";
 import TodaysRecommendations from "./TodaysRecommendations";
 
+import CatalogFilters from "./CatalogFilters";
+import { EMPTY_FILTERS, filterCatalog } from "../model/catalog-filters";
+
 type SortKey = "oldest" | "newest" | "popular" | "lowest" | "highest";
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
@@ -78,10 +81,12 @@ export default function CatalogPageClient({
   const [error, setError] = useState<string | null>(initialError);
   const [reloadToken, setReloadToken] = useState(0);
   const [sortKey, setSortKey] = useState<SortKey>("oldest");
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const shouldSkipInitialRequestRef = useRef(initialPage.items.length > 0 && !initialError);
 
   useEffect(() => {
+    if (searchQuery === debouncedSearchQuery) return;
     const timeoutId = window.setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
       setLiquorPage(0);
@@ -91,7 +96,7 @@ export default function CatalogPageClient({
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [searchQuery]);
+  }, [searchQuery, debouncedSearchQuery]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -161,7 +166,7 @@ export default function CatalogPageClient({
     return () => {
       controller.abort();
     };
-  }, [debouncedSearchQuery, initialError, initialItemCount, initialPage.page, liquorPage, reloadToken]);
+  }, [debouncedSearchQuery, initialError, initialItemCount, initialPage.page, initialPage.size, liquorPage, reloadToken]);
 
   // 정렬은 순수 클라이언트에서 sortedLiquors useMemo 만으로 처리.
   // SSR이 양주 전체(size=500)를 한 번에 가져오므로 페이지를 자동으로 더 진행할 필요가 없다.
@@ -192,18 +197,19 @@ export default function CatalogPageClient({
     return () => {
       observer.disconnect();
     };
-  }, [error, hasNextLiquorPage, loading, loadingMore, liquorPage, liquors.length]);
+  }, [error, hasNextLiquorPage, loading, loadingMore, liquorPage, liquors.length, filters]);
 
   const activeSearchQuery = debouncedSearchQuery.trim();
-  const visibleBottleCount = liquors.length;
+  const filteredLiquors = useMemo(() => filterCatalog(liquors, filters), [liquors, filters]);
+  const visibleBottleCount = filteredLiquors.length;
 
   // 정렬은 클라이언트에서 처리 (서버는 항상 updated_at desc로 내려옴 = newest 기본).
   // 가격 0(미수집)은 정렬 끝으로 밀어서 진짜 가격 있는 상품이 먼저 보이게.
   // popular = view_count(0.7) + vendor 수(0.3) 정규화 합산. 둘 다 max 기준으로 정규화해
   // 한쪽 값이 폭주해도 비율이 무너지지 않게 한다. 같은 점수면 최저가 낮은 순으로 결정.
   const sortedLiquors = useMemo(() => {
-    if (sortKey === "oldest") return liquors;
-    const arr = liquors.slice();
+    if (sortKey === "oldest") return filteredLiquors;
+    const arr = filteredLiquors.slice();
     if (sortKey === "newest") {
       arr.reverse();
       return arr;
@@ -237,7 +243,7 @@ export default function CatalogPageClient({
       });
     }
     return arr;
-  }, [liquors, sortKey]);
+  }, [filteredLiquors, sortKey]);
 
   function handleRetry() {
     setError(null);
@@ -251,178 +257,27 @@ export default function CatalogPageClient({
   }
 
   return (
-    <main className="catalog-shell min-h-screen pb-20">
-      <header className="catalog-glass sticky top-0 z-20">
-        <div className="mx-auto flex max-w-[96rem] flex-col gap-4 px-5 py-4 sm:px-8 lg:flex-row lg:items-center lg:justify-between">
-          <Link
-            href="/"
-            className="group flex items-center gap-2.5 text-left transition-opacity hover:opacity-80"
-            aria-label="위스키다모아"
-            title="메인 페이지로 이동"
-          >
-            <span className="h-2.5 w-2.5 rounded-full bg-[color:var(--catalog-primary)]" />
-            <span className="text-[1.4rem] font-bold leading-none tracking-[-0.02em] text-[color:var(--catalog-ink)]">
-              위스키다모아
-            </span>
-          </Link>
-
-          <div className="w-full lg:max-w-md">
-            <div className="relative group">
-              <svg
-                className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--catalog-soft)] transition-colors group-focus-within:text-[color:var(--catalog-primary)]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.6}
-                  d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-              <input
-                type="text"
-                placeholder="위스키 · 브랜드 검색"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                className="w-full rounded-full border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] py-2.5 pl-11 pr-10 text-sm text-[color:var(--catalog-ink)] transition placeholder:text-[color:var(--catalog-soft)] focus:border-[color:var(--catalog-primary)] focus:ring-2 focus:ring-[color:var(--catalog-primary-soft)]"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[color:var(--catalog-soft)] transition hover:text-[color:var(--catalog-ink)]"
-                  aria-label="검색어 지우기"
-                >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
+    <main className="catalog-shell compare-shell">
+      <header className="compare-header"><div className="compare-container header-inner">
+        <Link href="/" className="compare-brand" aria-label="위스키다모아">위스키다모아 <span aria-hidden="true">●</span></Link>
+        <div className="compare-search"><label className="sr-only" htmlFor="catalog-search">위스키 · 브랜드 검색</label><span aria-hidden="true">⌕</span><input id="catalog-search" type="search" placeholder="위스키 · 브랜드 검색" value={searchQuery} onChange={event => setSearchQuery(event.target.value)} />{searchQuery && <button type="button" onClick={() => setSearchQuery("")} aria-label="검색어 지우기">×</button>}</div>
+        <a className="compare-design-link" href="/design-preview">디자인 시안 ↗</a>
+      </div></header>
+      <div className="compare-container"><PromoBanner />
+        <section className="compare-intro"><div><p className="compare-eyebrow">WHISKY PRICE INDEX</p><h1>위스키 가격, 빠르게 비교하세요</h1><p>여러 판매처의 가격을 한눈에. 좋은 위스키를 더 현명하게.</p></div><span>좋은 선택이<br />좋은 시간으로 이어지니까.</span></section>
+        <div className="compare-layout"><CatalogFilters items={liquors} value={filters} onChange={setFilters} />
+          <section className="compare-results" aria-label="상품 목록">
+            <div className="compare-toolbar"><div aria-live="polite"><strong>{error && !liquors.length ? "상품을 불러오지 못했어요" : loading ? "상품 불러오는 중" : "전체 상품 " + formatCount(visibleBottleCount) + "개"}</strong>{activeSearchQuery && <p>&quot;{activeSearchQuery}&quot; 검색</p>}</div>
+              <label>정렬 <select aria-label="정렬" value={sortKey} onChange={event => setSortKey(event.target.value as SortKey)}>{SORT_OPTIONS.map(option => <option key={option.key} value={option.key}>{option.label}</option>)}</select></label>
             </div>
-          </div>
+            <p className="compare-disclaimer">가격은 판매처에서 최종 확인하세요. 용량과 구매 조건에 따라 달라질 수 있습니다.</p>
+            {!loading && !error && liquors.length > 0 && sortedLiquors.length === 0 ? <div className="compare-empty"><h2>선택한 조건에 맞는 상품이 없습니다</h2><button type="button" onClick={() => setFilters(EMPTY_FILTERS)}>필터 초기화</button>{hasNextLiquorPage && <button type="button" disabled={loadingMore} onClick={() => setLiquorPage(page => page + 1)}>{loadingMore ? "불러오는 중" : "다음 상품 불러오기"}</button>}</div> : <LiquorGrid searchQuery={activeSearchQuery} liquors={sortedLiquors} loading={loading} loadingMore={loadingMore} hasNext={hasNextLiquorPage} error={error} onRetry={handleRetry} loadMoreRef={loadMoreRef} />}
+            {!loading && !error && visibleBottleCount > 0 && !hasNextLiquorPage && <p className="compare-end">모든 상품을 확인했습니다 · {formatCount(visibleBottleCount)}개</p>}
+          </section>
         </div>
-      </header>
-
-      <div className="mx-auto max-w-[96rem] px-5 pt-5 sm:px-8">
-        <PromoBanner />
+        {(recommendations.length > 0 || Object.values(sourceRecommendations).some(items => items.length) || Object.values(flavorRecommendations).some(items => items.length)) && <details className="compare-recommendations"><summary>다른 위스키도 둘러보기</summary><SourceRecommendations recommendations={sourceRecommendations} /><FlavorRecommendations recommendations={flavorRecommendations} /><TodaysRecommendations recommendations={recommendations} /></details>}
+        <footer className="compare-footer"><strong>위스키다모아</strong><p>판매처별 가격을 한곳에서 비교하세요.</p><span>© 2026 위스키다모아 · 정보 제공 목적의 가격 데이터</span></footer>
       </div>
-
-      {/* HERO band */}
-      <section className="mx-auto max-w-[96rem] px-5 pt-14 sm:px-8 md:pt-24">
-        <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between md:gap-12">
-          <div className="flex-1">
-            <span className="catalog-kicker">
-              <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--catalog-primary)]" />
-              CURATED MARKET · 2026
-            </span>
-            <h1 className="mt-5 text-[2.6rem] font-bold leading-[0.98] tracking-[-0.035em] text-[color:var(--catalog-ink)] sm:text-[3.8rem] md:text-[5rem]">
-              오늘 가장 합리적인<br />
-              <span className="catalog-editorial italic font-medium text-[color:var(--catalog-primary)]">한 병</span>의 가격.
-            </h1>
-            <p className="mt-6 max-w-xl text-base leading-8 text-[color:var(--catalog-muted)] md:text-[1.05rem]">
-              국내 주요 쇼핑몰의 위스키 가격을 매일 갱신해 한눈에 비교합니다.
-              최저가 · 판매처 · 시세 변동을 한곳에 정리했습니다.
-            </p>
-            <SourceRecommendations recommendations={sourceRecommendations} />
-            <FlavorRecommendations recommendations={flavorRecommendations} />
-          </div>
-          <TodaysRecommendations recommendations={recommendations} />
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-[96rem] px-5 pt-14 sm:px-8 md:pt-16">
-        <div className="mb-8 flex flex-col gap-4 border-t border-[color:var(--catalog-hairline)] pt-8 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-baseline gap-3">
-            <span className="text-[2.2rem] font-bold leading-none tracking-[-0.02em] text-[color:var(--catalog-ink)]">
-              {formatCount(visibleBottleCount)}
-            </span>
-            <div>
-              <p className="catalog-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--catalog-primary)]">
-                Bottles
-              </p>
-              {activeSearchQuery && (
-                <p className="mt-0.5 text-xs text-[color:var(--catalog-muted)]">
-                  &quot;{activeSearchQuery}&quot; 검색
-                </p>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-[color:var(--catalog-muted)]">
-            <span className="catalog-mono text-[11px] font-semibold uppercase tracking-[0.22em]">Sort</span>
-            <div
-              role="group"
-              aria-label="정렬"
-              className="flex items-center gap-0.5 rounded-full border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] p-0.5"
-            >
-              {SORT_OPTIONS.map((opt) => {
-                const active = sortKey === opt.key;
-                return (
-                  <button
-                    key={opt.key}
-                    type="button"
-                    onClick={() => setSortKey(opt.key)}
-                    aria-pressed={active}
-                    className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
-                      active
-                        ? "bg-[color:var(--catalog-ink)] text-white"
-                        : "text-[color:var(--catalog-muted)] hover:text-[color:var(--catalog-ink)]"
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <LiquorGrid
-            searchQuery={activeSearchQuery}
-            liquors={sortedLiquors}
-            loading={loading}
-            loadingMore={loadingMore}
-            hasNext={hasNextLiquorPage}
-            error={error}
-            onRetry={handleRetry}
-            loadMoreRef={loadMoreRef}
-          />
-        </div>
-
-        {!loading && !error && visibleBottleCount > 0 && !hasNextLiquorPage && (
-          <div className="mt-16 flex flex-col items-center gap-4">
-            <div className="h-px w-32 bg-[linear-gradient(90deg,transparent,var(--catalog-outline-strong),transparent)]" />
-            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[color:var(--catalog-soft)]">
-              End of records ({formatCount(visibleBottleCount)})
-            </p>
-          </div>
-        )}
-
-
-
-        <footer className="mt-20 rounded-3xl border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)] px-6 py-10 sm:px-10">
-          <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
-            <div className="max-w-md space-y-5">
-              <div className="flex items-center gap-2.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-[color:var(--catalog-primary)]" />
-                <p className="text-xl font-bold tracking-[-0.02em] text-[color:var(--catalog-ink)]">
-                  위스키다모아
-                </p>
-              </div>
-              <p className="text-sm leading-7 text-[color:var(--catalog-muted)]">
-                국내 주요 쇼핑몰의 위스키 가격을 매일 갱신해 비교하는 큐레이션 인덱스.
-              </p>
-            </div>
-          </div>
-          <div className="mt-10 border-t border-[color:var(--catalog-hairline)] pt-6">
-            <p className="catalog-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--catalog-muted)]">
-              © 2026 위스키다모아 · 정보 제공 목적의 가격 데이터
-            </p>
-          </div>
-        </footer>
-      </section>
     </main>
   );
 }

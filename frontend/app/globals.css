@@ -1,22 +1,23 @@
 @import "tailwindcss";
+@import "./comparison.css";
 
 :root {
   color-scheme: light;
 
   /* Surfaces — warm bright whites */
-  --catalog-bg-solid: #fbfaf7;
-  --catalog-bg-secondary: #f4f1ea;
-  --catalog-bg-strong: #ebe6da;
+  --catalog-bg-solid: #ffffff;
+  --catalog-bg-secondary: #f5f7fc;
+  --catalog-bg-strong: #e8edf7;
   --catalog-surface: #ffffff;
   --catalog-surface-soft: rgba(255, 255, 255, 0.85);
   --catalog-surface-strong: #ffffff;
   --catalog-surface-elevated: #ffffff;
 
   /* Text — high contrast warm near-black */
-  --catalog-ink: #14110d;
-  --catalog-ink-soft: #2a2620;
-  --catalog-muted: #6b6258;
-  --catalog-soft: #7a7166; /* 배경 #fbfaf7 대비 4.6:1 (WCAG AA) */
+  --catalog-ink: #101b36;
+  --catalog-ink-soft: #273651;
+  --catalog-muted: #5b6983;
+  --catalog-soft: #63718a; /* 배경 #ffffff 대비 4.6:1 (WCAG AA) */
   --catalog-mute: #c4bcaf;
 
   /* Lines */
@@ -25,11 +26,11 @@
   --catalog-hairline: rgba(20, 17, 13, 0.06);
 
   /* Accents — vibrant warm terracotta + deep ink contrast */
-  --catalog-primary: #e25822;
-  --catalog-primary-strong: #c84411;
-  --catalog-primary-text: #b8430f; /* 작은 강조 글씨용, 흰 배경 대비 5.5:1 */
-  --catalog-primary-soft: rgba(226, 88, 34, 0.1);
-  --catalog-primary-tint: rgba(226, 88, 34, 0.04);
+  --catalog-primary: #0755f5;
+  --catalog-primary-strong: #0342c6;
+  --catalog-primary-text: #084ac9; /* 작은 강조 글씨용, 흰 배경 대비 5.5:1 */
+  --catalog-primary-soft: #eaf0ff;
+  --catalog-primary-tint: #f5f8ff;
   --catalog-accent: #1a1814;
   --catalog-accent-strong: #000000;
 
@@ -40,8 +41,8 @@
   --catalog-shadow-pop: 0 0 0 4px var(--catalog-primary-soft);
 
   /* Typography */
-  --catalog-display-font: var(--font-newsreader), var(--font-noto-serif-kr), "Iowan Old Style", Georgia, serif;
-  --catalog-body-font: var(--font-manrope), var(--font-noto-sans-kr), "Avenir Next", "Segoe UI", sans-serif;
+  --catalog-display-font: "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
+  --catalog-body-font: "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
 }
 
 html {

@@ -21,7 +21,7 @@ interface LiquorCardListProps {
 
 const LiquorCardList = memo(function LiquorCardList({ liquors }: LiquorCardListProps) {
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="compare-list">
       {liquors.map((liquor, index) => (
         <LiquorCard
           key={`${liquor.id}-${liquor.product_code || liquor.name}`}
@@ -45,13 +45,13 @@ export default function LiquorGrid({
 }: LiquorGridProps) {
   if (loading) {
     return (
-      <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <section className="compare-list">
         {LOADING_PLACEHOLDERS.map((placeholder) => (
           <article
             key={placeholder}
             className="overflow-hidden rounded-2xl border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)]"
           >
-            <div className="aspect-[4/5] animate-pulse bg-[color:var(--catalog-bg-strong)]" />
+            <div className="h-20 animate-pulse bg-[color:var(--catalog-bg-strong)]" />
             <div className="space-y-3 p-5">
               <div className="h-2.5 w-32 animate-pulse rounded-full bg-[color:var(--catalog-bg-strong)]" />
               <div className="h-6 w-5/6 animate-pulse rounded-full bg-[color:var(--catalog-bg-secondary)]" />
