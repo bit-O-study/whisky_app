@@ -1,0 +1,73 @@
+{
+  "checked_at": "2026-10-15T08:26:21.921Z",
+  "counts": {
+    "liquor": 115,
+    "liquor_price": 157,
+    "liquor_url": 153
+  },
+  "encoding_issues": [],
+  "suspicious_text": [],
+  "missing_names": [],
+  "invalid_prices": [],
+  "orphan_rows": [],
+  "invalid_urls": [],
+  "volume_mismatches": [
+    {
+      "id": 904,
+      "name": "벤치마크 NO.8 버번 위스키 (1,750ML)",
+      "name_volume": 1750,
+      "stored_volume": 750
+    }
+  ],
+  "duplicate_prices": [],
+  "duplicate_links": [
+    {
+      "key": "868|EMART_TRADERS|https://emart.kr/1aTLw",
+      "ids": [
+        25,
+        35
+      ]
+    }
+  ],
+  "duplicate_product_identity": [],
+  "receipt_mismatches": [],
+  "new_products": [
+    {
+      "id": 1182,
+      "name": "하이랜드 파크 17년 비트윈 유앤아이 2 700ml",
+      "matches_receipt": true,
+      "link_count": 1,
+      "price_count": 0,
+      "pending_metadata": [
+        "brand",
+        "category",
+        "image_url"
+      ]
+    },
+    {
+      "id": 1183,
+      "name": "와일드터키 레어브리드 라이 750ml",
+      "matches_receipt": true,
+      "link_count": 1,
+      "price_count": 0,
+      "pending_metadata": [
+        "brand",
+        "category",
+        "image_url"
+      ]
+    },
+    {
+      "id": 1184,
+      "name": "켄터키 아울 타쿠미 에디션 700ml",
+      "matches_receipt": true,
+      "link_count": 1,
+      "price_count": 0,
+      "pending_metadata": [
+        "brand",
+        "category",
+        "image_url"
+      ]
+    }
+  ],
+  "updated_price_rows_checked": 16
+}
