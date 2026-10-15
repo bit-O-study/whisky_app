@@ -47,3 +47,6 @@
 - Android ADB: https://developer.android.com/tools/adb
 - UI Automator: https://developer.android.com/training/testing/other-components/ui-automator
 - 기존 코드: backend/crawler-playwright/src/core/ingest-preview.ts, safety-gates.ts, ingest-write.ts
+
+## 구현 단계 변경 (2026-10-15)
+첫 반복 수집기는 scripts/adb/collect.mjs에 둔다. 목록에서 판매처 배지/상품명/가격/할인조건을 한 번에 읽어 상세 진입 비용을 줄인다. 현재 위스키 카테고리, 이마트/트레이더스 전환, 중복 제거, 체크포인트, 제한 재시도/스크롤, 정체 종료를 구현한다. 재개는 기존 결과를 유지하고 홈에서 다시 순회하는 방식이다. 원본 전체 XML/화면은 계정정보가 섞일 수 있어 저장하지 않고 상품 텍스트만 보존한다. 결과는 검토 전용이며 데이터베이스 계약을 변경하지 않는다.

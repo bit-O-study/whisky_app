@@ -185,3 +185,13 @@ curl -X POST http://localhost:8081/api/crawl/emart
 - 사이트 구조 변경 시 크롤러 파서 수정이 필요합니다.
 - `backend/crawler`는 `spring.jpa.hibernate.ddl-auto=validate`이므로 대상 DB에 스키마가 먼저 있어야 실행됩니다.
 - 기본 이미지는 현재 Supabase Storage 공개 경로 fallback을 유지합니다.
+
+## 와인그랩 자동 수집
+
+USB 디버깅을 승인하고 이마트 앱의 와인그랩 홈/위스키 목록을 열어 둔 다음 저장소 루트에서 실행합니다.
+
+```powershell
+.\scripts\collect-winegrab.ps1
+```
+
+이마트와 트레이더스 위스키 목록을 자동 스크롤해 `artifacts/adb/`에 검토용 JSON을 저장합니다. 중복 제거, 할인조건 보존, 오류 시 저장, 재개를 지원합니다. [실행 옵션과 제한](scripts/adb/README.md)을 참고하세요.

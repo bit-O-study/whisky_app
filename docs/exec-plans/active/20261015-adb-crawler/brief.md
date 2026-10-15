@@ -7,3 +7,6 @@
 현황: Selenium 및 backend/crawler-playwright가 존재. 후자는 EMART/LOTTEON 수집, ingest-preview, safety-gates, ingest-write를 구현했다. 로컬 위스키 DB 연결은 복구했고 실제 목록 112개 조회를 확인했다. DB 쓰기/ADB 실행은 이번 계획 범위에 포함하지 않는다.
 
 2026-10-15 최종 요청: 네 판매처 양주 수집 시나리오를 작성하고, 추후 쉘 스크립트/어드민 버튼 한 번으로 시작할 수 있도록 설계한다. 최신 실행 명세는 one-click-scenarios.md이며 이전 source-plan.md의 가정된 LOTTEON 대상보다 우선한다.
+
+## 2026-10-15 반복 수집 구현 범위
+사용자가 로그인과 실기기 검증을 완료하고 이마트/트레이더스 자동 반복 수집 구현을 요청했다. scripts/adb의 독립 Node.js CLI로 위스키 목록을 자동 전환/스크롤하여 검토 JSON을 저장한다. 별도 의존성 설치 없이 PowerShell/Bash에서 실행한다. DB 적재와 어드민 큐/버튼은 후속 범위다.

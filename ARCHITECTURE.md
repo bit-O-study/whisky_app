@@ -45,3 +45,6 @@
 - 설계 결정: [docs/design-docs/index.md](/home/ubuntu/code/bitO-liquor/docs/design-docs/index.md)
 - 실행 기록: [docs/PLANS.md](/home/ubuntu/code/bitO-liquor/docs/PLANS.md)
 - 보안/신뢰성 기준: [docs/SECURITY.md](/home/ubuntu/code/bitO-liquor/docs/SECURITY.md), [docs/RELIABILITY.md](/home/ubuntu/code/bitO-liquor/docs/RELIABILITY.md)
+
+### 로컬 ADB 수집
+`scripts/adb/collect.mjs`는 USB 연결 PC에서 와인그랩 위스키 목록을 순회하고 검토 JSON/체크포인트를 `artifacts/adb/`에 저장한다. DB 쓰기 경로와 분리되어 있으며 기존 가격 계약에 자동 반영하지 않는다. PowerShell/Bash 진입점과 실행 방법은 `scripts/adb/README.md` 참조.
