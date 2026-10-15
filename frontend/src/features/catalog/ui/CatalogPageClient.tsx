@@ -261,7 +261,6 @@ export default function CatalogPageClient({
       <header className="compare-header"><div className="compare-container header-inner">
         <Link href="/" className="compare-brand" aria-label="위스키다모아">위스키다모아 <span aria-hidden="true">●</span></Link>
         <div className="compare-search"><label className="sr-only" htmlFor="catalog-search">위스키 · 브랜드 검색</label><span aria-hidden="true">⌕</span><input id="catalog-search" type="search" placeholder="위스키 · 브랜드 검색" value={searchQuery} onChange={event => setSearchQuery(event.target.value)} />{searchQuery && <button type="button" onClick={() => setSearchQuery("")} aria-label="검색어 지우기">×</button>}</div>
-        <a className="compare-design-link" href="/design-preview">디자인 시안 ↗</a>
       </div></header>
       <div className="compare-container"><PromoBanner />
         <section className="compare-intro"><div><p className="compare-eyebrow">WHISKY PRICE INDEX</p><h1>위스키 가격, 빠르게 비교하세요</h1><p>여러 판매처의 가격을 한눈에. 좋은 위스키를 더 현명하게.</p></div><span>좋은 선택이<br />좋은 시간으로 이어지니까.</span></section>
