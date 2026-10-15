@@ -44,3 +44,5 @@ node scripts/adb/validate-file.mjs artifacts/adb/my-run/products.json artifacts/
 공백/괄호/단위 표기만 정규화하여 동일 이름과 용량을 검사한다. 라이, CS, 숙성 연수, 전용잔/기획세트 등 이름 내용은 제거하지 않는다. 중복 상품, DB 이름과 용량의 불일치, 조건부 할인, 24시간 이상 지난 관측, 40%를 넘는 가격 변동은 검토 대상으로 차단한다. 통과는 상세 화면 검토 대상이라는 뜻이며 DB 쓰기 승인이 아니다. 앱 상세의 판매처/용량/가격/조건과 대조 후 반영해야 한다.
 
 검증 테스트: `node --test scripts/adb/validate.test.mjs scripts/adb/winegrab-parser.test.mjs`
+
+판매량순: `--sort sales` (기본 신상품순). 특정 상품의 상세 확인: `--sources EMART --sort sales --review-name "존바 리저브 750ml"`. 해당 상품 발견 시 목록/상세 캡처와 XML을 출력 폴더에 저장하고 멈춘다. 캡처 파일은 계정정보가 포함될 수 있어 외부 공유/커밋하지 않는다. 화면을 사람이 대조하기 위한 근거이며 자동 검증 완료를 뜻하지 않는다.

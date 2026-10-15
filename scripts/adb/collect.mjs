@@ -4,21 +4,22 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
-import { activeScreen, extractProducts, visible } from './winegrab-parser.mjs';
+import { activeScreen, extractProducts, visible, parseNodes } from './winegrab-parser.mjs';
 
 const options = {};
 for (let i = 2; i < process.argv.length; i++) {
   const key = process.argv[i];
-  if (!['--adb', '--serial', '--sources', '--max-pages', '--out', '--resume', '--help'].includes(key))
+  if (!['--adb', '--serial', '--sources', '--max-pages', '--out', '--resume', '--sort', '--review-name', '--help'].includes(key))
     throw new Error(`알 수 없는 옵션: ${key}`);
   options[key.slice(2)] = ['--resume', '--help'].includes(key) ? true : process.argv[++i];
 }
 if (options.help) {
-  console.log('node scripts/adb/collect.mjs [--adb PATH] [--serial SERIAL] [--sources EMART,TRADERS] [--max-pages 200] [--out DIRECTORY] [--resume]');
+  console.log('node scripts/adb/collect.mjs [--adb PATH] [--serial SERIAL] [--sources EMART,TRADERS] [--max-pages 200] [--out DIRECTORY] [--resume] [--sort newest|sales] [--review-name NAME]');
   process.exit(0);
 }
 const sources = (options.sources ?? 'EMART,TRADERS').split(',');
 if (!sources.length || sources.some(s => !['EMART', 'TRADERS'].includes(s))) throw new Error('지원 판매처: EMART,TRADERS');
+if (options.sort && !['newest', 'sales'].includes(options.sort)) throw new Error('sort: newest 또는 sales');
 const maxPages = Number(options['max-pages'] ?? 200);
 if (!Number.isInteger(maxPages) || maxPages < 1 || maxPages > 2000) throw new Error('max-pages: 1~2000');
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -69,7 +70,7 @@ async function capture() {
       const result = run(['shell', 'uiautomator', 'dump', remote]);
       if (!result.includes('dumped')) throw new Error('UI dump 실패');
       const xml = run(['shell', 'cat', remote]);
-      activeScreen(xml);
+      parseNodes(xml);
       return xml;
     } catch (e) { error = e; await sleep(500 * (attempt + 1)); }
     finally { try { run(['shell', 'rm', '-f', remote]); } catch { /* disconnected */ } }
@@ -101,7 +102,18 @@ async function openSource(source) {
   nodes = activeScreen(xml).nodes;
   const label = source === 'EMART' ? '이마트' : '트레이더스';
   await tap(nodes.find(n => n.text === label && n.class === 'android.widget.ToggleButton' && visible(n)));
-  return capture();
+  xml = await capture();
+  if (options.sort === 'sales') {
+    nodes = activeScreen(xml).nodes;
+    const sort = nodes.find(n => ['신상품순', '판매량순', '낮은가격순', '높은가격순'].includes(n.text) && visible(n));
+    if (sort?.text !== '판매량순') {
+      await tap(sort);
+      const menu = parseNodes(await capture());
+      await tap(menu.find(n => n.text === '판매량순' && n.clickable === 'true' && visible(n)));
+      xml = await capture();
+    }
+  }
+  return xml;
 }
 
 try {
@@ -129,6 +141,20 @@ try {
         report.pages++;
         save();
         console.log(`${source} | 화면 ${report.pages} | 신규 ${report.added} | 누적 ${Object.keys(state.products).length}`);
+        const review = products.find(p => p.name === options['review-name']);
+        if (review) {
+          const shot = () => execFileSync(adb, ['-s', serial, 'exec-out', 'screencap', '-p'], {timeout:25000,maxBuffer:24*1024*1024});
+          fs.writeFileSync(path.join(out, 'review-list.png'), shot());
+          fs.writeFileSync(path.join(out, 'review-observation.json'), JSON.stringify(review,null,2));
+          const productNode = activeScreen(xml).nodes.find(n => n['content-desc'] === review.raw_text && visible(n));
+          await tap(productNode);
+          const detail = await capture();
+          fs.writeFileSync(path.join(out, 'review-detail.xml'), detail);
+          fs.writeFileSync(path.join(out, 'review-detail.png'), shot());
+          report.status = 'detail_review';
+          stopping = true;
+          break;
+        }
         if (repeated >= 3) { report.status = 'stalled_or_end'; break; }
         if (page + 1 >= maxPages) { report.status = 'page_limit'; break; }
         const { root } = activeScreen(xml);
@@ -140,12 +166,12 @@ try {
         await sleep(500);
         xml = await capture();
       }
-      if (stopping) report.status = 'interrupted';
+      if (stopping && report.status !== 'detail_review') report.status = 'interrupted';
     } catch (error) { report.status = 'failed'; report.error = error.message; throw error; }
     finally { report.finished_at = new Date().toISOString(); save(); }
   }
   console.log(`저장 완료: ${Object.keys(state.products).length}개 → ${path.join(out, 'products.json')}`);
-  if (stopping) process.exitCode = 130;
+  if (stopping && state.runs.at(-1)?.status !== 'detail_review') process.exitCode = 130;
 } catch (error) {
   console.error(`수집 중단: ${error.message}\n이미 수집한 결과는 저장됨. 같은 --out에 --resume으로 재실행하세요.`);
   process.exitCode = 1;
