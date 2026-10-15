@@ -1,0 +1,17 @@
+{
+  "checked_at": "2026-10-15T05:32:25.129Z",
+  "home_status": 200,
+  "header_uses_new_logo": true,
+  "logo_status": 200,
+  "logo_hash_matches": true,
+  "release": "https://github.com/bit-O-study/whisky_app/releases/tag/android-v1.0.2",
+  "apk": [
+    {
+      "name": "whiskydamoa-1.0.2-debug.apk",
+      "url": "https://github.com/bit-O-study/whisky_app/releases/download/android-v1.0.2/whiskydamoa-1.0.2-debug.apk",
+      "bytes": 352920,
+      "digest": "sha256:5bf6261cf9e508523c77f54e30309def20bf7276b39b8e8e55ccc7c89fb3cd3f"
+    }
+  ],
+  "draft": false
+}
