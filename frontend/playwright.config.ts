@@ -15,6 +15,13 @@ export default defineConfig({
     command: "npm run dev -- --hostname 127.0.0.1 --port 3100",
     url: "http://127.0.0.1:3100",
     reuseExistingServer: false,
+    // Browser tests mock catalog APIs; never preload a real local/production DB.
+    env: {
+      SUPABASE_URL: "",
+      NEXT_PUBLIC_SUPABASE_URL: "",
+      SUPABASE_SERVICE_ROLE_KEY: "",
+      SUPABASE_SERVICE_KEY: "",
+    },
     timeout: 120000,
   },
   projects: [

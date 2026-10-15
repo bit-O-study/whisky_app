@@ -243,3 +243,7 @@ body {
   z-index: -1;
   pointer-events: none;
 }
+
+/* Brand mark */
+.compare-brand { display: inline-flex; align-items: center; gap: 10px; }
+.compare-brand img { flex: 0 0 auto; }
