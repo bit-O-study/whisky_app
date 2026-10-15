@@ -2,6 +2,15 @@
 
 롯데온/이마트 주류 데이터를 수집하고 Next.js + Supabase 기반 카탈로그를 제공하는 모노레포입니다.
 
+## Android APK 다운로드
+
+**[위스키다모아 APK 다운로드 (1.0.0)](https://github.com/bit-O-study/whisky_app/releases/download/android-v1.0.0/whiskydamoa-1.0.0-debug.apk)**
+
+- [GitHub 릴리즈 및 설치 파일](https://github.com/bit-O-study/whisky_app/releases/tag/android-v1.0.0): Assets에서 APK를 선택하세요.
+- Android 8 이상, 개발용 서명 APK로 사전 릴리즈에 게시되어 있습니다.
+- 실행하면 위스키 웹에 바로 연결하며 인터넷 연결이 필요합니다.
+- 저장소 내 파일: [whiskydamoa-1.0.0-debug.apk](frontend/public/downloads/whiskydamoa-1.0.0-debug.apk).
+
 ## 프로젝트 구성
 
 - `backend/`: Java 21 + Spring Boot 멀티모듈
