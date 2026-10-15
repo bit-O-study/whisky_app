@@ -1,5 +1,15 @@
 ﻿# 위스키다모아 검수보고서
 
+## 최신 앱 로고 · Android 1.0.3
+
+![심플한 위스키 잔 로고](../exec-plans/completed/20261015-simple-logo/logo-simple.png)
+
+사용자 피드백을 반영해 금속 질감·W·받침을 제거하고 네이비/아이보리 두 색의 잔 윤곽과 액체 선으로 단순화했다. 웹 헤더·파비콘·Apple 아이콘과 Android 아이콘에 적용했다. Android 1.0.3(code 4) 빌드·lint·서명 검증 및 웹 lint/build 통과. 기존 개발용 서명과 일치한다. 실기기 설치는 미검증이다.
+
+[APK 1.0.3 다운로드](https://github.com/bit-O-study/whisky_app/releases/download/android-v1.0.3/whiskydamoa-1.0.3-debug.apk) · [생성 프롬프트와 작업 기록](../exec-plans/completed/20261015-simple-logo/progress.md)
+
+APK: 197,580 bytes · SHA-256: `2d5f5676397a64a1ba67dd3f06b8049c1933a096456398e785a8ab3120918ffe`. 아래 1.0.2 로고/가격 기록은 이전 검수 이력이다.
+
 검수일: 2026-10-15 · 대상 버전: Android 1.0.2(code 3) · 구현 커밋: 26727ed
 
 ## 최신 작업 현황 — 2026-10-15 17:26 KST

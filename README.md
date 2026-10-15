@@ -4,14 +4,14 @@
 
 ## Android APK 다운로드
 
-**[위스키다모아 APK 다운로드 (1.0.2)](https://github.com/bit-O-study/whisky_app/releases/download/android-v1.0.2/whiskydamoa-1.0.2-debug.apk)**
+**[위스키다모아 APK 다운로드 (1.0.3)](https://github.com/bit-O-study/whisky_app/releases/download/android-v1.0.3/whiskydamoa-1.0.3-debug.apk)**
 
-- 1.0.2: 금색 W와 위스키 잔을 결합한 새 앱 로고 적용.
+- 1.0.3: 위스키 잔 윤곽과 짧은 선만 남긴 심플한 앱 로고 적용.
 
-- [GitHub 릴리즈 및 설치 파일](https://github.com/bit-O-study/whisky_app/releases/tag/android-v1.0.2): Assets에서 APK를 선택하세요.
+- [GitHub 릴리즈 및 설치 파일](https://github.com/bit-O-study/whisky_app/releases/tag/android-v1.0.3): Assets에서 APK를 선택하세요.
 - Android 8 이상, 개발용 서명 APK로 사전 릴리즈에 게시되어 있습니다.
 - 실행하면 위스키 웹에 바로 연결하며 인터넷 연결이 필요합니다.
-- 저장소 내 파일: [whiskydamoa-1.0.2-debug.apk](frontend/public/downloads/whiskydamoa-1.0.2-debug.apk).
+- 저장소 내 파일: [whiskydamoa-1.0.3-debug.apk](frontend/public/downloads/whiskydamoa-1.0.3-debug.apk).
 
 ## 프로젝트 구성
 

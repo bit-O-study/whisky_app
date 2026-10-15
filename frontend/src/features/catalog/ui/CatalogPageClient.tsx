@@ -260,7 +260,7 @@ export default function CatalogPageClient({
   return (
     <main className="catalog-shell compare-shell">
       <header className="compare-header"><div className="compare-container header-inner">
-        <Link href="/" className="compare-brand" aria-label="위스키다모아"><Image src="/branding/app-icon-v2.png" alt="" width={40} height={40} className="rounded-xl" priority />위스키다모아</Link>
+        <Link href="/" className="compare-brand" aria-label="위스키다모아"><Image src="/branding/app-icon-v3.png" alt="" width={40} height={40} className="rounded-xl" priority />위스키다모아</Link>
         <div className="compare-search"><label className="sr-only" htmlFor="catalog-search">위스키 · 브랜드 검색</label><span aria-hidden="true">⌕</span><input id="catalog-search" type="search" placeholder="위스키 · 브랜드 검색" value={searchQuery} onChange={event => setSearchQuery(event.target.value)} />{searchQuery && <button type="button" onClick={() => setSearchQuery("")} aria-label="검색어 지우기">×</button>}</div>
       </div></header>
       <div className="compare-container"><PromoBanner />
