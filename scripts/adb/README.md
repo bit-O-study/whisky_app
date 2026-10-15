@@ -32,3 +32,15 @@ Linux/macOS에서는 `bash scripts/collect-winegrab.sh` 또는 모든 OS에서 `
 목록의 최대할인가/카드할인가를 일반 판매가로 변환하지 않는다. 상세 카드 조건, 지점, 재고, 상품 ID는 이번 목록 수집 범위에서 확정하지 못한다. 모든 결과는 `review_required: true`이며 DB 자동 적재는 하지 않는다. 현재 자동 순회 카테고리는 **위스키**다.
 
 검증: `node --test scripts/adb/winegrab-parser.test.mjs`
+
+## 데이터 검증
+
+가격 반영 전 DB 스냅샷(`liquor`, `liquor_price` 배열)과 비교한다.
+
+```powershell
+node scripts/adb/validate-file.mjs artifacts/adb/my-run/products.json artifacts/adb/my-run/db-before.json artifacts/adb/my-run/validation.json
+```
+
+공백/괄호/단위 표기만 정규화하여 동일 이름과 용량을 검사한다. 라이, CS, 숙성 연수, 전용잔/기획세트 등 이름 내용은 제거하지 않는다. 중복 상품, DB 이름과 용량의 불일치, 조건부 할인, 24시간 이상 지난 관측, 40%를 넘는 가격 변동은 검토 대상으로 차단한다. 통과는 상세 화면 검토 대상이라는 뜻이며 DB 쓰기 승인이 아니다. 앱 상세의 판매처/용량/가격/조건과 대조 후 반영해야 한다.
+
+검증 테스트: `node --test scripts/adb/validate.test.mjs scripts/adb/winegrab-parser.test.mjs`

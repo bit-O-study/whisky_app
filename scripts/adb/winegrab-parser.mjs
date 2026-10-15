@@ -1,3 +1,4 @@
+import { volumeFromName } from './validate.mjs';
 import { createHash } from 'node:crypto';
 
 const decode = value => value.replace(/&(?:quot|apos|lt|gt|amp|#\d+|#x[\da-f]+);/gi, entity => {
@@ -63,14 +64,14 @@ export function extractProducts(xml, observedAt = new Date().toISOString()) {
       && node.box[1] - n.box[3] < 150).at(-1);
     if (!badge) continue; // Never infer retailer from a selected filter alone.
     const source = badge.text === '이마트' ? 'EMART' : 'TRADERS';
-    const volume = name.match(/(\d+(?:\.\d+)?)\s*(ml|l)\b/i);
+
     const price = Number(priceMatch[1].replaceAll(',', ''));
     if (!price || !Number.isSafeInteger(price)) continue;
     const conditional = /최대할인가|카드할인|회원|쿠폰/.test(raw);
     products.push({
       key: createHash('sha256').update(`${source}|${name}`).digest('hex').slice(0, 24),
       source, channel: 'WINEGRAB_APP', category: '위스키', name,
-      volume_ml: volume ? Number(volume[1]) * (volume[2].toLowerCase() === 'l' ? 1000 : 1) : null,
+      volume_ml: volumeFromName(name),
       displayed_price: price,
       regular_price: raw.match(/정상가\s*([\d,]+)\s*원/)?.[1].replaceAll(',', '') * 1 || null,
       price_kind: conditional ? 'CONDITIONAL_DISPLAY' : 'DISPLAYED_SALE',
