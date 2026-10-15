@@ -4,4 +4,6 @@
 
 목표: 앱에서 표시되는 상품·가격·조건을 근거와 함께 추출하고 기존 preview/검증/적재 경로로 연결한다.
 미확정: 첫 대상 앱/패키지·우선순위, 기기, 매장/지역, 일반가와 회원가 표시 정책. 사용자에게 대상 앱을 질문한 상태다.
-현황: Selenium 및 backend/crawler-playwright가 존재. 후자는 EMART/LOTTEON 수집, ingest-preview, safety-gates, ingest-write를 구현했다. 로컬 위스키 DB 환경변수는 현재 없다.
+현황: Selenium 및 backend/crawler-playwright가 존재. 후자는 EMART/LOTTEON 수집, ingest-preview, safety-gates, ingest-write를 구현했다. 로컬 위스키 DB 연결은 복구했고 실제 목록 112개 조회를 확인했다. DB 쓰기/ADB 실행은 이번 계획 범위에 포함하지 않는다.
+
+2026-10-15 추가 요청: 판매처별 구체적인 ADB 수집 계획. 현재 source 4개(EMART/EMART_TRADERS/LOTTEON/COSTCO)를 기준으로 제안하며 실제 대상 앱/기기/매장은 미확정이다. 세부 계획은 source-plan.md 참조.
