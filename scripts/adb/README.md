@@ -11,6 +11,8 @@ Node.js 20 이상과 Android platform-tools(ADB)가 필요하다. 휴대폰 USB 
 .\scripts\collect-winegrab.ps1 --out artifacts/adb/my-run --resume
 # 판매처 하나만
 .\scripts\collect-winegrab.ps1 --sources TRADERS
+# 신규 상품과 실제 공유 상세 링크를 함께 저장
+.\scripts\collect-winegrab.ps1 --links --max-pages 2000 --out artifacts/adb/full-links
 ```
 
 Linux/macOS에서는 `bash scripts/collect-winegrab.sh` 또는 모든 OS에서 `node scripts/adb/collect.mjs`로 실행한다. `ADB_PATH` 환경변수 또는 `--adb`로 경로를 지정할 수 있다. 기기가 여러 대면 `--serial`을 지정한다.
@@ -46,3 +48,18 @@ node scripts/adb/validate-file.mjs artifacts/adb/my-run/products.json artifacts/
 검증 테스트: `node --test scripts/adb/validate.test.mjs scripts/adb/winegrab-parser.test.mjs`
 
 판매량순: `--sort sales` (기본 신상품순). 특정 상품의 상세 확인: `--sources EMART --sort sales --review-name "존바 리저브 750ml"`. 해당 상품 발견 시 목록/상세 캡처와 XML을 출력 폴더에 저장하고 멈춘다. 캡처 파일은 계정정보가 포함될 수 있어 외부 공유/커밋하지 않는다. 화면을 사람이 대조하기 위한 근거이며 자동 검증 완료를 뜻하지 않는다.
+
+## 기존 링크 갱신과 신규 발견
+
+기존 상품은 `liquor_url` 연결을 기준으로 직접 상세 페이지에 진입한다. 목록 전체를 다시 검색할 필요가 없다. `refresh-links.mjs`는 큐의 단축 URL을 실제 공식 상품 주소로 해석하고 `emart-today` 딥링크로 앱을 열어 표시 가격을 저장한다. `EMART_TRADERS`와 `EMART`를 구분하며 SSG 웹 채널은 이 앱 수집기에 섞지 않는다. 현재 기기 serial은 Galaxy S23 개발 기기로 고정돼 있다.
+
+```powershell
+node scripts/adb/refresh-links.mjs QUEUE.json DB_SNAPSHOT.json OBSERVATIONS.json
+# 기본은 계획만 출력. --apply는 DB 갱신 후 재조회까지 수행한다.
+node scripts/adb/apply-link-prices.mjs OBSERVATIONS.json
+node scripts/adb/apply-link-prices.mjs OBSERVATIONS.json --apply
+```
+
+큐는 `liquor_url` 행 배열, DB 스냅샷은 `liquor` 배열을 포함한다. 실제 DB에 같은 상품/판매처/URL 연결이 존재하면 상품명의 표기 차이를 이유로 갱신을 차단하지 않는다. 확인된 오연결(블론드 링크가 블랙 루비로 연결됨), 용량 불일치, 조건부 가격, 픽업불가, 오래된 관측, 큰 가격 변동은 별도 검토한다. 가격이 같더라도 확인 시각을 갱신하며 재실행 시 이미 반영한 관측은 건너뛴다. 변경 전 DB와 영수증은 입력 파일 옆에 저장한다.
+
+신규 발견은 `collect.mjs --links`를 사용한다. 상세의 공유하기 → 더보기에서 Android 공유 미리보기 제목과 실제 URL만 읽고 닫는다. 공유 대상은 선택하지 않으며 연락처/공유 시트 원문은 결과에 저장하지 않는다. 이 모드는 상품별 상세 왕복 비용이 추가된다. `register-products.mjs`는 상품 메타데이터의 등록 계획/적용 도구이며 가격을 쓰지 않는다. 신규 후보는 링크와 기존 별칭을 대조한 뒤 등록해야 한다.

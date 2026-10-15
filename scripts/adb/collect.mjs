@@ -5,13 +5,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { activeScreen, extractProducts, visible, parseNodes } from './winegrab-parser.mjs';
+import { readSharedLink } from './share-link.mjs';
 
 const options = {};
 for (let i = 2; i < process.argv.length; i++) {
   const key = process.argv[i];
-  if (!['--adb', '--serial', '--sources', '--max-pages', '--out', '--resume', '--sort', '--review-name', '--help'].includes(key))
+  if (!['--adb', '--serial', '--sources', '--max-pages', '--out', '--resume', '--sort', '--review-name', '--links', '--help'].includes(key))
     throw new Error(`알 수 없는 옵션: ${key}`);
-  options[key.slice(2)] = ['--resume', '--help'].includes(key) ? true : process.argv[++i];
+  options[key.slice(2)] = ['--resume', '--help', '--links'].includes(key) ? true : process.argv[++i];
 }
 if (options.help) {
   console.log('node scripts/adb/collect.mjs [--adb PATH] [--serial SERIAL] [--sources EMART,TRADERS] [--max-pages 200] [--out DIRECTORY] [--resume] [--sort newest|sales] [--review-name NAME]');
@@ -58,14 +59,15 @@ function save() {
   fs.renameSync(`${checkpoint}.tmp`, checkpoint);
   fs.writeFileSync(path.join(out, 'products.json'), JSON.stringify(Object.values(state.products), null, 2));
 }
-async function capture() {
+async function capture(allowShare = false) {
   let error;
   for (let attempt = 0; attempt < 3; attempt++) {
     const remote = `/sdcard/winegrab-${process.pid}-${Date.now()}.xml`;
     try {
       run(['shell', 'input', 'keyevent', '224']);
       const activity = run(['shell', 'dumpsys', 'activity', 'activities']);
-      if (!activity.split(/\r?\n/).some(line => /(?:ResumedActivity|topResumedActivity)/.test(line) && line.includes('com.emart.today/')))
+      if (!activity.split(/\r?\n/).some(line => /(?:ResumedActivity|topResumedActivity)/.test(line)
+        && (line.includes('com.emart.today/') || (allowShare && line.includes('com.android.intentresolver/')))))
         throw new Error('이마트 앱이 전면에 없습니다. 앱을 열고 다시 실행하세요.');
       const result = run(['shell', 'uiautomator', 'dump', remote]);
       if (!result.includes('dumped')) throw new Error('UI dump 실패');
@@ -83,9 +85,41 @@ async function tap(node) {
   run(['shell', 'input', 'tap', String(Math.round((x1 + x2) / 2)), String(Math.round((y1 + y2) / 2))]);
   await sleep(650);
 }
+
+async function collectLink(product, xml) {
+  await tap(activeScreen(xml).nodes.find(n => n['content-desc'] === product.raw_text && visible(n)));
+  const detail = activeScreen(await capture()).nodes;
+  await tap(detail.find(n => (n.text === '공유하기' || n['content-desc'] === '공유하기') && visible(n)));
+  const menu = parseNodes(await capture());
+  await tap(menu.find(n => n.text === '더보기' && visible(n)));
+  // Only inspect the preview URL/title. Never select a share recipient or save contacts.
+  const url = readSharedLink(await capture(true), product.name);
+  run(['shell', 'input', 'keyevent', '4']);
+  await sleep(400);
+  const closed = parseNodes(await capture());
+  const close = closed.find(n => n.text === '닫기' && visible(n) && n.clickable === 'true');
+  if (close) await tap(close);
+  run(['shell', 'input', 'keyevent', '4']);
+  await sleep(400);
+  const list = await capture();
+  if (!extractProducts(list).some(p => p.key === product.key)) throw Error('상세 링크 수집 후 목록 복귀 실패');
+  return { url, xml: list };
+}
 async function openSource(source) {
   let xml = await capture();
   let { nodes, root } = activeScreen(xml);
+  const detailHome = nodes.find(n => n['content-desc'] === '홈으로 이동' && visible(n));
+  if (detailHome) {
+    await tap(detailHome);
+    xml = await capture();
+    ({ nodes, root } = activeScreen(xml));
+  }
+  const winegrab = nodes.find(n => n['content-desc'] === '와인그랩' && n.clickable === 'true' && visible(n));
+  if (winegrab) {
+    await tap(winegrab);
+    xml = await capture();
+    ({ nodes, root } = activeScreen(xml));
+  }
   const top = nodes.find(n => n['content-desc'] === 'TOP' && visible(n));
   if (top) {
     await tap(top);
@@ -136,7 +170,16 @@ try {
         lastSignature = signature;
         for (const product of products) {
           if (!state.products[product.key]) report.added++;
-          state.products[product.key] = product;
+          const prior = state.products[product.key];
+          state.products[product.key] = { ...product, ...(prior?.product_url ? { product_url: prior.product_url } : {}) };
+          if (options.links && !state.products[product.key].product_url) {
+            save();
+            const linked = await collectLink(product, xml);
+            state.products[product.key].product_url = linked.url;
+            xml = linked.xml;
+            save();
+            console.log(`${source} | 상세 링크 저장 | ${product.name}`);
+          }
         }
         report.pages++;
         save();
