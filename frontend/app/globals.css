@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./comparison.css";
+@import "./loading.css";
 
 :root {
   color-scheme: light;

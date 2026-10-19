@@ -16,6 +16,9 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -23,6 +26,8 @@ public final class MainActivity extends Activity {
     private static final String ORIGIN = "https://whisky-app-vert.vercel.app";
     private WebView web;
     private ProgressBar progress;
+    private LinearLayout startupLoading;
+    private boolean firstPageVisible;
     private AlertDialog connectionError;
 
     @Override public void onCreate(Bundle state) {
@@ -41,7 +46,36 @@ public final class MainActivity extends Activity {
         progress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
         root.addView(progress, new LinearLayout.LayoutParams(-1, (int) (3 * getResources().getDisplayMetrics().density)));
         web = new WebView(this);
-        root.addView(web, new LinearLayout.LayoutParams(-1, 0, 1));
+        FrameLayout content = new FrameLayout(this);
+        root.addView(content, new LinearLayout.LayoutParams(-1, 0, 1));
+        content.addView(web, new FrameLayout.LayoutParams(-1, -1));
+        startupLoading = new LinearLayout(this);
+        startupLoading.setOrientation(LinearLayout.VERTICAL);
+        startupLoading.setGravity(android.view.Gravity.CENTER);
+        startupLoading.setBackgroundColor(android.graphics.Color.WHITE);
+        startupLoading.setPadding(dp(24), dp(24), dp(24), dp(24));
+        startupLoading.setClickable(true);
+        ImageView logo = new ImageView(this);
+        logo.setImageResource(R.drawable.launcher_artwork);
+        startupLoading.addView(logo, new LinearLayout.LayoutParams(dp(72), dp(72)));
+        TextView title = new TextView(this);
+        title.setText(R.string.app_name);
+        title.setTextSize(26);
+        title.setTextColor(android.graphics.Color.rgb(16, 27, 54));
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        title.setPadding(0, dp(20), 0, dp(32));
+        startupLoading.addView(title);
+        ProgressBar spinner = new ProgressBar(this);
+        spinner.setIndeterminateTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.rgb(7, 85, 245)));
+        startupLoading.addView(spinner, new LinearLayout.LayoutParams(dp(24), dp(24)));
+        TextView message = new TextView(this);
+        message.setText(R.string.startup_loading);
+        message.setTextSize(14);
+        message.setTextColor(android.graphics.Color.rgb(91, 105, 131));
+        message.setPadding(0, dp(16), 0, 0);
+        message.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
+        startupLoading.addView(message);
+        content.addView(startupLoading, new FrameLayout.LayoutParams(-1, -1));
         WebSettings settings = web.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -58,6 +92,11 @@ public final class MainActivity extends Activity {
             }
         });
         web.setWebViewClient(new WebViewClient() {
+            @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
+                if (!firstPageVisible) startupLoading.setVisibility(View.VISIBLE);
+            }
+            @Override public void onPageCommitVisible(WebView view, String url) { finishStartupLoading(); }
+            @Override public void onPageFinished(WebView view, String url) { finishStartupLoading(); }
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 if (!request.isForMainFrame()) return false;
                 Uri uri = request.getUrl();
@@ -81,9 +120,15 @@ public final class MainActivity extends Activity {
     private void showConnectionError() {
         if (isFinishing() || isDestroyed() || (connectionError != null && connectionError.isShowing())) return;
         progress.setVisibility(View.GONE);
+        startupLoading.setVisibility(View.GONE);
         connectionError = new AlertDialog.Builder(this).setTitle("연결을 확인해주세요")
             .setMessage("위스키다모아에 연결하지 못했습니다. 인터넷 연결을 확인한 뒤 다시 시도해주세요.")
             .setPositiveButton("다시 시도", (dialog, which) -> web.loadUrl(ORIGIN)).setNegativeButton("닫기", null).show();
+    }
+    private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
+    private void finishStartupLoading() {
+        firstPageVisible = true;
+        startupLoading.setVisibility(View.GONE);
     }
     private void goBack() { if (web != null && web.canGoBack()) web.goBack(); else finish(); }
     // API 33+ uses the platform OnBackInvokedDispatcher registered in onCreate.

@@ -1,0 +1,34 @@
+.app-loading { color: var(--catalog-ink); width: 100%; }
+.app-loading-content { animation: loading-appear .18s ease-out .18s both; }
+.app-loading--page {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: max(32px, env(safe-area-inset-top)) 24px max(32px, env(safe-area-inset-bottom));
+  background: radial-gradient(ellipse at 50% 25%, #f0f5ff, #fff 65%);
+}
+.app-loading--page .app-loading-content { width: min(100%, 360px); }
+.app-loading-brand { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 38px; }
+.app-loading-brand img { border-radius: 20px; box-shadow: 0 10px 32px #0755f51a; margin-bottom: 20px; }
+.app-loading-brand strong { font-size: 27px; font-weight: 800; letter-spacing: -1px; }
+.app-loading-brand p { margin-top: 8px; color: var(--catalog-muted); font-size: 13px; }
+.app-loading-message { display: flex; justify-content: center; align-items: center; gap: 10px; font-size: 13px; color: var(--catalog-muted); line-height: 1.6; }
+.app-loading-spinner { flex-shrink: 0; width: 16px; height: 16px; border: 2px solid #dce7ff; border-top-color: var(--catalog-primary); border-radius: 50%; animation: loading-spin .9s linear infinite; }
+.app-loading-rows { margin-top: 24px; }
+.app-loading-row { display: grid; grid-template-columns: 32px minmax(0, 1fr) 64px; gap: 16px; align-items: center; min-height: 86px; border-bottom: 1px solid #eaf0f7; }
+.app-loading-row:last-child { border-bottom: 0; }
+.app-loading-bottle, .app-loading-line, .app-loading-price { display: block; background: #e8eef8; border-radius: 5px; animation: loading-pulse 1.8s ease-in-out infinite; }
+.app-loading-bottle { width: 24px; height: 48px; border-radius: 7px 7px 5px 5px; justify-self: center; }
+.app-loading-line { height: 10px; width: 85%; }
+.app-loading-line--short { height: 7px; width: 55%; margin-top: 12px; }
+.app-loading-price { height: 14px; background: #dce8ff; }
+.app-loading--list { padding: 24px 0; }
+.app-loading--list .app-loading-row { min-height: 112px; }
+.app-loading--more { padding: 28px 8px; }
+@keyframes loading-appear { from { opacity: 0; } to { opacity: 1; } }
+@keyframes loading-spin { to { transform: rotate(360deg); } }
+@keyframes loading-pulse { 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) {
+  .app-loading-content, .app-loading-spinner, .app-loading-bottle, .app-loading-line, .app-loading-price { animation: none; }
+}

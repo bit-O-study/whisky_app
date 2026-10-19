@@ -195,7 +195,9 @@ test("catalog search shows filtered result count", async ({ page }) => {
   await expect(page.getByRole("link", { name: "위스키다모아" })).toHaveAttribute("href", "/");
 
   const searchBox = page.getByPlaceholder(SEARCH_PLACEHOLDER);
+  const searchResponse = page.waitForResponse(response => response.url().includes("/api/liquors/search?q=Macallan") && response.ok());
   await searchBox.fill("Macallan");
+  await searchResponse;
 
   await expect(page.getByText('"Macallan" 검색')).toBeVisible();
   await expect(page.getByRole("link", { name: "Macallan 12", exact: true })).toBeVisible();
@@ -235,7 +237,9 @@ test("catalog shows empty search result state", async ({ page }) => {
   await page.goto("/");
 
   const searchBox = page.getByPlaceholder(SEARCH_PLACEHOLDER);
+  const searchResponse = page.waitForResponse(response => response.url().includes("/api/liquors/search?q=Lagavulin") && response.ok());
   await searchBox.fill("Lagavulin");
+  await searchResponse;
 
   await expect(page.getByText('"Lagavulin" 결과가 없습니다')).toBeVisible();
   await expect(page.getByText("다른 검색어를 시도해보세요")).toBeVisible();

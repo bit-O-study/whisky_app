@@ -1,6 +1,7 @@
 import { memo, type RefObject } from "react";
 import type { CatalogCardItem } from "../model/catalog";
 import LiquorCard from "./LiquorCard";
+import { AppLoading } from "@/shared/ui/AppLoading";
 
 interface LiquorGridProps {
   searchQuery: string;
@@ -12,8 +13,6 @@ interface LiquorGridProps {
   onRetry: () => void;
   loadMoreRef: RefObject<HTMLDivElement | null>;
 }
-
-const LOADING_PLACEHOLDERS = Array.from({ length: 8 }, (_, index) => index);
 
 interface LiquorCardListProps {
   liquors: CatalogCardItem[];
@@ -44,32 +43,7 @@ export default function LiquorGrid({
   loadMoreRef,
 }: LiquorGridProps) {
   if (loading) {
-    return (
-      <section className="compare-list">
-        {LOADING_PLACEHOLDERS.map((placeholder) => (
-          <article
-            key={placeholder}
-            className="overflow-hidden rounded-2xl border border-[color:var(--catalog-outline)] bg-[color:var(--catalog-surface)]"
-          >
-            <div className="h-20 animate-pulse bg-[color:var(--catalog-bg-strong)]" />
-            <div className="space-y-3 p-5">
-              <div className="h-2.5 w-32 animate-pulse rounded-full bg-[color:var(--catalog-bg-strong)]" />
-              <div className="h-6 w-5/6 animate-pulse rounded-full bg-[color:var(--catalog-bg-secondary)]" />
-              <div className="mt-4 flex items-end justify-between border-t border-[color:var(--catalog-hairline)] pt-4">
-                <div className="space-y-2">
-                  <div className="h-2.5 w-12 animate-pulse rounded-full bg-[color:var(--catalog-primary-soft)]" />
-                  <div className="h-5 w-24 animate-pulse rounded-full bg-[color:var(--catalog-bg-strong)]" />
-                </div>
-                <div className="space-y-2 text-right">
-                  <div className="ml-auto h-2.5 w-14 animate-pulse rounded-full bg-[color:var(--catalog-bg-strong)]" />
-                  <div className="ml-auto h-4 w-6 animate-pulse rounded-full bg-[color:var(--catalog-bg-secondary)]" />
-                </div>
-              </div>
-            </div>
-          </article>
-        ))}
-      </section>
-    );
+    return <AppLoading variant="list" label={searchQuery ? "검색 결과를 불러오고 있어요" : "상품과 가격을 불러오고 있어요"} />;
   }
 
   if (error && liquors.length === 0) {
@@ -140,13 +114,7 @@ export default function LiquorGrid({
       )}
       <LiquorCardList liquors={liquors} />
       {hasNext && <div ref={loadMoreRef} className="h-10" aria-hidden="true" />}
-      {loadingMore && (
-        <div className="py-10 text-center">
-          <div className="mx-auto h-px w-36 bg-[linear-gradient(90deg,transparent,var(--catalog-outline-strong),transparent)]" />
-          <p className="catalog-kicker mt-4">Loading More Records</p>
-          <p className="mt-2 text-sm text-[color:var(--catalog-muted)]">더 불러오는 중...</p>
-        </div>
-      )}
+      {loadingMore && <AppLoading variant="more" label="상품을 더 불러오고 있어요" />}
     </>
   );
 }
