@@ -1,4 +1,4 @@
-# 024.vercel-seo-domain-migration / brief
+# 037.vercel-seo-domain-migration / brief
 
 ## 문제
 - Vercel 이전 이후 프론트 SEO 메타데이터, robots, sitemap에 이전 배포 도메인 `https://bit-o-liquor.vercel.app`가 하드코딩되어 있다.

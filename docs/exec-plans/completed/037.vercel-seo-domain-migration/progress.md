@@ -1,4 +1,4 @@
-# 024.vercel-seo-domain-migration / progress
+# 037.vercel-seo-domain-migration / progress
 
 - 2026-05-27 14:15 KST: `frontend/app/layout.tsx`, `frontend/app/robots.ts`, `frontend/app/sitemap.ts`에 이전 Vercel 도메인 하드코딩이 있음을 확인했다.
 - 2026-05-27 14:15 KST: 새 대표 도메인은 코드 고정값 대신 환경변수 기반으로 결정하고, 미설정 시 기존 Vercel URL로 fallback하기로 했다.

@@ -53,6 +53,12 @@ check_numbered_plan_dirs() {
         continue
       fi
 
+      # 날짜형(YYYYMMDD-작업명)은 2026-10 이후 작업 기록 형식이다. 이름 자체가 고유하다.
+      if [[ "$base" =~ ^20[0-9]{6}-[a-z0-9][a-z0-9-]*$ ]]; then
+        pass "dated exec plan slug: docs/exec-plans/$bucket/$base"
+        continue
+      fi
+
       if [[ ! "$base" =~ ^([0-9]{3})\.[a-z0-9][a-z0-9.-]*$ ]]; then
         fail "invalid exec plan slug: docs/exec-plans/$bucket/$base"
         continue

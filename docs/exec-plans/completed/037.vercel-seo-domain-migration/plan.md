@@ -1,4 +1,4 @@
-# 024.vercel-seo-domain-migration / plan
+# 037.vercel-seo-domain-migration / plan
 
 ## 상태 규칙
 - `[ ]` 미착수
