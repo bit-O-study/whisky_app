@@ -4,11 +4,13 @@ import { DEFAULT_LIQUOR_IMAGE_URL } from "../../../shared/config/default-images"
 import type { CatalogCardItem } from "../model/catalog";
 import { sourceLabel } from "../model/catalog-filters";
 import { checkedDate, priceFreshness } from "../model/price-freshness";
+import { priceSummary } from "../model/liquor-detail";
 import FreshnessChip from "./FreshnessChip";
 const price = (value: number) => value > 0 ? value.toLocaleString("ko-KR") + "원" : "가격 확인 중";
 export default function LiquorCard({ liquor, prioritizeImage = false }: { liquor: CatalogCardItem; prioritizeImage?: boolean }) {
   const vendors = liquor.vendors.slice().sort((a, b) => (a.current_price > 0 ? a.current_price : Infinity) - (b.current_price > 0 ? b.current_price : Infinity));
-  const best = vendors.find(vendor => vendor.current_price > 0);
+  // 상세와 같은 기준: 최근 30일 가격이 있으면 그중 최저, 없으면 전체 최저(흐리게)
+  const best = priceSummary(liquor.vendors).hero ?? undefined;
   const bestStale = priceFreshness(best?.crawled_at).tone === "stale";
   return <article className="compare-row">
     <div className="compare-product">

@@ -7,6 +7,7 @@ import ViewTracker from "@/features/catalog/ui/ViewTracker";
 import {
     fetchLiquorDetailFromServer,
     fetchLiquorPriceHistoryFromServer,
+    fetchSameBrandFromServer,
     isLiquorReportEnabled,
 } from "@/features/catalog/api/catalog-server";
 import { parseLiquorId } from "@/features/catalog/model/liquor-detail";
@@ -88,10 +89,13 @@ export default async function LiquorDetailPage({ params }: PageProps) {
         notFound();
     }
 
+    // 같은 브랜드는 곁가지라 실패해도 빈 목록으로 상세를 그린다
+    const sameBrand = await fetchSameBrandFromServer(liquorData.brand, liquorData.id);
+
     return (
         <>
             <ViewTracker liquorId={liquorData.id} />
-            <LiquorDetailView liquor={liquorData} priceHistory={priceHistory ?? []} reportEnabled={reportEnabled} />
+            <LiquorDetailView liquor={liquorData} priceHistory={priceHistory ?? []} reportEnabled={reportEnabled} sameBrand={sameBrand} />
         </>
     );
 }

@@ -809,3 +809,45 @@ export async function isLiquorReportEnabled(): Promise<boolean> {
   }
   return reportTableReady;
 }
+
+/**
+ * 상세 "같은 브랜드" — 같은 브랜드의 다른 상품(가격 있는 것만, 싼 순). 브랜드가 비었으면 빈 배열.
+ * 실패해도 상세 화면은 떠야 하므로 오류는 빈 배열로 돌려준다.
+ */
+export async function fetchSameBrandFromServer(brand: string, excludeId: number, limit = 4): Promise<CatalogCardItem[]> {
+  const name = brand.trim();
+  if (!name || name.toLowerCase() === "unknown") return [];
+  try {
+    const supabase = getSupabaseClient() as unknown as CatalogSupabaseClient;
+    const { data: rows, error } = await (supabase.from("liquor") as AwaitableQuery<LiquorRow>)
+      .select(`
+        id, normalized_name, brand, category, country, volume_ml, alcohol_percent,
+        product_code, product_name, product_url, image_url, updated_at, view_count,
+        sweet, smoky, fruity, spicy, woody, body,
+        liquor_info!fk_liquor_info (volume_ml, alcohol_percent, sub_category),
+        liquor_url!fk_liquor_url_liquor (source, product_url)
+      `)
+      .eq("brand", name)
+      .limit(limit + 4);
+    if (error || !rows?.length) return [];
+    const others = rows.filter((row) => row.id !== excludeId);
+    if (!others.length) return [];
+    const { data: prices, error: priceError } = await (supabase.from("liquor_price") as AwaitableQuery<LiquorPriceRow>)
+      .select("liquor_id, source, current_price, original_price, crawled_at")
+      .in("liquor_id", others.map((row) => row.id));
+    if (priceError) return [];
+    const normalized = others.map((row) => ({
+      ...row,
+      volume_ml: row.liquor_info?.volume_ml ?? row.volume_ml,
+      alcohol_percent: row.liquor_info?.alcohol_percent ?? row.alcohol_percent,
+    }));
+    const lookup = buildVendorLookup(prices ?? [], normalized);
+    return normalized
+      .map((row) => mapLiquorRowToCatalogItem(row, lookup.get(row.id) ?? []))
+      .filter((item) => item.lowest_price > 0)
+      .sort((a, b) => a.lowest_price - b.lowest_price)
+      .slice(0, limit);
+  } catch {
+    return [];
+  }
+}

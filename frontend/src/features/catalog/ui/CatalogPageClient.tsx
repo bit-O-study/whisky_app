@@ -20,6 +20,10 @@ import TodaysRecommendations from "./TodaysRecommendations";
 
 import CatalogFilters from "./CatalogFilters";
 import { EMPTY_FILTERS, filterCatalog } from "../model/catalog-filters";
+import { priceSummary } from "../model/liquor-detail";
+
+/** 화면에 보이는 최저가(최근 30일 우선) — 카드와 상세가 같은 기준으로 정렬되게. */
+const shownPrice = (item: CatalogCardItem) => priceSummary(item.vendors).hero?.current_price ?? item.lowest_price ?? 0;
 
 type SortKey = "oldest" | "newest" | "popular" | "lowest" | "highest";
 
@@ -84,11 +88,14 @@ export default function CatalogPageClient({
   const [sortKey, setSortKey] = useState<SortKey>("oldest");
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  // 첫 페이지(새 검색어 포함)를 받기 전에는 다음 페이지를 요청하지 않는다. 상태값은 한 박자 늦을 수 있어 ref 로 막는다.
+  const firstPagePendingRef = useRef(false);
   const shouldSkipInitialRequestRef = useRef(initialPage.items.length > 0 && !initialError);
 
   useEffect(() => {
     if (searchQuery === debouncedSearchQuery) return;
     const timeoutId = window.setTimeout(() => {
+      firstPagePendingRef.current = true;
       setDebouncedSearchQuery(searchQuery);
       setLiquorPage(0);
       setHasNextLiquorPage(true);
@@ -122,6 +129,7 @@ export default function CatalogPageClient({
     async function load() {
       try {
         if (liquorPage === 0) {
+          firstPagePendingRef.current = true;
           setLoading(true);
         } else {
           setLoadingMore(true);
@@ -155,6 +163,7 @@ export default function CatalogPageClient({
       } finally {
         if (!controller.signal.aborted) {
           if (liquorPage === 0) {
+            firstPagePendingRef.current = false;
             setLoading(false);
           }
           setLoadingMore(false);
@@ -166,6 +175,12 @@ export default function CatalogPageClient({
 
     return () => {
       controller.abort();
+      // 취소된 요청은 finally 에서 로딩을 끄지 않는다. 첫 페이지 요청 도중 다음 페이지 요청이 끼어들면
+      // "불러오는 중"이 영영 남던 문제(검색 E2E 간헐 실패)를 막기 위해 여기서 정리한다.
+      // 새 요청이 첫 페이지면 load() 가 곧바로 다시 켠다.
+      firstPagePendingRef.current = false;
+      setLoading(false);
+      setLoadingMore(false);
     };
   }, [debouncedSearchQuery, initialError, initialItemCount, initialPage.page, initialPage.size, liquorPage, reloadToken]);
 
@@ -183,6 +198,7 @@ export default function CatalogPageClient({
       (entries) => {
         if (
           entries[0]?.isIntersecting &&
+          !firstPagePendingRef.current &&
           !loading &&
           !loadingMore &&
           hasNextLiquorPage &&
@@ -226,20 +242,20 @@ export default function CatalogPageClient({
       arr.sort((a, b) => {
         const diff = score(b) - score(a);
         if (diff !== 0) return diff;
-        const ap = a.lowest_price > 0 ? a.lowest_price : Number.POSITIVE_INFINITY;
-        const bp = b.lowest_price > 0 ? b.lowest_price : Number.POSITIVE_INFINITY;
+        const ap = shownPrice(a) > 0 ? shownPrice(a) : Number.POSITIVE_INFINITY;
+        const bp = shownPrice(b) > 0 ? shownPrice(b) : Number.POSITIVE_INFINITY;
         return ap - bp;
       });
     } else if (sortKey === "lowest") {
       arr.sort((a, b) => {
-        const ap = a.lowest_price > 0 ? a.lowest_price : Number.POSITIVE_INFINITY;
-        const bp = b.lowest_price > 0 ? b.lowest_price : Number.POSITIVE_INFINITY;
+        const ap = shownPrice(a) > 0 ? shownPrice(a) : Number.POSITIVE_INFINITY;
+        const bp = shownPrice(b) > 0 ? shownPrice(b) : Number.POSITIVE_INFINITY;
         return ap - bp;
       });
     } else {
       arr.sort((a, b) => {
-        const ap = a.lowest_price > 0 ? a.lowest_price : Number.NEGATIVE_INFINITY;
-        const bp = b.lowest_price > 0 ? b.lowest_price : Number.NEGATIVE_INFINITY;
+        const ap = shownPrice(a) > 0 ? shownPrice(a) : Number.NEGATIVE_INFINITY;
+        const bp = shownPrice(b) > 0 ? shownPrice(b) : Number.NEGATIVE_INFINITY;
         return bp - ap;
       });
     }

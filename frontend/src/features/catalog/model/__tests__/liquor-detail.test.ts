@@ -7,7 +7,9 @@ import {
   isStalePrice,
   onlineBestVendor,
   parseLiquorId,
+  priceSummary,
   rankedVendors,
+  tasteSummary,
 } from "../liquor-detail";
 
 const vendor = (source: string, current_price: number, product_url = `https://shop/${source}`) =>
@@ -51,5 +53,39 @@ describe("liquor detail display", () => {
   it("accepts only positive integer ids from the URL", () => {
     expect(parseLiquorId("863")).toBe(863);
     expect(["abc", "0", "-1", "1.5", "12abc", ""].map(parseLiquorId)).toEqual([null, null, null, null, null, null]);
+  });
+});
+
+describe("price summary", () => {
+  const now = Date.parse("2026-10-20T12:00:00Z");
+  const at = (source: string, price: number, crawled_at: string, product_url = `https://shop/${source}`) =>
+    ({ source, current_price: price, product_url, original_price: 0, discount_percent: 0, crawled_at }) as CatalogCardVendor;
+  const blueLabel = [
+    at("COSTCO", 228790, "2026-05-10T19:30:00Z", ""),
+    at("EMART_TRADERS", 259800, "2026-10-14T22:47:00Z"),
+    at("EMART", 308000, "2026-04-30T07:14:00Z"),
+    at("LOTTEON", 328000, "2026-09-03T04:54:00Z"),
+  ];
+
+  it("heads with the cheapest price checked in the last 30 days and keeps the older cheaper one aside", () => {
+    const s = priceSummary(blueLabel, now);
+    expect(s.hero?.source).toBe("EMART_TRADERS");
+    expect(s.recent).toBe(true);
+    expect(s.olderCheaper?.source).toBe("COSTCO");
+    expect(s.buy?.source).toBe("EMART_TRADERS");
+    expect(s.lowestPrice).toBe(228790);
+  });
+
+  it("falls back to the overall lowest when every price is old", () => {
+    const s = priceSummary([at("LOTTEON", 39800, "2026-09-03T00:00:00Z"), at("EMART", 54800, "2026-04-30T00:00:00Z")], now);
+    expect(s).toMatchObject({ recent: false, olderCheaper: null });
+    expect(s.hero?.source).toBe("LOTTEON");
+    expect(priceSummary([], now)).toMatchObject({ hero: null, buy: null, lowestPrice: 0 });
+  });
+
+  it("summarises standout taste notes", () => {
+    expect(tasteSummary({ sweet: 3, smoky: 2, fruity: 3.5, spicy: 2.5, woody: 3.5, body: 4 })).toBe("바디감이 묵직하고, 과일·우디 향이 도드라져요");
+    expect(tasteSummary({ smoky: 4.5, sweet: 1 })).toBe("스모키 향이 도드라져요");
+    expect(tasteSummary({ sweet: 2, body: null })).toBeNull();
   });
 });

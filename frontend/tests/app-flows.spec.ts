@@ -56,8 +56,9 @@ test("vendor table shows dated prices with freshness and no fake link for store-
   await expect(costco.locator('[data-tone="stale"]')).toHaveText("5개월 전");
   await expect(costco).toContainText(/20\d\d\.\d\d\.\d\d/);
   await expect(table.getByRole("row", { name: /이마트/ }).locator('[data-tone="new"]')).toHaveText("2일 전");
-  // 오래된 최저가는 흐리게, 신선도 점과 함께
-  await expect(page.locator(".compare-price strong.is-stale")).toHaveText("90,000원");
+  // 최저가는 상세와 같은 기준: 최근 30일 가격(이마트 94,000원)이 5개월 전 코스트코 90,000원보다 앞선다
+  await expect(page.locator(".compare-price strong")).toHaveText("94,000원");
+  await expect(page.locator(".compare-price strong.is-stale")).toHaveCount(0);
 });
 
 const baseLiquorList = [
