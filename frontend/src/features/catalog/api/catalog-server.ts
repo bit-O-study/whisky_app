@@ -383,7 +383,8 @@ export async function fetchLiquorDetailFromServer(id: string): Promise<CatalogCa
       `)
       .in("id", [liquorId]) as QueryResponse<LiquorRow>;
 
-  if (liquorError || !liquors?.[0]) throw liquorError || new Error("Not Found");
+  if (liquorError) throw liquorError;
+  if (!liquors?.[0]) throw Object.assign(new Error("Not Found"), { status: 404 });
 
   const rawLiquor = liquors[0];
 

@@ -49,14 +49,16 @@ export default function PriceTrendChart({ points }: Props) {
 
   // 추이 그래프는 서로 다른 날짜가 2개 이상일 때만 의미가 있음.
   if (visiblePoints.length < 2 || !stats) {
+    // 기록이 모자라면 큰 빈 상자 대신 한 줄로 알린다(상품 대부분이 아직 이 상태).
+    const first = visiblePoints[0];
     return (
-      <div className="flex h-40 items-center justify-center rounded-3xl border border-dashed border-[color:var(--catalog-outline)] bg-[color:var(--catalog-bg-secondary)] px-6 text-center">
-        <p className="text-sm text-[color:var(--catalog-muted)]">
-          {visiblePoints.length === 0
-            ? "아직 가격 변동 기록이 없습니다"
-            : "가격 추이를 보여주려면 다른 날짜의 기록이 더 필요합니다"}
-        </p>
-      </div>
+      <p
+        className="rounded-2xl border border-dashed border-[color:var(--catalog-outline)] bg-[color:var(--catalog-bg-secondary)] px-4 py-3 text-sm text-[color:var(--catalog-muted)]"
+        data-testid="price-trend-empty"
+      >
+        가격 기록을 모으는 중이에요
+        {first ? ` · ${formatShortDate(first.date)}부터 기록` : ""}
+      </p>
     );
   }
 

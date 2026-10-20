@@ -63,6 +63,9 @@ body {
   font-family: var(--catalog-body-font);
   font-feature-settings: "ss01", "cv11";
   letter-spacing: -0.005em;
+  /* 한글이 낱말 중간에서 끊기지 않게("가격입/니다"), 아주 긴 영문·숫자만 칸 안에서 끊는다 */
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 * {
