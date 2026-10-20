@@ -12,7 +12,10 @@ import {
     onlineBestVendor,
     rankedVendors,
 } from "../model/liquor-detail";
+import { checkedDate } from "../model/price-freshness";
+import FreshnessChip from "./FreshnessChip";
 import PriceTrendChart from "./PriceTrendChart";
+import ReportIssueButton from "./ReportIssueButton";
 import FlavorRadarChart, { hasAnyFlavorValue, type FlavorRadarValues } from "./FlavorRadarChart";
 import {
     FLAVOR_AXIS_KEYS,
@@ -23,36 +26,13 @@ import {
 interface Props {
     liquor: CatalogCardItem;
     priceHistory?: PriceHistoryPoint[];
+    /** 신고 테이블이 준비된 경우에만 "알려 주기"를 보여 준다. */
+    reportEnabled?: boolean;
 }
 
 function formatPrice(price: number) {
     if (typeof price !== "number" || !Number.isFinite(price) || price <= 0) return "—";
     return price.toLocaleString("ko-KR") + "원";
-}
-
-function formatRelativeFromNow(value?: string | null) {
-    if (!value) return null;
-    const ts = new Date(value).getTime();
-    if (!Number.isFinite(ts)) return null;
-    const diffMs = Date.now() - ts;
-    if (diffMs < 0) return "방금";
-    const minutes = Math.floor(diffMs / 60_000);
-    if (minutes < 1) return "방금";
-    if (minutes < 60) return `${minutes}분 전`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}시간 전`;
-    const days = Math.floor(hours / 24);
-    if (days < 30) return `${days}일 전`;
-    const months = Math.floor(days / 30);
-    if (months < 12) return `${months}개월 전`;
-    return `${Math.floor(months / 12)}년 전`;
-}
-
-function formatDateShort(value?: string | null) {
-    if (!value) return null;
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return null;
-    return date.toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" });
 }
 
 function ArrowIcon({ className = "h-4 w-4" }: { className?: string }) {
@@ -76,7 +56,7 @@ function BottlePlaceholder() {
     );
 }
 
-export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
+export default function LiquorDetailView({ liquor, priceHistory = [], reportEnabled = false }: Props) {
     const vendors = rankedVendors(liquor.vendors);
     const bestVendor = vendors[0];
     const bestIsCostco = !!bestVendor && isCostcoVendor(bestVendor.source);
@@ -85,8 +65,6 @@ export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
 
     // 최저가 옆 갱신 시각은 그 최저가를 낸 판매처의 시각이다(다른 판매처의 최신 시각을 붙이면 오래된 최저가가 최신처럼 보인다).
     const bestCrawledAt = bestVendor?.crawled_at ?? null;
-    const latestRelative = formatRelativeFromNow(bestCrawledAt);
-    const latestExact = formatDateShort(bestCrawledAt);
     const bestStale = isStalePrice(bestCrawledAt);
 
     const brand = detailBrand(liquor.brand);
@@ -168,20 +146,19 @@ export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
                             {hasPrice ? (
                                 <>
                                     <p className="text-xs font-semibold text-[color:var(--catalog-primary)]">최저가</p>
-                                    <p className="mt-1.5 whitespace-nowrap text-[2.25rem] font-bold leading-none tracking-tight text-[color:var(--catalog-ink)] sm:text-[2.6rem]">
+                                    <p className={`mt-1.5 whitespace-nowrap text-[2.25rem] font-bold leading-none tracking-tight sm:text-[2.6rem] ${bestStale ? "text-[color:var(--catalog-muted)]" : "text-[color:var(--catalog-ink)]"}`}>
                                         {formatPrice(liquor.lowest_price)}
                                     </p>
-                                    <p className="mt-2 text-sm font-semibold text-[color:var(--catalog-muted)]">
-                                        {sourceLabel(bestVendor.source)}
-                                        {latestRelative && (
-                                            <span className="font-normal text-[color:var(--catalog-soft)]" title={latestExact ?? undefined}>
-                                                {" "}· 가격 갱신 {latestRelative}
-                                            </span>
+                                    <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold text-[color:var(--catalog-muted)]" data-testid="detail-best-meta">
+                                        <span>{sourceLabel(bestVendor.source)}</span>
+                                        {checkedDate(bestCrawledAt) && (
+                                            <span className="font-normal text-[color:var(--catalog-soft)]">{checkedDate(bestCrawledAt)} 확인</span>
                                         )}
-                                        {bestStale && (
-                                            <span className="ml-1.5 rounded-full bg-[color:var(--catalog-bg-secondary)] px-2 py-0.5 text-[11px] font-semibold text-[color:var(--catalog-muted)]">오래된 가격</span>
-                                        )}
+                                        <FreshnessChip crawledAt={bestCrawledAt} />
                                     </p>
+                                    {bestStale && (
+                                        <p className="mt-2 text-xs text-[color:var(--catalog-muted)]">한 달 넘게 확인하지 못한 가격이에요. 판매처에서 지금 가격을 꼭 확인해 주세요.</p>
+                                    )}
 
                                     {bestIsCostco ? (
                                         <div className="mt-5 space-y-3">
@@ -289,7 +266,7 @@ export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
                                 const isCostco = isCostcoVendor(v.source);
                                 const linked = !isCostco && !!v.product_url;
                                 const stale = isStalePrice(v.crawled_at);
-                                const relative = formatRelativeFromNow(v.crawled_at);
+                                const checked = checkedDate(v.crawled_at);
                                 const innerContent = (
                                     <>
                                         <div className="min-w-0 flex-1">
@@ -298,19 +275,21 @@ export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
                                                 {idx === 0 && (
                                                     <span className="rounded-full bg-[color:var(--catalog-primary-soft)] px-2 py-0.5 text-[11px] font-bold text-[color:var(--catalog-primary-strong)]">최저</span>
                                                 )}
-                                                {stale && (
-                                                    <span className="rounded-full bg-[color:var(--catalog-bg-secondary)] px-2 py-0.5 text-[11px] font-semibold text-[color:var(--catalog-muted)]" data-testid="detail-stale">오래된 가격</span>
-                                                )}
+                                                <FreshnessChip crawledAt={v.crawled_at} />
                                             </p>
                                             <p className="mt-0.5 text-xs text-[color:var(--catalog-soft)]">
-                                                {[isCostco ? "매장 전용" : "", relative ? `${relative} 확인` : ""].filter(Boolean).join(" · ")}
+                                                {[checked ? `${checked} 확인` : "", isCostco ? "매장 전용" : ""].filter(Boolean).join(" · ")}
                                             </p>
                                         </div>
                                         <div className="flex shrink-0 items-center gap-2">
                                             <div className="text-right">
                                                 <p
                                                     className={`whitespace-nowrap text-[1.05rem] font-bold tabular-nums ${
-                                                        idx === 0 ? "text-[color:var(--catalog-primary)]" : "text-[color:var(--catalog-ink)]"
+                                                        stale
+                                                            ? "text-[color:var(--catalog-soft)]"
+                                                            : idx === 0
+                                                              ? "text-[color:var(--catalog-primary)]"
+                                                              : "text-[color:var(--catalog-ink)]"
                                                     }`}
                                                 >
                                                     {formatPrice(v.current_price)}
@@ -359,6 +338,13 @@ export default function LiquorDetailView({ liquor, priceHistory = [] }: Props) {
                                 );
                             })}
                         </ul>
+                        {reportEnabled && (
+                            <ReportIssueButton
+                                liquorId={liquor.id}
+                                liquorName={name}
+                                vendors={vendors.map((v) => ({ source: v.source, label: sourceLabel(v.source) }))}
+                            />
+                        )}
                     </section>
                 )}
             </main>

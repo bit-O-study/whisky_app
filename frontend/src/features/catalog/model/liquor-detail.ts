@@ -1,8 +1,6 @@
 import type { CatalogCardItem, CatalogCardVendor } from "./catalog";
 import { categoryLabel } from "./catalog-filters";
-
-/** 이 기간보다 오래 갱신되지 않은 판매처 가격은 "오래된 가격"으로 표시한다. */
-export const STALE_PRICE_DAYS = 30;
+import { STALE_PRICE_DAYS } from "./price-freshness";
 
 const isBlank = (value?: string | null) => {
   const text = (value ?? "").trim();

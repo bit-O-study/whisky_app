@@ -49,7 +49,7 @@ export default function LiquorGrid({
   if (error && liquors.length === 0) {
     return (
       <div className="catalog-panel rounded-3xl px-6 py-16 text-center sm:px-10">
-        <span className="catalog-kicker">Catalog Error</span>
+        <span className="catalog-kicker">불러오기 실패</span>
         <h2 className="mt-4 text-3xl font-bold leading-tight tracking-[-0.02em] text-[color:var(--catalog-ink)] md:text-4xl">
           데이터를 불러오지 못했습니다
         </h2>
@@ -73,7 +73,7 @@ export default function LiquorGrid({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
-        <span className="catalog-kicker">No Matching Labels</span>
+        <span className="catalog-kicker">검색 결과</span>
         {searchQuery ? (
           <>
             <p className="mt-4 text-3xl font-bold leading-tight tracking-[-0.02em] text-[color:var(--catalog-ink)] md:text-4xl">
@@ -100,7 +100,7 @@ export default function LiquorGrid({
       {error && liquors.length > 0 && (
         <div className="catalog-panel mb-5 flex flex-col gap-3 rounded-2xl px-5 py-4 text-sm text-[color:var(--catalog-ink)] sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <span className="catalog-kicker">Partial Load Warning</span>
+            <span className="catalog-kicker">일부만 불러옴</span>
             <p className="mt-1">{error}</p>
           </div>
           <button

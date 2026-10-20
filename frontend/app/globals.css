@@ -251,3 +251,10 @@ body {
 /* Brand mark */
 .compare-brand { display: inline-flex; align-items: center; gap: 10px; }
 .compare-brand img { flex: 0 0 auto; }
+
+/* 가격 신선도 점 — FreshnessChip */
+.fresh-chip { display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; border-radius: 999px; padding: 0.05rem 0.5rem; font-size: 0.68rem; font-weight: 600; line-height: 1.5; letter-spacing: 0; }
+.fresh-chip::before { content: ""; width: 0.38rem; height: 0.38rem; border-radius: 50%; background: currentColor; }
+.fresh-new { color: #1f7a45; background: #e6f5ec; }
+.fresh-mid { color: #4f5d77; background: #eff2f7; }
+.fresh-stale { color: #8f5300; background: #fdf0d9; }

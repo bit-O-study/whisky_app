@@ -22,9 +22,10 @@ test("C comparison supports mobile filters, vendor prices and memo web link", as
   await expect(page.getByRole("link", { name: "프로젝트 메모" })).toHaveAttribute("href", "https://meeting-minutes-orcin.vercel.app");
   await page.getByLabel("정렬", { exact: true }).selectOption("lowest");
   await expect(page.locator(".compare-row").first()).toContainText("Talisker 10");
-  await page.getByRole("group", { name: "용량", exact: true }).getByText("700ml", { exact: true }).click();
+  // 휴대폰 필터는 한 줄 선택 상자(종류 · 용량 · 판매처)
+  await page.getByRole("combobox", { name: "용량", exact: true }).selectOption({ label: "700ml" });
   await expect(page.locator(".compare-row")).toHaveCount(1);
-  await page.getByRole("group", { name: "판매처", exact: true }).getByText("이마트", { exact: true }).click();
+  await page.getByRole("combobox", { name: "판매처", exact: true }).selectOption({ label: "이마트" });
   await page.locator("summary", { hasText: "가격 비교" }).click();
   const table = page.getByRole("table", { name: "Macallan 12 판매처별 가격" });
   await expect(table).toBeVisible();
@@ -34,6 +35,29 @@ test("C comparison supports mobile filters, vendor prices and memo web link", as
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.getByRole("button", { name: "초기화", exact: true }).click();
   await expect(page.locator(".compare-row")).toHaveCount(2);
+});
+
+test("vendor table shows dated prices with freshness and no fake link for store-only vendors", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const now = Date.now();
+  await mockLiquorApis(page, [{
+    ...baseLiquorList[0],
+    vendors: [
+      { source: "COSTCO", current_price: 90000, original_price: 0, product_url: "", crawled_at: new Date(now - 150 * 86_400_000).toISOString() },
+      { source: "EMART", current_price: 94000, original_price: 0, product_url: "https://example.com/macallan-12-emart", crawled_at: new Date(now - 2 * 86_400_000).toISOString() },
+    ],
+  }] as unknown as typeof baseLiquorList);
+  await page.goto("/");
+  await page.locator("summary", { hasText: "가격 비교" }).click();
+  const table = page.getByRole("table", { name: "Macallan 12 판매처별 가격" });
+  const costco = table.getByRole("row", { name: /코스트코/ });
+  await expect(costco).toContainText("매장에서 확인");
+  await expect(costco.getByRole("link")).toHaveCount(0);
+  await expect(costco.locator('[data-tone="stale"]')).toHaveText("5개월 전");
+  await expect(costco).toContainText(/20\d\d\.\d\d\.\d\d/);
+  await expect(table.getByRole("row", { name: /이마트/ }).locator('[data-tone="new"]')).toHaveText("2일 전");
+  // 오래된 최저가는 흐리게, 신선도 점과 함께
+  await expect(page.locator(".compare-price strong.is-stale")).toHaveText("90,000원");
 });
 
 const baseLiquorList = [
@@ -126,7 +150,7 @@ async function mockLiquorApis(
     const sizeParam = Number(url.searchParams.get("size") ?? "24");
     const shouldFail = options?.failSearchPages?.includes(pageParam);
 
-    if (shouldFail) {
+    if (shouldFail && options) {
       options.failSearchPages = options.failSearchPages?.filter((candidate) => candidate !== pageParam);
       await route.fulfill({
         status: 500,
@@ -159,7 +183,7 @@ async function mockLiquorApis(
     const sizeParam = Number(url.searchParams.get("size") ?? "24");
     const shouldFail = options?.failCatalogPages?.includes(pageParam);
 
-    if (shouldFail) {
+    if (shouldFail && options) {
       options.failCatalogPages = options.failCatalogPages?.filter((candidate) => candidate !== pageParam);
       await route.fulfill({
         status: 500,

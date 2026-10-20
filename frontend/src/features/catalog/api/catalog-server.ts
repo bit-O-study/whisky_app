@@ -780,3 +780,32 @@ export async function fetchLiquorPriceHistoryFromServer(
 
   return points;
 }
+
+interface ReportTableSupabaseClient {
+  from(table: "liquor_report"): {
+    select(columns: string): {
+      limit(count: number): Promise<{ error: { message?: string } | null }>;
+    };
+  };
+}
+
+let reportTableCheckedAt = 0;
+let reportTableReady = false;
+
+/**
+ * "알려 주기" 신고 테이블(liquor_report)이 있는지. 없으면 상세의 신고 버튼을 숨긴다.
+ * 있으면 계속 true 로 기억하고, 없으면 5분마다 다시 확인한다(SQL 실행 후 재배포 없이 켜지게).
+ */
+export async function isLiquorReportEnabled(): Promise<boolean> {
+  if (reportTableReady || Date.now() - reportTableCheckedAt < 5 * 60_000) return reportTableReady;
+  reportTableCheckedAt = Date.now();
+  try {
+    const supabase = getSupabaseClient() as unknown as ReportTableSupabaseClient;
+    // HEAD 요청은 테이블이 없어도 204 를 돌려주므로(오류 없음) 실제 조회로 확인한다
+    const { error } = await supabase.from("liquor_report").select("id").limit(1);
+    reportTableReady = !error;
+  } catch {
+    reportTableReady = false;
+  }
+  return reportTableReady;
+}

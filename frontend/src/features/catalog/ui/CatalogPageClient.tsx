@@ -264,7 +264,7 @@ export default function CatalogPageClient({
         <div className="compare-search"><label className="sr-only" htmlFor="catalog-search">위스키 · 브랜드 검색</label><span aria-hidden="true">⌕</span><input id="catalog-search" type="search" placeholder="위스키 · 브랜드 검색" value={searchQuery} onChange={event => setSearchQuery(event.target.value)} />{searchQuery && <button type="button" onClick={() => setSearchQuery("")} aria-label="검색어 지우기">×</button>}</div>
       </div></header>
       <div className="compare-container"><PromoBanner />
-        <section className="compare-intro"><div><p className="compare-eyebrow">WHISKY PRICE INDEX</p><h1>위스키 가격, 빠르게 비교하세요</h1><p>여러 판매처의 가격을 한눈에. 좋은 위스키를 더 현명하게.</p></div><span>좋은 선택이<br />좋은 시간으로 이어지니까.</span></section>
+        <section className="compare-intro"><div><p className="compare-eyebrow">위스키 가격 비교</p><h1>위스키 가격, 빠르게 비교하세요</h1><p>여러 판매처의 가격을 한눈에. 좋은 위스키를 더 현명하게.</p></div><span>좋은 선택이<br />좋은 시간으로 이어지니까.</span></section>
         <div className="compare-layout"><CatalogFilters items={liquors} value={filters} onChange={setFilters} />
           <section className="compare-results" aria-label="상품 목록">
             <div className="compare-toolbar"><div aria-live="polite"><strong>{error && !liquors.length ? "상품을 불러오지 못했어요" : loading ? "상품 불러오는 중" : "전체 상품 " + formatCount(visibleBottleCount) + "개"}</strong>{activeSearchQuery && <p>&quot;{activeSearchQuery}&quot; 검색</p>}</div>

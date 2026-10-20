@@ -7,6 +7,7 @@ import ViewTracker from "@/features/catalog/ui/ViewTracker";
 import {
     fetchLiquorDetailFromServer,
     fetchLiquorPriceHistoryFromServer,
+    isLiquorReportEnabled,
 } from "@/features/catalog/api/catalog-server";
 import { parseLiquorId } from "@/features/catalog/model/liquor-detail";
 
@@ -52,12 +53,14 @@ export default async function LiquorDetailPage({ params }: PageProps) {
 
     let liquorData: Awaited<ReturnType<typeof fetchLiquorDetailFromServer>> | null = null;
     let priceHistory;
+    let reportEnabled = false;
     let fetchError: HttpError | null = null;
 
     try {
-        [liquorData, priceHistory] = await Promise.all([
+        [liquorData, priceHistory, reportEnabled] = await Promise.all([
             getLiquorDetail(id),
             fetchLiquorPriceHistoryFromServer(id, 90),
+            isLiquorReportEnabled(),
         ]);
     } catch (error: unknown) {
         fetchError = error as HttpError;
@@ -88,7 +91,7 @@ export default async function LiquorDetailPage({ params }: PageProps) {
     return (
         <>
             <ViewTracker liquorId={liquorData.id} />
-            <LiquorDetailView liquor={liquorData} priceHistory={priceHistory ?? []} />
+            <LiquorDetailView liquor={liquorData} priceHistory={priceHistory ?? []} reportEnabled={reportEnabled} />
         </>
     );
 }
