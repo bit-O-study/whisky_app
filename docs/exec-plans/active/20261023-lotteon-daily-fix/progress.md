@@ -30,3 +30,13 @@
 - 일일 수집 job만 전용 whisky-lotteon 라벨의 Windows 실행기로 이전한다. PR 및 Java/Node 검증은 GitHub 서버에서 유지한다.
 - 실행 전 훅이 저장소 ID/main/워크플로/crawl job/이벤트를 검사하고 누락·다른 작업은 거부한다. 공식 실행기는 체크섬 검증 후 저장소 밖에 설치한다.
 - 현재 사용자 로그온 자동 시작을 구성하며 PC 전원·절전 설정은 변경하지 않는다. 운영 저장과 전체 수집 검증은 진행 중이다.
+
+## 2026-10-23 임시 PC 운영 연결 검증 완료
+- 사용자 승인에 따라 GitHub 공식 Windows 실행기 2.338.1을 SHA-256 검증 후 저장소 밖 C:/develop/whisky/.runners/lotteon에 설치했다. 전용 라벨 whisky-lotteon, 기본 라벨 없음. 파일 접근은 현재 사용자와 SYSTEM으로 제한한다.
+- WhiskyLotteonRunner 예약 작업을 현재 사용자 로그온 시 숨김 시작하도록 등록했다. Running 및 GitHub online 상태를 확인했다. 전원·절전 설정은 변경하지 않았다.
+- 실행 전 훅 허용/거부 8개가 로컬 및 GitHub Windows CI에서 통과했다. 실제 main 수집 job이 PC에 배정되어 훅을 통과했다.
+- PR #2를 main 8f5defe에 반영했다. 실제 실행 https://github.com/bit-O-study/whisky_app/actions/runs/39886479387 에서 verify / runner-guard / crawl 모두 성공했다.
+- limit=3 실제 검증: 864 블랙 루비 54,800→56,800원(10:55:55 KST), 865 블론드 39,800→28,800원(10:56:01 KST). DB 재조회로 이력 수 5→6 / 4→5, 가격·이력 금액과 관측 시각 일치를 확인했다. 863 블루라벨은 상품 코드 불일치로 건너뛰었다.
+- DB 키를 PC로 옮기지 않고 GitHub OIDC → 운영 Next.js → RPC로 실제 저장했다. 로컬 개발 사본에도 검증한 두 상품의 DB 행을 반영했다.
+- 일일 워크플로 active, 매일 09:00 KST, 기본 limit=0(전체 기존 LOTTEON 대상). 다음 예약은 2026-10-24이며 GitHub 스케줄은 지연될 수 있다. PC 전원·로그인·인터넷 연결 유지가 필요하다.
+- 현재 확인은 표본 수동 실행 성공이며 전체 대상 완주와 첫 예약 실행 확인은 아직 남아 있다. 이슈 #3 및 active 계획은 다음 예약 결과 확인 전까지 열어둔다.
