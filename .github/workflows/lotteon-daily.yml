@@ -23,7 +23,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: lotteon-daily
+  group: lotteon-daily-${{ github.event_name == 'pull_request' && github.ref || 'production' }}
   cancel-in-progress: false
 
 jobs:
