@@ -105,6 +105,9 @@ async function main(): Promise<void> {
     console.log(`[ingest:lotteon:batch] summary json: ${summaryPaths.jsonPath}`);
     console.log(`[ingest:lotteon:batch] summary md: ${summaryPaths.markdownPath}`);
     console.log(JSON.stringify(results, null, 2));
+    if (!results.some((item) => item.writeResult.wrote)) {
+      throw new Error('롯데온 배치에서 저장된 상품이 0건입니다. 결과 아티팩트를 확인하세요.');
+    }
   } finally {
     await context.close();
     await browser.close();

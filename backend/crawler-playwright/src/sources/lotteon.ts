@@ -2,7 +2,7 @@ import type { Page } from 'playwright';
 
 const SEARCH_URL_TEMPLATE = 'https://www.lotteon.com/search/search/search.ecn?render=search&platform=pc&q=%s';
 const SOURCE = 'LOTTEON';
-const MIN_MATCH_SCORE = 30;
+const MIN_MATCH_SCORE = 60;
 const MAX_ITEMS_PER_KEYWORD = 20;
 const SCRIPT_ITEM_PATTERN = /data-item="\{([^}]+)\}"/;
 const DOM_SELECTORS = [
@@ -54,7 +54,7 @@ export async function crawlLotteonKeyword(page: Page, keyword: string): Promise<
     ? { ...scriptCandidate, score: calculateMatchScore(keyword, scriptCandidate.name) }
     : null;
 
-  if (scoredScriptCandidate && scoredScriptCandidate.score >= MIN_MATCH_SCORE) {
+  if (scoredScriptCandidate && scoredScriptCandidate.currentPrice > 0 && scoredScriptCandidate.score >= MIN_MATCH_SCORE) {
     return {
       html,
       result: {
@@ -131,7 +131,7 @@ function parseFirstFromScript(pageSource: string): LotteonCandidate | null {
       currentPrice: price,
       originalPrice,
       productCode: item.item_id ? `LOTTEON_${item.item_id}` : createFallbackProductCode(itemName),
-      productUrl: '',
+      productUrl: item.item_id ? `https://www.lotteon.com/p/product/${item.item_id}` : '',
       imageUrl: '',
     });
   } catch {
@@ -193,7 +193,7 @@ async function parseCandidatesFromDom(page: Page): Promise<LotteonCandidate[]> {
           productCode,
         });
       })
-      .filter((candidate): candidate is LotteonCandidate => candidate !== null);
+      .filter((candidate): candidate is LotteonCandidate => candidate !== null && candidate.currentPrice > 0);
   }
 
   return [];
@@ -245,10 +245,10 @@ function extractDetailsFromName(name: string): {
     ?? name.replace(/\[.*?\]/g, '').trim().split(/\s+/)[0]
     ?? '기타';
 
-  const volumeMatch = name.match(/(\d+)\s*(ml|ML|L|l|리터)/i);
+  const volumeMatch = name.match(/(\d+(?:\.\d+)?)\s*(ml|ML|L|l|리터)/i);
   let volumeMl = 700;
   if (volumeMatch) {
-    volumeMl = Number.parseInt(volumeMatch[1], 10);
+    volumeMl = Number.parseFloat(volumeMatch[1]);
     const unit = volumeMatch[2].toLowerCase();
     if (unit === 'l' || unit === '리터') {
       volumeMl *= 1000;
@@ -256,7 +256,7 @@ function extractDetailsFromName(name: string): {
   }
 
   const alcoholMatch = name.match(/(\d+(?:\.\d+)?)\s*(%|도|프루프)/);
-  let alcoholPercent = 40;
+  let alcoholPercent = 0;
   if (alcoholMatch) {
     alcoholPercent = Number.parseFloat(alcoholMatch[1]);
     if (alcoholMatch[2] === '프루프') {
@@ -333,6 +333,8 @@ function normalizeForMatch(text: string): string {
   return text
     .toLowerCase()
     .replace(/ /g, '')
+    .replace('블랙라벨12년', '블랙')
+    .replace('블랙12년', '블랙')
     .replace('블랙라벨', '블랙')
     .replace('골드라벨', '골드')
     .replace('레드라벨', '레드')

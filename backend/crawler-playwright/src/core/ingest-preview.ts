@@ -91,6 +91,15 @@ export interface IngestPreview {
 
 export async function previewIngest(candidate: PreviewCandidateInput): Promise<IngestPreview> {
   const normalized = normalizeCandidate(candidate);
+  if (normalized.currentPrice === null) {
+    return {
+      source: normalized.source, scrapedName: normalized.name,
+      normalizedCandidate: buildNormalizedSnapshot(normalized), matchedLiquorInfo: null,
+      matchedLiquorInfoId: null, matchedLiquorId: null, liquorAction: 'skip',
+      priceAction: 'skip', urlAction: 'skip', liquorCandidates: [], skip: true,
+      reason: 'invalid_current_price',
+    };
+  }
   const matchedLiquorInfo = await findLiquorInfo(normalized);
 
   if (!matchedLiquorInfo) {
@@ -112,6 +121,9 @@ export async function previewIngest(candidate: PreviewCandidateInput): Promise<I
 
   if ((!normalized.clazz || normalized.clazz === 'None') && matchedLiquorInfo.clazz?.trim()) {
     normalized.clazz = normalizeClazz(matchedLiquorInfo.clazz);
+  }
+  if (matchedLiquorInfo.alcohol_percent != null) {
+    normalized.alcoholPercent = matchedLiquorInfo.alcohol_percent;
   }
 
   const matchedLiquor = await findLiquor(normalized);
@@ -206,7 +218,8 @@ interface NormalizedCandidate extends Omit<PreviewCandidateInput, 'currentPrice'
 }
 
 function normalizeCandidate(candidate: PreviewCandidateInput): NormalizedCandidate {
-  const currentPrice = candidate.currentPrice > 0 ? candidate.currentPrice : null;
+  const currentPrice = Number.isSafeInteger(candidate.currentPrice) && candidate.currentPrice > 0
+    && candidate.currentPrice <= 2147483647 ? candidate.currentPrice : null;
   const originalPriceRaw = candidate.originalPrice > 0 ? candidate.originalPrice : null;
   const originalPrice = currentPrice && originalPriceRaw && originalPriceRaw < currentPrice
     ? currentPrice

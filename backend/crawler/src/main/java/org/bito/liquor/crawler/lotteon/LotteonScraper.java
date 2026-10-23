@@ -32,7 +32,7 @@ public class LotteonScraper {
     private final LiquorInfoRepository liquorInfoRepository;
     private static final String SEARCH_URL_TEMPLATE = "https://www.lotteon.com/search/search/search.ecn?render=search&platform=pc&q=%s";
     private static final String SOURCE = "LOTTEON";
-    private static final int MIN_MATCH_SCORE = 30;
+    private static final int MIN_MATCH_SCORE = 60;
 
 //    private static final List<String> TARGET_KEYWORDS = Arrays.asList(
 //            "산토리 가쿠빈",
@@ -84,6 +84,7 @@ public class LotteonScraper {
     public List<Liquor> scrapeLiquors() {
         List<Liquor> liquors = new ArrayList<>();
         WebDriver driver = null;
+        int failedKeywords = 0;
 
         try {
             driver = createWebDriver();
@@ -110,13 +111,13 @@ public class LotteonScraper {
                     Thread.sleep(3000);
 
                     String pageSource = driver.getPageSource();
-                    Liquor liquor = parseFirstFromScript(pageSource);
+                    Liquor liquor = parseBestFromDOM(driver, keyword);
 
                     if (!isAcceptableMatch(keyword, liquor)) {
-                        liquor = parseBestFromDOM(driver, keyword);
+                        liquor = parseFirstFromScript(pageSource);
                     }
 
-                    if (liquor != null) {
+                    if (isAcceptableMatch(keyword, liquor)) {
                         liquors.add(liquor);
                         log.info("'{}' → 상품 수집 성공: {} - {}원", keyword, liquor.getName(), liquor.getCurrentPrice());
                     } else {
@@ -138,14 +139,19 @@ public class LotteonScraper {
                     Thread.sleep((long) (Math.random() * 1500) + 1500);
 
                 } catch (Exception e) {
+                    failedKeywords++;
                     log.error("'{}' 검색 중 오류: {}", keyword, e.getMessage());
                 }
             }
 
+            if (failedKeywords > 0) {
+                throw new IllegalStateException("롯데온 검색 오류: " + failedKeywords + "개 키워드");
+            }
             log.info("롯데온 크롤링 완료: 총 {}개 상품 수집", liquors.size());
 
         } catch (Exception e) {
             log.error("크롤링 중 치명적 오류: {}", e.getMessage(), e);
+            throw new IllegalStateException("롯데온 수집에 실패했습니다.", e);
         } finally {
             if (driver != null) {
                 driver.quit();
@@ -204,6 +210,7 @@ public class LotteonScraper {
                         .currentPrice(price)
                         .originalPrice(discount > 0 ? price + discount : price)
                         .source(SOURCE)
+                        .productUrl(itemId.isBlank() ? null : "https://www.lotteon.com/p/product/" + itemId)
                         .build();
 
                 extractDetailsFromName(liquor);
@@ -235,6 +242,7 @@ public class LotteonScraper {
                 int limit = Math.min(elements.size(), 20);
                 for (int i = 0; i < limit; i++) {
                     Liquor liquor = extractFromElement(elements.get(i));
+                    if (liquor == null || liquor.getCurrentPrice() == null || liquor.getCurrentPrice() <= 0) continue;
                     int score = calculateMatchScore(keyword, liquor);
                     if (score > bestScore) {
                         bestScore = score;
@@ -318,7 +326,8 @@ public class LotteonScraper {
     }
 
     private boolean isAcceptableMatch(String keyword, Liquor liquor) {
-        return calculateMatchScore(keyword, liquor) >= MIN_MATCH_SCORE;
+        return liquor != null && liquor.getCurrentPrice() != null && liquor.getCurrentPrice() > 0
+                && calculateMatchScore(keyword, liquor) >= MIN_MATCH_SCORE;
     }
 
     private int calculateMatchScore(String keyword, Liquor liquor) {
@@ -399,6 +408,15 @@ public class LotteonScraper {
                 .replace("로얄살루트", "로얄 살루트")
                 .replace("짐빔", "짐 빔")
                 .replace("맥켈란", "맥캘란")
+                .replace(" ", "")
+                .replace("블랙라벨12년", "블랙")
+                .replace("블랙라벨", "블랙")
+                .replace("블랙12년", "블랙")
+                .replace("골드라벨", "골드")
+                .replace("레드라벨", "레드")
+                .replace("그린라벨", "그린")
+                .replace("블루라벨", "블루")
+                .replace("화이트라벨", "화이트")
                 .replaceAll("[^0-9a-z가-힣]", "");
     }
 
@@ -426,15 +444,15 @@ public class LotteonScraper {
             }
         }
 
-        Pattern volumePattern = Pattern.compile("(\\d+)\\s*(ml|ML|L|l|리터)", Pattern.CASE_INSENSITIVE);
+        Pattern volumePattern = Pattern.compile("(\\d+(?:\\.\\d+)?)\\s*(ml|ML|L|l|리터)", Pattern.CASE_INSENSITIVE);
         Matcher volumeMatcher = volumePattern.matcher(name);
         if (volumeMatcher.find()) {
-            int volume = Integer.parseInt(volumeMatcher.group(1));
+            double volume = Double.parseDouble(volumeMatcher.group(1));
             String unit = volumeMatcher.group(2).toLowerCase();
             if (unit.equals("l") || unit.equals("리터")) {
                 volume *= 1000;
             }
-            liquor.setVolume(volume);
+            liquor.setVolume((int) Math.round(volume));
         }
 
         Pattern alcoholPattern = Pattern.compile("(\\d+(?:\\.\\d+)?)\\s*(%|도|프루프)");

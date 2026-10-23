@@ -16,6 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -36,12 +39,20 @@ public class LotteonCrawlService {
         log.info("롯데온 양주 크롤링 시작");
 
         List<Liquor> scrapedLiquors = lotteonScraper.scrapeLiquors();
+        if (scrapedLiquors.isEmpty()) {
+            throw new IllegalStateException("롯데온 수집 결과가 0건입니다.");
+        }
+        List<LiquorPrice> processed = new ArrayList<>();
         int newCount = 0;
         int updateCount = 0;
         int skipCount = 0;
 
         for (Liquor scraped : scrapedLiquors) {
             normalizeLiquor(scraped, NORMALIZED_SOURCE);
+            if (scraped.getCurrentPrice() == null || scraped.getCurrentPrice() <= 0) {
+                skipCount++;
+                continue;
+            }
             Optional<LiquorInfo> infoOpt = findLiquorInfo(scraped);
 
             if (infoOpt.isEmpty()) {
@@ -50,16 +61,21 @@ public class LotteonCrawlService {
             }
 
             scraped.setLiquorInfo(infoOpt.get());
+            scraped.setBrand(infoOpt.get().getBrand());
+            if (infoOpt.get().getAlcoholPercent() != null) {
+                scraped.setAlcoholPercent(infoOpt.get().getAlcoholPercent());
+            }
 
             Liquor liquor = upsertLiquor(scraped);
 
             updateLiquorUrls(liquor, scraped.getProductUrl(), scraped.getImageUrl(), NORMALIZED_SOURCE);
 
             boolean existed = liquorPriceRepository.findByLiquorIdAndSource(liquor.getId(), NORMALIZED_SOURCE).isPresent();
-            upsertLiquorPrice(liquor, scraped);
+            LiquorPrice price = upsertLiquorPrice(liquor, scraped);
+            processed.add(price);
 
             // 가격 이력 적재 (시계열)
-            appendLiquorPriceHistory(liquor, scraped);
+            appendLiquorPriceHistory(liquor, scraped, price.getCrawledAt());
 
             if (existed) {
                 updateCount++;
@@ -70,7 +86,10 @@ public class LotteonCrawlService {
 
         log.info("롯데온 크롤링 완료 - 신규: {}개, 업데이트: {}개, 스킵(Info없음): {}개", newCount, updateCount, skipCount);
 
-        return liquorPriceRepository.findAllOrderByUpdatedAtDesc();
+        if (processed.isEmpty()) {
+            throw new IllegalStateException("롯데온에서 저장 가능한 상품이 없습니다.");
+        }
+        return processed;
     }
 
     private Optional<LiquorInfo> findLiquorInfo(Liquor scraped) {
@@ -88,7 +107,8 @@ public class LotteonCrawlService {
         }
 
         String scrapedBrand = scraped.getBrand().replace(" ", "").toLowerCase();
-        String scrapedClazz = scraped.getClazz() != null ? scraped.getClazz().replace(" ", "").toLowerCase() : "";
+        String scrapedClazz = normalizeClazz(scraped.getClazz()).toLowerCase(Locale.ROOT);
+        if (scrapedClazz.isEmpty()) return Optional.empty();
 
         for (LiquorInfo info : candidates) {
             if (info.getBrand() == null) continue;
@@ -123,9 +143,6 @@ public class LotteonCrawlService {
         }
         if (liquor.getOriginalPrice() != null && liquor.getOriginalPrice() <= 0) {
             liquor.setOriginalPrice(null);
-        }
-        if (liquor.getCurrentPrice() == null && liquor.getOriginalPrice() != null) {
-            liquor.setCurrentPrice(liquor.getOriginalPrice());
         }
         if (liquor.getOriginalPrice() == null && liquor.getCurrentPrice() != null) {
             liquor.setOriginalPrice(liquor.getCurrentPrice());
@@ -169,7 +186,7 @@ public class LotteonCrawlService {
         return liquorRepository.save(newLiquor);
     }
 
-    private void appendLiquorPriceHistory(Liquor liquor, Liquor scraped) {
+    private void appendLiquorPriceHistory(Liquor liquor, Liquor scraped, LocalDateTime observedAt) {
         if (scraped.getCurrentPrice() == null && scraped.getOriginalPrice() == null) {
             return;
         }
@@ -178,6 +195,7 @@ public class LotteonCrawlService {
                 .source(NORMALIZED_SOURCE)
                 .currentPrice(scraped.getCurrentPrice())
                 .originalPrice(scraped.getOriginalPrice())
+                .crawledAt(observedAt)
                 .build();
         liquorPriceHistoryRepository.save(history);
     }
@@ -194,6 +212,7 @@ public class LotteonCrawlService {
         price.setSource(NORMALIZED_SOURCE);
         price.setCurrentPrice(scraped.getCurrentPrice());
         price.setOriginalPrice(scraped.getOriginalPrice());
+        price.setCrawledAt(LocalDateTime.now(ZoneOffset.UTC));
         return liquorPriceRepository.save(price);
     }
 
@@ -216,6 +235,12 @@ public class LotteonCrawlService {
                 .replaceAll("\\[.*?\\]", "")
                 .replace("()", "")
                 .replace(" ", "")
+                .replaceAll("^블랙$", "블랙라벨")
+                .replaceAll("^골드$", "골드라벨")
+                .replaceAll("^레드$", "레드라벨")
+                .replaceAll("^그린$", "그린라벨")
+                .replaceAll("^블루$", "블루라벨")
+                .replaceAll("^화이트$", "화이트라벨")
                 .trim();
     }
 

@@ -1,0 +1,92 @@
+name: Lotteon Daily Crawl
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # 09:00 Asia/Seoul
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/lotteon-daily.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lotteon-daily
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: bash gradlew :crawler:test --console=plain
+      - run: npm ci && npm run build && node --test tests/*.test.mjs
+        working-directory: backend/crawler-playwright
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lotteon-tests
+          path: backend/crawler/build/reports/tests/
+
+  crawl:
+    if: github.event_name != 'pull_request'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DB_URL: ${{ secrets.DB_URL }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check database configuration
+        shell: bash
+        run: |
+          for name in DB_URL DB_USERNAME DB_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Required repository secret is missing: $name"
+              exit 1
+            fi
+          done
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Verify Chrome availability
+        run: google-chrome --version
+      - name: Crawl and save verified prices
+        shell: bash
+        run: |
+          set -o pipefail
+          bash gradlew :crawler:bootRun --console=plain --args='--spring.main.web-application-type=none --spring.jpa.show-sql=false --lotteon.batch=true' 2>&1 | tee lotteon-daily.log
+      - name: Execution summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f lotteon-daily.log ]; then
+            grep -E 'LOTTEON_DAILY_SUCCESS|크롤링 완료|저장 가능한 상품|수집 결과가 0건' lotteon-daily.log >> "$GITHUB_STEP_SUMMARY" || true
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lotteon-daily-${{ github.run_id }}
+          path: |
+            backend/lotteon-daily.log
+            backend/lotteon_debug_*.html
+          retention-days: 14
