@@ -5,6 +5,10 @@ on:
     - cron: '0 0 * * *' # 09:00 Asia/Seoul
   workflow_dispatch:
     inputs:
+      dry_run:
+        description: 'Read-only crawl (allows diagnostic branches)'
+        default: false
+        type: boolean
       limit:
         description: 'Maximum products (0 = all)'
         default: '0'
@@ -48,7 +52,7 @@ jobs:
           path: backend/crawler/build/reports/tests/
 
   crawl:
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    if: (github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')) || (github.event_name == 'workflow_dispatch' && inputs.dry_run)
     needs: verify
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -59,6 +63,7 @@ jobs:
       run:
         working-directory: backend/crawler-playwright
     env:
+      DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
       CRAWL_LIMIT: ${{ github.event.inputs.limit || '0' }}
     steps:
       - uses: actions/checkout@v4
@@ -72,7 +77,9 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          node dist/cli/daily-lotteon.js --limit "$CRAWL_LIMIT" 2>&1 | tee lotteon-daily.log
+          args=(--limit "$CRAWL_LIMIT")
+          if [ "$DRY_RUN" = 'true' ]; then args+=(--dry-run); fi
+          node dist/cli/daily-lotteon.js "${args[@]}" 2>&1 | tee lotteon-daily.log
       - name: Execution summary
         if: always()
         shell: bash
