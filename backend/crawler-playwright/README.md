@@ -56,3 +56,5 @@ npm run crawl:emart -- --keywords-file ./keywords.txt --limit 5
 - main 배포와 첫 수동 실행 성공을 확인하기 전에는 자동 수집이 활성화됐다고 간주하지 않습니다.
 - Java 배치는 DB 설정이 있는 수동 환경에서 `:crawler:bootRun --args='--spring.main.web-application-type=none --lotteon.batch=true'`로 사용할 수 있습니다.
 - 검증: Java `./gradlew :crawler:test`, Node `npm run build && node --test tests/*.test.mjs`, 프론트 `npm test && npm run lint && npm run build`.
+### 특정 상품 재실행
+수집/저장 실패 상품은 `node dist/cli/daily-lotteon.js --ids 917`로 제한할 수 있습니다. GitHub 수동 실행의 ids 입력도 동일합니다. 빈 ids는 전체 대상이며 예약 작업 기본값입니다. 지정한 ID 중 기존 LOTTEON 연결이 없는 ID가 있으면 실행 전에 실패합니다.

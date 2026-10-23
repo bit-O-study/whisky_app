@@ -123,8 +123,8 @@ function parseFirstFromScript(pageSource: string): LotteonCandidate | null {
     const item = JSON.parse(jsonString) as {
       item_name?: string;
       item_id?: string;
-      price?: number;
-      discount?: number;
+      price?: number | string;
+      discount?: number | string;
     };
 
     const itemName = item.item_name?.trim() ?? '';
@@ -132,9 +132,16 @@ function parseFirstFromScript(pageSource: string): LotteonCandidate | null {
       return null;
     }
 
-    const price = item.price ?? 0;
-    const discount = item.discount ?? 0;
-    const originalPrice = discount > 0 ? price + discount : price;
+    const amount = (value: unknown): number | null => {
+      const parsed = typeof value === 'number' ? value
+        : typeof value === 'string' && /^\d+$/.test(value.trim()) ? Number(value.trim()) : NaN;
+      return Number.isSafeInteger(parsed) && parsed >= 0 && parsed <= 2147483647 ? parsed : null;
+    };
+    const price = amount(item.price);
+    const discount = amount(item.discount ?? 0);
+    if (price === null || price <= 0 || discount === null) return null;
+    const originalPrice = price + discount;
+    if (originalPrice > 2147483647) return null;
     return buildCandidate({
       name: itemName,
       currentPrice: price,

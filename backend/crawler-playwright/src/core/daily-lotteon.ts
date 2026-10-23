@@ -1,4 +1,11 @@
 export const INGEST_URL = 'https://whisky-app-vert.vercel.app/api/internal/lotteon-ingest';
+export function parseProductIds(raw: string): Set<number> | null {
+  if (!raw) return null;
+  if (!/^[1-9]\d*(,[1-9]\d*)*$/.test(raw)) throw new Error('Invalid product IDs');
+  const ids = raw.split(',').map(Number);
+  if (ids.some(id => !Number.isSafeInteger(id))) throw new Error('Invalid product IDs');
+  return new Set(ids);
+}
 export function lotteonCode(raw: string): string | null {
   try {
     const url = new URL(raw);

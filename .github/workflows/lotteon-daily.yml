@@ -5,6 +5,10 @@ on:
     - cron: '0 0 * * *' # 09:00 Asia/Seoul
   workflow_dispatch:
     inputs:
+      ids:
+        description: 'Retry product IDs, comma-separated (empty = all)'
+        default: ''
+        type: string
       dry_run:
         description: 'Read-only crawl on main'
         default: false
@@ -71,6 +75,7 @@ jobs:
         working-directory: backend/crawler-playwright
         shell: powershell
     env:
+      CRAWL_IDS: ${{ github.event.inputs.ids || '' }}
       DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
       CRAWL_LIMIT: ${{ github.event.inputs.limit || '0' }}
     steps:
@@ -85,6 +90,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Continue'
           $arguments = @('--limit', $env:CRAWL_LIMIT)
+          if ($env:CRAWL_IDS) { $arguments += @('--ids', $env:CRAWL_IDS) }
           if ($env:DRY_RUN -eq 'true') { $arguments += '--dry-run' }
           node dist/cli/daily-lotteon.js @arguments 2>&1 | Tee-Object -FilePath lotteon-daily.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
