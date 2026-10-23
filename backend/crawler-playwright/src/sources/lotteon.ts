@@ -15,6 +15,14 @@ const DOM_SELECTORS = [
   "[class*='prd-item']",
 ];
 
+export class LotteonAccessBlocked extends Error {}
+export function assertLotteonAccessible(html: string): void {
+  if (/Request unsuccessful[\s\S]*Incapsula incident ID/i.test(html) ||
+      /<iframe[^>]+src=["'][^"']*_Incapsula_Resource/i.test(html)) {
+    throw new LotteonAccessBlocked('Lotteon blocked this runner connection (Incapsula); no prices were collected');
+  }
+}
+
 export interface LotteonCandidate {
   productCode: string;
   name: string;
@@ -49,6 +57,7 @@ export async function crawlLotteonKeyword(page: Page, keyword: string): Promise<
   await page.waitForTimeout(1_500);
 
   const html = await page.content();
+  assertLotteonAccessible(html);
   const scriptCandidate = parseFirstFromScript(html);
   const scoredScriptCandidate = scriptCandidate
     ? { ...scriptCandidate, score: calculateMatchScore(keyword, scriptCandidate.name) }

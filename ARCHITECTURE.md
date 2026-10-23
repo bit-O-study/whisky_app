@@ -50,3 +50,6 @@
 
 ### 로컬 ADB 수집
 `scripts/adb/collect.mjs`는 USB 연결 PC에서 와인그랩 위스키 목록을 순회하고 검토 JSON/체크포인트를 `artifacts/adb/`에 저장한다. DB 쓰기 경로와 분리되어 있으며 기존 가격 계약에 자동 반영하지 않는다. PowerShell/Bash 진입점과 실행 방법은 `scripts/adb/README.md` 참조.
+
+### 롯데온 임시 실행 환경
+2026-10-23 사용자 승인에 따라 일일 수집 job은 현재 PC의 whisky-lotteon 전용 Windows 실행기를 사용한다. GitHub는 예약과 Java/Node 검증을 담당한다. 저장소 밖 실행 전 훅으로 main의 정확한 수집 작업만 허용하고 PR은 실행하지 않는다. PC 전원·로그인·네트워크 유지가 필요하다. 운영 저장은 기존 OIDC → Next.js → RPC 경로를 유지한다.

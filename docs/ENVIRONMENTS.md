@@ -56,3 +56,8 @@
 - 문서상 스키마와 실제 DB 스키마의 드리프트
 - MCP 설정 프로젝트와 실제 작업 대상 프로젝트의 불일치
 - 로컬 build/test 환경과 샌드박스 환경 차이
+
+## 임시 롯데온 PC 실행기
+- 수집 job은 whisky-lotteon 전용 Windows 실행기를 사용한다. 현재 사용자 로그온 시 WhiskyLotteonRunner 예약 작업이 숨김으로 시작한다.
+- PC가 켜져 있고 로그인 및 인터넷 연결이 유지되어야 한다. 절전 중에는 실행되지 않을 수 있으며 전원 정책은 변경하지 않는다.
+- 설치/중지/보안 검증: scripts/runner/README.md. GitHub 기본 서버는 검증 job을 계속 실행한다.
