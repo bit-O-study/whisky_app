@@ -1,5 +1,5 @@
 import { createBrowserBundle } from '../core/browser.js';
-import { nowStamp, writeJsonArtifact } from '../core/io.js';
+import { nowStamp, writeJsonArtifact, writeTextArtifact } from '../core/io.js';
 import { lotteonCode, sendObservations } from '../core/daily-lotteon.js';
 import { crawlLotteonKeyword } from '../sources/lotteon.js';
 
@@ -30,10 +30,12 @@ async function main() {
     for (const item of selected) {
       try {
         const keyword = /\d\s*(?:ml|l|리터)\b/i.test(item.name) ? item.name : `${item.name} ${item.volume}ml`;
-        const { result } = await crawlLotteonKeyword(page, keyword);
+        const { result, html } = await crawlLotteonKeyword(page, keyword);
         const best = result.bestMatch;
         const known = item.vendors.find(v => v.source === 'LOTTEON')!;
         if (!best || lotteonCode(best.productUrl) !== lotteonCode(known.product_url)) {
+          await writeTextArtifact(`daily/debug-${item.id}.html`, html);
+          console.log(`SEARCH_DIAGNOSTIC id=${item.id} title=${await page.title()} url=${page.url()} htmlBytes=${html.length}`);
           results.push({ liquorId: item.id, status: 'skipped', reason: 'No matching existing product code', result });
           console.log(`SKIPPED id=${item.id} ${keyword}`);
           continue;
