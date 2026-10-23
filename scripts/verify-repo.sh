@@ -136,8 +136,9 @@ def normalize_target(source: Path, raw_target: str):
 
     candidate = None
     if file_part.startswith('/'):
-        repo_marker = f'/{repo_name}/'
-        if repo_marker in file_part:
+        repo_marker = next((f'/{name}/' for name in (repo_name, 'bitO-liquor', 'whisky_app')
+                            if f'/{name}/' in file_part), None)
+        if repo_marker is not None:
             relative = file_part.split(repo_marker, 1)[1]
             candidate = root / relative
         elif file_part == f'/{repo_name}':

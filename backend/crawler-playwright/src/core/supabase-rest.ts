@@ -23,6 +23,15 @@ function buildHeaders(key: string) {
   };
 }
 
+export async function callSupabaseRpc<T>(name: string, params: Record<string, unknown>): Promise<T> {
+  const { restUrl, key } = getSupabaseConfig();
+  const response = await fetch(`${restUrl}/rpc/${name}`, {
+    method: 'POST', headers: buildHeaders(key), body: JSON.stringify(params),
+  });
+  if (!response.ok) throw new Error(`Supabase RPC failed (${name} ${response.status}): ${await response.text()}`);
+  return await response.json() as T;
+}
+
 export async function fetchSupabaseRows<T extends object>(
   table: string,
   options: {

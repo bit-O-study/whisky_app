@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +19,11 @@ import java.util.Map;
 public class LotteonCrawlController {
 
     private final LotteonCrawlService lotteonCrawlService;
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, Object>> crawlFailed(IllegalStateException error) {
+        return ResponseEntity.internalServerError().body(Map.of("message", "롯데온 크롤링에 실패했습니다.", "count", 0));
+    }
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> scrapeLiquors() {

@@ -1,0 +1,90 @@
+name: Lotteon Daily Crawl
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # 09:00 Asia/Seoul
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Maximum products (0 = all)'
+        default: '0'
+        type: string
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - '.github/workflows/lotteon-daily.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lotteon-daily
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: bash gradlew :crawler:test --console=plain
+      - run: npm ci && npm run build && node --test tests/*.test.mjs
+        working-directory: backend/crawler-playwright
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lotteon-tests
+          path: backend/crawler/build/reports/tests/
+
+  crawl:
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: backend/crawler-playwright
+    env:
+      CRAWL_LIMIT: ${{ github.event.inputs.limit || '0' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Crawl existing products and save with workflow identity
+        shell: bash
+        run: |
+          set -o pipefail
+          node dist/cli/daily-lotteon.js --limit "$CRAWL_LIMIT" 2>&1 | tee lotteon-daily.log
+      - name: Execution summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f lotteon-daily.log ]; then
+            grep -E 'LOTTEON_DAILY_SUCCESS|SAVED|SKIPPED|FAILED' lotteon-daily.log >> "$GITHUB_STEP_SUMMARY" || true
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lotteon-daily-${{ github.run_id }}
+          path: |
+            backend/crawler-playwright/lotteon-daily.log
+            backend/crawler-playwright/artifacts/daily/
+          retention-days: 14

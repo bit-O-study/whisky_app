@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    testRuntimeOnly 'com.h2database:h2'
     implementation project(':common')
 
     // Crawling libraries

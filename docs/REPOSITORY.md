@@ -13,6 +13,7 @@
 - 환경/시크릿/실행 경계: [ENVIRONMENTS.md](/home/ubuntu/code/bitO-liquor/docs/ENVIRONMENTS.md)
 - 저장소 하네스 자동 검증: `scripts/verify-repo.sh`, `.github/workflows/repo-harness.yml`
   - 필수 문서, exec plan 구조, Markdown 내부 링크를 함께 검사한다.
+  - 이전 저장소 이름 `bitO-liquor`와 현재 이름 `whisky_app`을 포함한 절대 문서 링크는 현재 체크아웃 기준으로 해석한다. 실제 파일/앵커 존재와 저장소 경계 검사는 그대로 수행한다.
 
 ## Application Harness
 - 시스템 경계와 데이터 흐름: [ARCHITECTURE.md](/home/ubuntu/code/bitO-liquor/ARCHITECTURE.md)
