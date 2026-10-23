@@ -1,0 +1,1285 @@
+{
+  "summary": {
+    "runId": 39887883939,
+    "artifact": "lotteon-2026-10-23T02-22-23-880Z.json",
+    "targets": 111,
+    "processed": 111,
+    "savedCount": 100,
+    "changedCount": 41,
+    "unchangedCount": 59,
+    "skippedCount": 11,
+    "failedCount": 0,
+    "firstObservedAt": "2026-10-23T02:11:06.692Z",
+    "lastObservedAt": "2026-10-23T02:34:43.991Z",
+    "retryRunId": 39890120932,
+    "reconciledAfterRetry": true
+  },
+  "saved": [
+    {
+      "liquorId": 864,
+      "currentPrice": 56800,
+      "originalPrice": 56800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000267198576?sitmNo=LM5000267198576_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%A1%B0%EB%8B%88%EC%9B%8C%EC%BB%A4%20%EB%B8%94%EB%9E%99%20%EB%A3%A8%EB%B9%84%20700ml&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174631/LM/50/00/26/71/98/57/6_/00/1/LM5000267198576_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:11:06.692Z",
+      "name": "조니워커 블랙 루비 700ml",
+      "oldPrice": 56800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 865,
+      "currentPrice": 28800,
+      "originalPrice": 28800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000267190525?sitmNo=LM5000267190525_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%A1%B0%EB%8B%88%EC%9B%8C%EC%BB%A4%20%EB%B8%94%EB%A1%A0%EB%93%9C%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260917070701/LM/50/00/26/71/90/52/5_/00/1/LM5000267190525_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:11:15.169Z",
+      "name": "조니워커 블론드 (700ML)",
+      "oldPrice": 28800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 869,
+      "currentPrice": 129800,
+      "originalPrice": 129800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5010494195286?sitmNo=LM5010494195286_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%95%84%EB%93%9C%EB%B2%A1%2010%EB%85%84%20(700ml)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260911070630/LM/50/10/49/41/95/28/6_/00/1/LM5010494195286_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:11:43.466Z",
+      "name": "아드벡 10년 (700ml)",
+      "oldPrice": 128500,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 870,
+      "currentPrice": 144800,
+      "originalPrice": 144800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000281005409?sitmNo=LM5000281005409_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%9D%BC%EA%B0%80%EB%B6%88%EB%A6%B0%2016%EB%85%84%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261008202639/LM/50/00/28/10/05/40/9_/00/1/LM5000281005409_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:11:50.148Z",
+      "name": "라가불린 16년 (700ML)",
+      "oldPrice": 144800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 871,
+      "currentPrice": 34800,
+      "originalPrice": 34800,
+      "productUrl": "https://www.lotteon.com/p/product/LM4901777169043?sitmNo=LM4901777169043_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%82%B0%ED%86%A0%EB%A6%AC%20%EA%B0%80%EC%BF%A0%EB%B9%88%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261023024634/LM/49/01/77/71/69/04/3_/00/1/LM4901777169043_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:11:58.601Z",
+      "name": "산토리 가쿠빈 (700ML)",
+      "oldPrice": 34800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 872,
+      "currentPrice": 39900,
+      "originalPrice": 39900,
+      "productUrl": "https://www.lotteon.com/p/product/LM0080432402931?sitmNo=LM0080432402931_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%8B%9C%EB%B0%94%EC%8A%A4%EB%A6%AC%EA%B0%88%2012%EB%85%84%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261017070637/LM/00/80/43/24/02/93/1_/00/1/LM0080432402931_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:12:09.682Z",
+      "name": "시바스리갈 12년 (700ML)",
+      "oldPrice": 39800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 873,
+      "currentPrice": 229000,
+      "originalPrice": 229000,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000299211243?sitmNo=LM5000299211243_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%A1%9C%EC%96%84%EC%82%B4%EB%A3%A8%ED%8A%B8%2021%EB%85%84%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261017070635/LM/50/00/29/92/11/24/3_/00/1/LM5000299211243_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:12:14.534Z",
+      "name": "로얄살루트 21년 (700ML)",
+      "oldPrice": 219800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 874,
+      "currentPrice": 28800,
+      "originalPrice": 28800,
+      "productUrl": "https://www.lotteon.com/p/product/LM0080686001409?sitmNo=LM0080686001409_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%A7%90%EB%B9%94%ED%99%94%EC%9D%B4%ED%8A%B8%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261023024627/LM/00/80/68/60/01/40/9_/00/1/LM0080686001409_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:12:21.1Z",
+      "name": "짐빔화이트 (750ML)",
+      "oldPrice": 24800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 875,
+      "currentPrice": 39800,
+      "originalPrice": 39800,
+      "productUrl": "https://www.lotteon.com/p/product/LM0080244009236?sitmNo=LM0080244009236_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%B2%84%ED%8C%94%EB%A1%9C%ED%8A%B8%EB%A0%88%EC%9D%B4%EC%8A%A4%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174633/LM/00/80/24/40/09/23/6_/00/1/LM0080244009236_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:12:26.565Z",
+      "name": "버팔로트레이스 (750ML)",
+      "oldPrice": 49000,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 876,
+      "currentPrice": 29900,
+      "originalPrice": 29900,
+      "productUrl": "https://www.lotteon.com/p/product/LM5011007003005?sitmNo=LM5011007003005_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%A0%9C%EC%9E%84%EC%8A%A8%20%EC%8A%A4%ED%83%A0%EB%8B%A4%EB%93%9C%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174633/LM/50/11/00/70/03/00/5_/00/1/LM5011007003005_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:12:33.838Z",
+      "name": "제임슨 스탠다드 (700ML)",
+      "oldPrice": 29800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 877,
+      "currentPrice": 14800,
+      "originalPrice": 14800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000387905634?sitmNo=LM5000387905634_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%B2%A8%EC%A6%88%20%EB%B8%94%EB%A0%8C%EB%94%94%EB%93%9C%20%EC%8A%A4%EC%B9%B4%EC%B9%98%20%EC%9C%84%EC%8A%A4%ED%82%A4%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261015070647/LM/50/00/38/79/05/63/4_/00/1/LM5000387905634_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:12:40.127Z",
+      "name": "벨즈 블렌디드 스카치 위스키 (700ML)",
+      "oldPrice": 14800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 887,
+      "currentPrice": 120000,
+      "originalPrice": 120000,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000299613238?sitmNo=LM5000299613238_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%B0%9C%EB%A0%8C%ED%83%80%EC%9D%B8%20%EC%8B%B1%EA%B8%80%EB%AA%B0%ED%8A%B8%20%EA%B8%80%EB%A0%8C%EB%B2%84%EA%B8%B0%2015%EB%85%84%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261023070633/LM/50/00/29/96/13/23/8_/00/1/LM5000299613238_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:12:54.749Z",
+      "name": "발렌타인 싱글몰트 글렌버기 15년 (700ML)",
+      "oldPrice": 120000,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 888,
+      "currentPrice": 219900,
+      "originalPrice": 219900,
+      "productUrl": "https://www.lotteon.com/p/product/LM5060568321080?sitmNo=LM5060568321080_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EA%B8%80%EB%A0%8C%EC%95%8C%EB%9D%BC%ED%82%A4%2015%EB%85%84%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260912070632/LM/50/60/56/83/21/08/0_/00/1/LM5060568321080_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:13:05.411Z",
+      "name": "글렌알라키 15년 (700ML)",
+      "oldPrice": 149800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 889,
+      "currentPrice": 96800,
+      "originalPrice": 96800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5010327505138?sitmNo=LM5010327505138_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%B0%9C%EB%B2%A0%EB%8B%88%2012%EB%85%84%20(700ml)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261021113937/LM/50/10/32/75/05/13/8_/00/1/LM5010327505138_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:13:10.344Z",
+      "name": "발베니 12년 (700ml)",
+      "oldPrice": 96800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 890,
+      "currentPrice": 128300,
+      "originalPrice": 128300,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000299295021?sitmNo=LM5000299295021_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%8D%94%20%EA%B8%80%EB%A0%8C%EB%A6%AC%EB%B2%B3%2015%EB%85%84%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261023070633/LM/50/00/29/92/95/02/1_/00/1/LM5000299295021_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:13:15.349Z",
+      "name": "더 글렌리벳 15년 (700ML)",
+      "oldPrice": 128300,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 891,
+      "currentPrice": 159800,
+      "originalPrice": 159800,
+      "productUrl": "https://www.lotteon.com/p/product/LM4710085206711?sitmNo=LM4710085206711_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%B9%B4%EB%B0%9C%EB%9E%80%20%ED%81%B4%EB%9E%98%EC%8B%9D%20%EC%8B%B1%EA%B8%80%EB%AA%B0%ED%8A%B8%20%EC%9C%84%EC%8A%A4%ED%82%A4%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261008202643/LM/47/10/08/52/06/71/1_/00/1/LM4710085206711_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:13:21.878Z",
+      "name": "카발란 클래식 싱글몰트 위스키 (700ML)",
+      "oldPrice": 207000,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 892,
+      "currentPrice": 398800,
+      "originalPrice": 398800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000267199702?sitmNo=LM5000267199702_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%A1%B0%EB%8B%88%EC%9B%8C%EC%BB%A4%20%EB%B8%94%EB%A3%A8%20%EB%A7%90%EB%9D%A0%20%EC%97%90%EB%94%94%EC%85%98%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260902190630/LM/50/00/26/71/99/70/2_/00/1/LM5000267199702_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:13:26.511Z",
+      "name": "조니워커 블루 말띠 에디션 (750ML)",
+      "oldPrice": 379800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 893,
+      "currentPrice": 21800,
+      "originalPrice": 21800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000277000906?sitmNo=LM5000277000906_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%93%80%EC%96%B4%EC%8A%A4%20%ED%99%94%EC%9D%B4%ED%8A%B8%20%EB%9D%BC%EB%B2%A8%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261008202639/LM/50/00/27/70/00/90/6_/00/1/LM5000277000906_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:13:32.408Z",
+      "name": "듀어스 화이트 라벨 (700ML)",
+      "oldPrice": 19800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 894,
+      "currentPrice": 69800,
+      "originalPrice": 69800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5010106172001?sitmNo=LM5010106172001_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%B0%9C%EB%A0%8C%ED%83%80%EC%9D%B8%20%EB%A7%88%EC%8A%A4%ED%84%B0%EC%A6%88%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261023070637/LM/50/10/10/61/72/00/1_/00/1/LM5010106172001_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:13:40.673Z",
+      "name": "발렌타인 마스터즈 (700ML)",
+      "oldPrice": 69800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 895,
+      "currentPrice": 268000,
+      "originalPrice": 268000,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000267114279?sitmNo=LM5000267114279_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%A1%B0%EB%8B%88%EC%9B%8C%EC%BB%A4%20%EB%B8%94%EB%A3%A8%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174633/LM/50/00/26/71/14/27/9_/00/1/LM5000267114279_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:13:49.697Z",
+      "name": "조니워커 블루 (750ML)",
+      "oldPrice": 279800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 896,
+      "currentPrice": 12800,
+      "originalPrice": 12800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5018481315631?sitmNo=LM5018481315631_001&mall_no=1&dp_infw_cd=SCH%5E%5E%ED%83%88%EB%A6%AC%EC%8A%A4%EB%A7%8C%20%EC%8A%A4%EC%B9%B4%EC%B9%98%20%EC%9C%84%EC%8A%A4%ED%82%A4%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261015070639/LM/50/18/48/13/15/63/1_/00/1/LM5018481315631_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:14:01.042Z",
+      "name": "탈리스만 스카치 위스키 (700ML)",
+      "oldPrice": 12800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 897,
+      "currentPrice": 55900,
+      "originalPrice": 55900,
+      "productUrl": "https://www.lotteon.com/p/product/LM0085246139431?sitmNo=LM0085246139431_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%A9%94%EC%9D%B4%EC%BB%A4%EC%8A%A4%20%EB%A7%88%ED%81%AC%20(750ml)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261023070634/LM/00/85/24/61/39/43/1_/00/1/LM0085246139431_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:14:19.696Z",
+      "name": "메이커스 마크 (750ml)",
+      "oldPrice": 44720,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 899,
+      "currentPrice": 210000,
+      "originalPrice": 210000,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000267116174?sitmNo=LM5000267116174_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%A1%B0%EB%8B%88%EC%9B%8C%EC%BB%A4%20%EB%B8%94%EB%A3%A8%20(500ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261015070649/LM/50/00/26/71/16/17/4_/00/1/LM5000267116174_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:14:35.896Z",
+      "name": "조니워커 블루 (500ML)",
+      "oldPrice": 209800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 900,
+      "currentPrice": 138800,
+      "originalPrice": 138800,
+      "productUrl": "https://www.lotteon.com/p/product/LM0083664873067?sitmNo=LM0083664873067_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%B0%9C%EB%B2%A0%EB%8B%88%2012%EB%85%84%20%EC%8B%B1%EA%B8%80%EB%B0%B0%EB%9F%B4%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174630/LM/00/83/66/48/73/06/7_/00/1/LM0083664873067_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:14:43.783Z",
+      "name": "발베니 12년 싱글배럴 (750ML)",
+      "oldPrice": 139800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 901,
+      "currentPrice": 99800,
+      "originalPrice": 99800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5010314310837?sitmNo=LM5010314310837_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%A7%A5%EC%BA%98%EB%9E%80%2012%EB%85%84%20%EB%8D%94%EB%B8%94%20%EC%BA%90%EC%8A%A4%ED%81%AC%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174634/LM/50/10/31/43/10/83/7_/00/1/LM5010314310837_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:14:50.243Z",
+      "name": "맥캘란 12년 더블 캐스크 (700ML)",
+      "oldPrice": 109800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 903,
+      "currentPrice": 111000,
+      "originalPrice": 111000,
+      "productUrl": "https://www.lotteon.com/p/product/LM5010019640253?sitmNo=LM5010019640253_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%9D%BC%ED%94%84%EB%A1%9C%EC%9D%B5%2010%EB%85%84%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260703070642/LM/50/10/01/96/40/25/3_/00/1/LM5010019640253_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:14:54.916Z",
+      "name": "라프로익 10년 (750ML)",
+      "oldPrice": 69800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 904,
+      "currentPrice": 41800,
+      "originalPrice": 41800,
+      "productUrl": "https://www.lotteon.com/p/product/LM0088004020828?sitmNo=LM0088004020828_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%B2%A4%EC%B9%98%EB%A7%88%ED%81%AC%20NO.8%20%EB%B2%84%EB%B2%88%20%EC%9C%84%EC%8A%A4%ED%82%A4%20(1%2C750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174633/LM/00/88/00/40/20/82/8_/00/1/LM0088004020828_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:15:01.056Z",
+      "name": "벤치마크 NO.8 버번 위스키 (1,750ML)",
+      "oldPrice": 49900,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 905,
+      "currentPrice": 71800,
+      "originalPrice": 71800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000267134710?sitmNo=LM5000267134710_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%A1%B0%EB%8B%88%EC%9B%8C%EC%BB%A4%20%EA%B7%B8%EB%A6%B0%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261017070644/LM/50/00/26/71/34/71/0_/00/1/LM5000267134710_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:15:06.058Z",
+      "name": "조니워커 그린 (700ML)",
+      "oldPrice": 74800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 906,
+      "currentPrice": 129800,
+      "originalPrice": 129800,
+      "productUrl": "https://www.lotteon.com/p/product/LM4904230064374?sitmNo=LM4904230064374_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%8B%9B%EC%B9%B4%20%ED%83%80%EC%BC%80%EC%B8%A0%EB%A3%A8%20%ED%93%A8%EC%96%B4%EB%AA%B0%ED%8A%B8%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261001070705/LM/49/04/23/00/64/37/4_/00/1/LM4904230064374_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:15:10.981Z",
+      "name": "닛카 타케츠루 퓨어몰트 (700ML)",
+      "oldPrice": 129800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 907,
+      "currentPrice": 75800,
+      "originalPrice": 75800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000281005416?sitmNo=LM5000281005416_001&mall_no=1&dp_infw_cd=SCH%5E%5E%ED%83%88%EB%A6%AC%EC%8A%A4%EC%BB%A4%2010%EB%85%84%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261015070652/LM/50/00/28/10/05/41/6_/00/1/LM5000281005416_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:15:16.499Z",
+      "name": "탈리스커 10년 (700ML)",
+      "oldPrice": 74800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 908,
+      "currentPrice": 52800,
+      "originalPrice": 52800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000267116426?sitmNo=LM5000267116426_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%A1%B0%EB%8B%88%EC%9B%8C%EC%BB%A4%20%EB%8D%94%EB%B8%94%EB%B8%94%EB%9E%99%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261008202627/LM/50/00/26/71/16/42/6_/00/1/LM5000267116426_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:15:20.907Z",
+      "name": "조니워커 더블블랙 (700ML)",
+      "oldPrice": 52800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 909,
+      "currentPrice": 56300,
+      "originalPrice": 56300,
+      "productUrl": "https://www.lotteon.com/p/product/LM5060353301662?sitmNo=LM5060353301662_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%8A%A4%EB%AA%A8%ED%82%A4%EC%8A%A4%EC%BA%87%20%EC%95%84%EC%9D%BC%EB%9D%BC%20%EC%8B%B1%EA%B8%80%EB%AA%B0%ED%8A%B8%EC%9C%84%EC%8A%A4%ED%82%A4%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260602032638/LM/50/60/35/33/01/66/2_/00/1/LM5060353301662_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:15:26.146Z",
+      "name": "스모키스캇 아일라 싱글몰트위스키 (700ML)",
+      "oldPrice": 49000,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 910,
+      "currentPrice": 15800,
+      "originalPrice": 15800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5013967015944?sitmNo=LM5013967015944_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%B9%BC%EB%9D%BC%EC%9D%BC%20%EC%8A%A4%EC%B9%B4%EC%B9%98%20%EC%9C%84%EC%8A%A4%ED%82%A4%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261001070706/LM/50/13/96/70/15/94/4_/00/1/LM5013967015944_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:15:32.342Z",
+      "name": "칼라일 스카치 위스키 (700ML)",
+      "oldPrice": 15800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 911,
+      "currentPrice": 88700,
+      "originalPrice": 88700,
+      "productUrl": "https://www.lotteon.com/p/product/LM0080686016762?sitmNo=LM0080686016762_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%82%A9%ED%81%AC%EB%A6%AD%20%EB%B2%84%EB%B3%B8%20%EC%9C%84%EC%8A%A4%ED%82%A4%2050%25%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260114103652/LM/00/80/68/60/16/76/2_/00/1/LM0080686016762_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:15:37.43Z",
+      "name": "납크릭 버본 위스키 50% (750ML)",
+      "oldPrice": 88700,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 912,
+      "currentPrice": 141000,
+      "originalPrice": 141000,
+      "productUrl": "https://www.lotteon.com/p/product/LM5010327325125?sitmNo=LM5010327325125_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EA%B8%80%EB%A0%8C%ED%94%BC%EB%94%95%20(15%EB%85%84)%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174630/LM/50/10/32/73/25/12/5_/00/1/LM5010327325125_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:15:42.509Z",
+      "name": "글렌피딕 (15년) (700ML)",
+      "oldPrice": 104800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 913,
+      "currentPrice": 89800,
+      "originalPrice": 89800,
+      "productUrl": "https://www.lotteon.com/p/product/LM0000088001166?sitmNo=LM0000088001166_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%8A%A4%EC%B9%B4%EC%B9%98%EB%B8%94%EB%A3%A8%2021%EB%85%84%20(500ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261023070634/LM/00/00/08/80/01/16/6_/00/1/LM0000088001166_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:15:48.936Z",
+      "name": "스카치블루 21년 (500ML)",
+      "oldPrice": 89800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 914,
+      "currentPrice": 25800,
+      "originalPrice": 25800,
+      "productUrl": "https://www.lotteon.com/p/product/LM8806142716470?sitmNo=LM8806142716470_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%9D%BC%EB%B2%A85%20%EC%8A%A4%EC%B9%B4%EC%B9%98%20%EC%9C%84%EC%8A%A4%ED%82%A4%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260902181636/LM/88/06/14/27/16/47/0_/00/1/LM8806142716470_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:15:53.398Z",
+      "name": "라벨5 스카치 위스키 (700ML)",
+      "oldPrice": 22900,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 915,
+      "currentPrice": 69800,
+      "originalPrice": 69800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000267107776?sitmNo=LM5000267107776_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%A1%B0%EB%8B%88%EC%9B%8C%EC%BB%A4%20%EA%B3%A8%EB%93%9C%EB%A6%AC%EC%A0%80%EB%B8%8C%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261015070650/LM/50/00/26/71/07/77/6_/00/1/LM5000267107776_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:15:58.393Z",
+      "name": "조니워커 골드리저브 (750ML)",
+      "oldPrice": 72800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 916,
+      "currentPrice": 72800,
+      "originalPrice": 72800,
+      "productUrl": "https://www.lotteon.com/p/product/LM0088004021344?sitmNo=LM0088004021344_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%9D%B4%EA%B8%80%EB%A0%88%EC%96%B4%20%EB%B2%84%EB%B2%88%20%EC%9C%84%EC%8A%A4%ED%82%A4%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174633/LM/00/88/00/40/21/34/4_/00/1/LM0088004021344_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:16:12.075Z",
+      "name": "이글레어 버번 위스키 (750ML)",
+      "oldPrice": 129000,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 918,
+      "currentPrice": 60900,
+      "originalPrice": 60900,
+      "productUrl": "https://www.lotteon.com/p/product/LM5010852047837?sitmNo=LM5010852047837_001&mall_no=1&dp_infw_cd=SCH%5E%5E%ED%83%90%EB%91%90%20%EB%AF%B8%EB%8B%88%EC%96%B4%EC%B3%90%20(50ML*3%EC%9E%85)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260501220635/LM/50/10/85/20/47/83/7_/00/1/LM5010852047837_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:16:27.984Z",
+      "name": "탐두 미니어쳐 (50ML*3입)",
+      "oldPrice": 60900,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 920,
+      "currentPrice": 19800,
+      "originalPrice": 19800,
+      "productUrl": "https://www.lotteon.com/p/product/LM0088004023508?sitmNo=LM0088004023508_001&mall_no=1&dp_infw_cd=SCH%5E%5E%ED%8C%8C%EC%9D%B4%EC%96%B4%EB%B3%BC%20%EC%8B%9C%EB%82%98%EB%AA%AC%20%EC%9C%84%EC%8A%A4%ED%82%A4%20(500ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174631/LM/00/88/00/40/23/50/8_/00/1/LM0088004023508_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:16:32.548Z",
+      "name": "파이어볼 시나몬 위스키 (500ML)",
+      "oldPrice": 25000,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 921,
+      "currentPrice": 129000,
+      "originalPrice": 129000,
+      "productUrl": "https://www.lotteon.com/p/product/LM5010106110126?sitmNo=LM5010106110126_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%B0%9C%EB%A0%8C%ED%83%80%EC%9D%B8%2017%EB%85%84%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261015070649/LM/50/10/10/61/10/12/6_/00/1/LM5010106110126_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:16:39.146Z",
+      "name": "발렌타인 17년 (700ML)",
+      "oldPrice": 129000,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 922,
+      "currentPrice": 56800,
+      "originalPrice": 56800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5010327105215?sitmNo=LM5010327105215_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%AA%BD%ED%82%A4%EC%88%84%EB%8D%94%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261023024632/LM/50/10/32/71/05/21/5_/00/1/LM5010327105215_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:16:43.947Z",
+      "name": "몽키숄더 (700ML)",
+      "oldPrice": 64200,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 923,
+      "currentPrice": 94800,
+      "originalPrice": 94800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000281080826?sitmNo=LM5000281080826_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%9D%BC%EA%B0%80%EB%B6%88%EB%A6%B0%2011%EB%85%84%20%EC%8A%A4%EC%9C%97%ED%94%BC%ED%8A%B8%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260910161634/LM/50/00/28/10/80/82/6_/00/1/LM5000281080826_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:16:48.797Z",
+      "name": "라가불린 11년 스윗피트 (700ML)",
+      "oldPrice": 94800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 924,
+      "currentPrice": 199000,
+      "originalPrice": 199000,
+      "productUrl": "https://www.lotteon.com/p/product/LM5010106110386?sitmNo=LM5010106110386_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%B0%9C%EB%A0%8C%ED%83%80%EC%9D%B8%2021%EB%85%84%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261017070634/LM/50/10/10/61/10/38/6_/00/1/LM5010106110386_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:16:56.167Z",
+      "name": "발렌타인 21년 (700ML)",
+      "oldPrice": 199000,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 925,
+      "currentPrice": 139800,
+      "originalPrice": 139800,
+      "productUrl": "https://www.lotteon.com/p/product/LM8801027881724?sitmNo=LM8801027881724_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%A1%B0%EB%8B%88%EC%9B%8C%EC%BB%A4%2018%EB%85%84%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261008202642/LM/88/01/02/78/81/72/4_/00/1/LM8801027881724_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:17:00.981Z",
+      "name": "조니워커 18년 (750ML)",
+      "oldPrice": 139800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 926,
+      "currentPrice": 42600,
+      "originalPrice": 42600,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000299628713?sitmNo=LM5000299628713_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%B0%9C%EB%A0%8C%ED%83%80%EC%9D%B8%2010%EB%85%84%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261023070637/LM/50/00/29/96/28/71/3_/00/1/LM5000299628713_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:17:06.79Z",
+      "name": "발렌타인 10년 (700ML)",
+      "oldPrice": 42600,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 927,
+      "currentPrice": 113900,
+      "originalPrice": 113900,
+      "productUrl": "https://www.lotteon.com/p/product/LM0721059000222?sitmNo=LM0721059000222_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%99%80%EC%9D%BC%EB%93%9C%20%ED%84%B0%ED%82%A4%20%EB%A0%88%EC%96%B4%20%EB%B8%8C%EB%A6%AC%EB%93%9C%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260910161647/LM/07/21/05/90/00/22/2_/00/1/LM0721059000222_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:17:12.046Z",
+      "name": "와일드 터키 레어 브리드 (750ML)",
+      "oldPrice": 79800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 928,
+      "currentPrice": 32800,
+      "originalPrice": 32800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5099873226223?sitmNo=LM5099873226223_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%98%AC%EB%93%9C%ED%8F%AC%EB%A0%88%EC%8A%A4%ED%84%B0%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260829070642/LM/50/99/87/32/26/22/3_/00/1/LM5099873226223_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:17:16.487Z",
+      "name": "올드포레스터 (750ML)",
+      "oldPrice": 32800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 929,
+      "currentPrice": 15800,
+      "originalPrice": 15800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5013967004030?sitmNo=LM5013967004030_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%A1%B4%EB%B0%94%20%EB%A6%AC%EC%A0%80%EB%B8%8C%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174631/LM/50/13/96/70/04/03/0_/00/1/LM5013967004030_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:17:20.825Z",
+      "name": "존바 리저브 (750ML)",
+      "oldPrice": 15900,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 930,
+      "currentPrice": 125000,
+      "originalPrice": 125000,
+      "productUrl": "https://www.lotteon.com/p/product/LM5010019640161?sitmNo=LM5010019640161_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%9D%BC%ED%94%84%EB%A1%9C%EC%9D%B5%20%EC%BF%BC%ED%84%B0%EC%BA%90%EC%8A%A4%ED%81%AC%20(700ml)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260603070656/LM/50/10/01/96/40/16/1_/00/1/LM5010019640161_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:17:26.867Z",
+      "name": "라프로익 쿼터캐스크 (700ml)",
+      "oldPrice": 125000,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 931,
+      "currentPrice": 131400,
+      "originalPrice": 131400,
+      "productUrl": "https://www.lotteon.com/p/product/LM5010494917840?sitmNo=LM5010494917840_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EA%B8%80%EB%A0%8C%EB%AA%A8%EB%A0%8C%EC%A7%80%20%EB%9D%BC%EC%82%B0%ED%83%80%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260707142638/LM/50/10/49/49/17/84/0_/00/1/LM5010494917840_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:17:33.036Z",
+      "name": "글렌모렌지 라산타 (700ML)",
+      "oldPrice": 131400,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 932,
+      "currentPrice": 34800,
+      "originalPrice": 34800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000291020706?sitmNo=LM5000291020706_001&mall_no=1&dp_infw_cd=SCH%5E%5E%ED%83%A0%EC%BB%A4%EB%A0%88%EC%9D%B4%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174632/LM/50/00/29/10/20/70/6_/00/1/LM5000291020706_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:17:37.352Z",
+      "name": "탠커레이 (750ML)",
+      "oldPrice": 24800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 933,
+      "currentPrice": 44900,
+      "originalPrice": 44900,
+      "productUrl": "https://www.lotteon.com/p/product/LM8800300490202?sitmNo=LM8800300490202_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%AA%A8%EB%85%B8%EB%93%9C%EB%A6%BC%20%EB%B6%81%EA%B7%B9%EA%B3%B0%EC%9D%98%20%EB%88%88%EB%AC%BC%20%EB%8B%A4%EC%9D%B4%EA%B8%B4%EC%A3%A0%20(%EC%A0%84%EC%9A%A9%EC%9E%94%20%EC%84%B8%ED%8A%B8)%20(720ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261015070653/LM/88/00/30/04/90/20/2_/00/1/LM8800300490202_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:17:42.47Z",
+      "name": "모노드림 북극곰의 눈물 다이긴죠 (전용잔 세트) (720ML)",
+      "oldPrice": 31430,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 934,
+      "currentPrice": 51300,
+      "originalPrice": 51300,
+      "productUrl": "https://www.lotteon.com/p/product/LM0082184090473?sitmNo=LM0082184090473_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%9E%AD%20%EB%8B%A4%EB%8B%88%EC%97%98%EC%8A%A4%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261023024635/LM/00/82/18/40/90/47/3_/00/1/LM0082184090473_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:17:48.949Z",
+      "name": "잭 다니엘스 (700ML)",
+      "oldPrice": 51300,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 935,
+      "currentPrice": 36800,
+      "originalPrice": 36800,
+      "productUrl": "https://www.lotteon.com/p/product/LM0721059847506?sitmNo=LM0721059847506_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%99%80%EC%9D%BC%EB%93%9C%20%ED%84%B0%ED%82%A4%2081%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174632/LM/07/21/05/98/47/50/6_/00/1/LM0721059847506_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:17:54.122Z",
+      "name": "와일드 터키 81 (750ML)",
+      "oldPrice": 53900,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 936,
+      "currentPrice": 9800,
+      "originalPrice": 9800,
+      "productUrl": "https://www.lotteon.com/p/product/LM8801027560032?sitmNo=LM8801027560032_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EA%B8%B8%EB%B9%84%EC%8A%A4%20%EB%B3%B4%EB%93%9C%EC%B9%B4%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174636/LM/88/01/02/75/60/03/2_/00/1/LM8801027560032_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:17:58.711Z",
+      "name": "길비스 보드카 (700ML)",
+      "oldPrice": 8900,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 938,
+      "currentPrice": 49800,
+      "originalPrice": 49800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5013967015401?sitmNo=LM5013967015401_001&mall_no=1&dp_infw_cd=SCH%5E%5E%ED%83%90%EB%82%98%EB%B6%88%EB%A6%B0%20%EC%85%B0%EB%A6%AC%EC%BA%90%EC%8A%A4%ED%81%AC%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261001070705/LM/50/13/96/70/15/40/1_/00/1/LM5013967015401_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:18:09.835Z",
+      "name": "탐나불린 셰리캐스크 (700ML)",
+      "oldPrice": 46800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 939,
+      "currentPrice": 112200,
+      "originalPrice": 112200,
+      "productUrl": "https://www.lotteon.com/p/product/LM5010327325736?sitmNo=LM5010327325736_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EA%B8%80%EB%A0%8C%ED%94%BC%EB%94%95%2012%EB%85%84%20%EC%89%90%EB%A6%AC%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261023070637/LM/50/10/32/73/25/73/6_/00/1/LM5010327325736_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:18:16.081Z",
+      "name": "글렌피딕 12년 쉐리 (700ML)",
+      "oldPrice": 79900,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 940,
+      "currentPrice": 35300,
+      "originalPrice": 35300,
+      "productUrl": "https://www.lotteon.com/p/product/LM7312040017683?sitmNo=LM7312040017683_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%95%B1%EC%86%94%EB%A3%A8%ED%8A%B8%20%EB%B3%B4%EB%93%9C%EC%B9%B4%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260904032637/LM/73/12/04/00/17/68/3_/00/1/LM7312040017683_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:18:21.42Z",
+      "name": "앱솔루트 보드카 (700ML)",
+      "oldPrice": 35300,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 941,
+      "currentPrice": 17400,
+      "originalPrice": 17400,
+      "productUrl": "https://www.lotteon.com/p/product/LM7312040017591?sitmNo=LM7312040017591_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%95%B1%EC%86%94%EB%A3%A8%ED%8A%B8%20%EB%B3%B4%EB%93%9C%EC%B9%B4%20(375ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260917070701/LM/73/12/04/00/17/59/1_/00/1/LM7312040017591_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:18:26.392Z",
+      "name": "앱솔루트 보드카 (375ML)",
+      "oldPrice": 17400,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 942,
+      "currentPrice": 32000,
+      "originalPrice": 32000,
+      "productUrl": "https://www.lotteon.com/p/product/LM0080480280031?sitmNo=LM0080480280031_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EA%B7%B8%EB%A0%88%EC%9D%B4%EA%B5%AC%EC%8A%A4%20%EB%B3%B4%EB%93%9C%EC%B9%B4%20(375ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260602032636/LM/00/80/48/02/80/03/1_/00/1/LM0080480280031_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:18:32.557Z",
+      "name": "그레이구스 보드카 (375ML)",
+      "oldPrice": 32000,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 943,
+      "currentPrice": 118900,
+      "originalPrice": 118900,
+      "productUrl": "https://www.lotteon.com/p/product/LM3024482270123?sitmNo=LM3024482270123_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%A0%88%EB%AF%B8%EB%A7%88%ED%8B%B4%20VSOP%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260307032641/LM/30/24/48/22/70/12/3_/00/1/LM3024482270123_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:18:37.408Z",
+      "name": "레미마틴 VSOP (700ML)",
+      "oldPrice": 118900,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 944,
+      "currentPrice": 26900,
+      "originalPrice": 26900,
+      "productUrl": "https://www.lotteon.com/p/product/LM5010677028974?sitmNo=LM5010677028974_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%B0%94%EC%B9%B4%EB%94%94%20%EC%98%A4%EB%A1%9C%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174631/LM/50/10/67/70/28/97/4_/00/1/LM5010677028974_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:18:43.472Z",
+      "name": "바카디 오로 (750ML)",
+      "oldPrice": 26900,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 945,
+      "currentPrice": 444900,
+      "originalPrice": 444900,
+      "productUrl": "https://www.lotteon.com/p/product/LM3245990001218?sitmNo=LM3245990001218_001&mall_no=1&dp_infw_cd=SCH%5E%5E%ED%97%A4%EB%84%A4%EC%8B%9CXO(700)%20(700ml)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260930070638/LM/32/45/99/00/01/21/8_/00/1/LM3245990001218_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:18:48.189Z",
+      "name": "헤네시XO(700) (700ml)",
+      "oldPrice": 439900,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 947,
+      "currentPrice": 37500,
+      "originalPrice": 37500,
+      "productUrl": "https://www.lotteon.com/p/product/LM7312040150700?sitmNo=LM7312040150700_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%95%B1%EC%86%94%EB%A3%A8%ED%8A%B8%20%ED%8E%98%EC%96%B4%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260501220639/LM/73/12/04/01/50/70/0_/00/1/LM7312040150700_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:18:58.019Z",
+      "name": "앱솔루트 페어 (700ML)",
+      "oldPrice": 37500,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 948,
+      "currentPrice": 62500,
+      "originalPrice": 62500,
+      "productUrl": "https://www.lotteon.com/p/product/LM5010327755014?sitmNo=LM5010327755014_001&mall_no=1&dp_infw_cd=SCH%5E%5E%ED%97%A8%EB%93%9C%EB%A6%AD%EC%8A%A4%20%EC%A7%84%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260902175634/LM/50/10/32/77/55/01/4_/00/1/LM5010327755014_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:19:02.994Z",
+      "name": "헨드릭스 진 (700ML)",
+      "oldPrice": 62500,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 949,
+      "currentPrice": 23000,
+      "originalPrice": 23000,
+      "productUrl": "https://www.lotteon.com/p/product/LM0080480301033?sitmNo=LM0080480301033_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%B4%84%EB%B2%A0%EC%9D%B4%20%EC%82%AC%ED%8C%8C%EC%9D%B4%EC%96%B4%EC%A7%84%20(375ml)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174633/LM/00/80/48/03/01/03/3_/00/1/LM0080480301033_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:19:08.323Z",
+      "name": "봄베이 사파이어진 (375ml)",
+      "oldPrice": 23000,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 950,
+      "currentPrice": 76700,
+      "originalPrice": 76700,
+      "productUrl": "https://www.lotteon.com/p/product/LM8801028000155?sitmNo=LM8801028000155_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%AA%BD%ED%82%A4%2047%20(500ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260602033639/LM/88/01/02/80/00/15/5_/00/1/LM8801028000155_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:19:13.928Z",
+      "name": "몽키 47 (500ML)",
+      "oldPrice": 76700,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 951,
+      "currentPrice": 70900,
+      "originalPrice": 70900,
+      "productUrl": "https://www.lotteon.com/p/product/LM7501035012219?sitmNo=LM7501035012219_001&mall_no=1&dp_infw_cd=SCH%5E%5E%ED%98%B8%EC%84%B8%EC%BF%A0%EC%97%98%EB%B3%B4%20%ED%8A%B8%EB%A0%88%EB%94%94%EC%85%94%EB%84%90%20%EB%A0%88%ED%8F%AC%EC%82%AC%EB%8F%84%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260501211638/LM/75/01/03/50/12/21/9_/00/1/LM7501035012219_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:19:18.669Z",
+      "name": "호세쿠엘보 트레디셔널 레포사도 (700ML)",
+      "oldPrice": 70900,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 952,
+      "currentPrice": 36900,
+      "originalPrice": 36900,
+      "productUrl": "https://www.lotteon.com/p/product/LM8716000968517?sitmNo=LM8716000968517_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%8B%B4%EB%9D%BD%20%EC%A7%84%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260829070645/LM/87/16/00/09/68/51/7_/00/1/LM8716000968517_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:19:26.849Z",
+      "name": "담락 진 (700ML)",
+      "oldPrice": 36900,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 953,
+      "currentPrice": 25800,
+      "originalPrice": 25800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5010677015615?sitmNo=LM5010677015615_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%B0%94%EC%B9%B4%EB%94%94%20%EC%B9%B4%EB%A5%B4%ED%83%80%EB%B8%94%EB%9E%91%EC%B9%B4%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174630/LM/50/10/67/70/15/61/5_/00/1/LM5010677015615_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:19:32.71Z",
+      "name": "바카디 카르타블랑카 (750ML)",
+      "oldPrice": 25800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 954,
+      "currentPrice": 108400,
+      "originalPrice": 108400,
+      "productUrl": "https://www.lotteon.com/p/product/LM3028130076457?sitmNo=LM3028130076457_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EA%B9%8C%EB%AE%A4%20VSOP%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260703070639/LM/30/28/13/00/76/45/7_/00/1/LM3028130076457_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:19:38.421Z",
+      "name": "까뮤 VSOP (700ML)",
+      "oldPrice": 108400,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 955,
+      "currentPrice": 17800,
+      "originalPrice": 17800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5788686120124?sitmNo=LM5788686120124_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%8B%A8%EC%A6%88%EC%B9%B4%20%ED%81%AC%EB%9E%9C%EB%9D%BC%EC%A6%88%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260602033639/LM/57/88/68/61/20/12/4_/00/1/LM5788686120124_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:19:44.623Z",
+      "name": "단즈카 크랜라즈 (750ML)",
+      "oldPrice": 17800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 956,
+      "currentPrice": 21800,
+      "originalPrice": 21800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000289020701?sitmNo=LM5000289020701_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EA%B3%A0%EB%93%A0%EC%8A%A4%20%EC%A7%84%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261023070632/LM/50/00/28/90/20/70/1_/00/1/LM5000289020701_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:19:49.352Z",
+      "name": "고든스 진 (750ML)",
+      "oldPrice": 28500,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 957,
+      "currentPrice": 41300,
+      "originalPrice": 41300,
+      "productUrl": "https://www.lotteon.com/p/product/LM7640175740047?sitmNo=LM7640175740047_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%B4%84%EB%B2%A0%EC%9D%B4%20%EC%82%AC%ED%8C%8C%EC%9D%B4%EC%96%B4%EC%A7%84%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261023024631/LM/76/40/17/57/40/04/7_/00/1/LM7640175740047_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:19:54.776Z",
+      "name": "봄베이 사파이어진 (750ML)",
+      "oldPrice": 41300,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 958,
+      "currentPrice": 38900,
+      "originalPrice": 38900,
+      "productUrl": "https://www.lotteon.com/p/product/LM7312040552153?sitmNo=LM7312040552153_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%95%B1%EC%86%94%EB%A3%A8%ED%8A%B8%20%EC%9E%90%EB%AA%BD%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260307031640/LM/73/12/04/05/52/15/3_/00/1/LM7312040552153_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:20:00.334Z",
+      "name": "앱솔루트 자몽 (700ML)",
+      "oldPrice": 38900,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 959,
+      "currentPrice": 21800,
+      "originalPrice": 21800,
+      "productUrl": "https://www.lotteon.com/p/product/LM7501035025158?sitmNo=LM7501035025158_001&mall_no=1&dp_infw_cd=SCH%5E%5E%ED%98%B8%EC%84%B8%EC%BF%A0%EC%97%98%EB%B3%B4%20%EB%A7%88%EA%B0%80%EB%A6%AC%ED%83%80%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261015070654/LM/75/01/03/50/25/15/8_/00/1/LM7501035025158_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:20:06.112Z",
+      "name": "호세쿠엘보 마가리타 (700ML)",
+      "oldPrice": 27800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 960,
+      "currentPrice": 42400,
+      "originalPrice": 42400,
+      "productUrl": "https://www.lotteon.com/p/product/LM7640175742522?sitmNo=LM7640175742522_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%B4%84%EB%B2%A0%EC%9D%B4%20%EB%B8%8C%EB%9E%A8%EB%B8%94%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260902181637/LM/76/40/17/57/42/52/2_/00/1/LM7640175742522_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:20:10.615Z",
+      "name": "봄베이 브램블 (700ML)",
+      "oldPrice": 42400,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 961,
+      "currentPrice": 33500,
+      "originalPrice": 33500,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000329002193?sitmNo=LM5000329002193_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%B9%84%ED%94%BC%ED%84%B0%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260702031640/LM/50/00/32/90/02/19/3_/00/1/LM5000329002193_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:20:14.96Z",
+      "name": "비피터 (700ML)",
+      "oldPrice": 33500,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 962,
+      "currentPrice": 46000,
+      "originalPrice": 46000,
+      "productUrl": "https://www.lotteon.com/p/product/LM4901777349469?sitmNo=LM4901777349469_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%88%98%EC%9D%B4%20%EC%A7%84%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260307031638/LM/49/01/77/73/49/46/9_/00/1/LM4901777349469_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:20:19.639Z",
+      "name": "수이 진 (700ML)",
+      "oldPrice": 46000,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 963,
+      "currentPrice": 22800,
+      "originalPrice": 22800,
+      "productUrl": "https://www.lotteon.com/p/product/LM0870000027150?sitmNo=LM0870000027150_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%BA%A1%ED%8B%B4%EB%AA%A8%EA%B1%B4%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174631/LM/08/70/00/00/27/15/0_/00/1/LM0870000027150_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:20:24.368Z",
+      "name": "캡틴모건 (750ML)",
+      "oldPrice": 16800,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 966,
+      "currentPrice": 19900,
+      "originalPrice": 19900,
+      "productUrl": "https://www.lotteon.com/p/product/LM7312040552573?sitmNo=LM7312040552573_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%95%B1%EC%86%94%EB%A3%A8%ED%8A%B8%20%EC%96%B4%ED%94%BC%EC%B9%98%20(375ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260501211639/LM/73/12/04/05/52/57/3_/00/1/LM7312040552573_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:20:44.103Z",
+      "name": "앱솔루트 어피치 (375ML)",
+      "oldPrice": 19900,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 967,
+      "currentPrice": 99800,
+      "originalPrice": 99800,
+      "productUrl": "https://www.lotteon.com/p/product/LM3760107310606?sitmNo=LM3760107310606_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%97%90%EC%9D%B4%EC%B9%98%20%EB%B0%94%EC%9D%B4%20%ED%95%98%EC%9D%B8%20%EB%B8%8C%EC%9D%B4%EC%97%90%EC%8A%A4%EC%98%A4%ED%94%BC%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260501220634/LM/37/60/10/73/10/60/6_/00/1/LM3760107310606_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:20:49.035Z",
+      "name": "에이치 바이 하인 브이에스오피 (700ML)",
+      "oldPrice": 99800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 968,
+      "currentPrice": 99000,
+      "originalPrice": 99000,
+      "productUrl": "https://www.lotteon.com/p/product/LM7594003624927?sitmNo=LM7594003624927_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%94%94%ED%94%8C%EB%A1%9C%EB%A7%88%ED%8B%B0%EC%BD%94%20%EB%A0%88%EC%A0%9C%EB%A5%B4%EB%B0%94%20%EC%9D%B5%EC%8A%A4%ED%81%B4%EB%A3%A8%EC%8B%9C%EB%B0%94%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260307071653/LM/75/94/00/36/24/92/7_/00/1/LM7594003624927_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:20:54.324Z",
+      "name": "디플로마티코 레제르바 익스클루시바 (700ML)",
+      "oldPrice": 99000,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 969,
+      "currentPrice": 70200,
+      "originalPrice": 70200,
+      "productUrl": "https://www.lotteon.com/p/product/LM5010493025775?sitmNo=LM5010493025775_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%84%98%EB%B2%84.3%20%EB%9F%B0%EB%8D%98%20%EB%93%9C%EB%9D%BC%EC%9D%B4%20%EC%A7%84%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260623071640/LM/50/10/49/30/25/77/5_/00/1/LM5010493025775_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:21:00.278Z",
+      "name": "넘버.3 런던 드라이 진 (700ML)",
+      "oldPrice": 70200,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 970,
+      "currentPrice": 99800,
+      "originalPrice": 99800,
+      "productUrl": "https://www.lotteon.com/p/product/LM3760107311887?sitmNo=LM3760107311887_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%97%90%EC%9D%B4%EC%B9%98%20%EB%B0%94%EC%9D%B4%20%ED%95%98%EC%9D%B8%20%ED%95%98%EC%9D%B8%EB%B3%BC%20%ED%8C%A8%ED%82%A4%EC%A7%80%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260501220637/LM/37/60/10/73/11/88/7_/00/1/LM3760107311887_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:21:05.246Z",
+      "name": "에이치 바이 하인 하인볼 패키지 (700ML)",
+      "oldPrice": 99800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 971,
+      "currentPrice": 37100,
+      "originalPrice": 37100,
+      "productUrl": "https://www.lotteon.com/p/product/LM7312040552726?sitmNo=LM7312040552726_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%95%B1%EC%86%94%EB%A3%A8%ED%8A%B8%20%EC%9B%8C%ED%84%B0%EB%A9%9C%EB%A1%A0%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260701070649/LM/73/12/04/05/52/72/6_/00/1/LM7312040552726_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:21:11.59Z",
+      "name": "앱솔루트 워터멜론 (700ML)",
+      "oldPrice": 37100,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 972,
+      "currentPrice": 9800,
+      "originalPrice": 9800,
+      "productUrl": "https://www.lotteon.com/p/product/LM8801027880697?sitmNo=LM8801027880697_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%8A%A4%EB%AF%B8%EB%85%B8%ED%94%84%20%EB%A0%88%EB%93%9C%20(200ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260307071653/LM/88/01/02/78/80/69/7_/00/1/LM8801027880697_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:21:16.243Z",
+      "name": "스미노프 레드 (200ML)",
+      "oldPrice": 9800,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 973,
+      "currentPrice": 25800,
+      "originalPrice": 25800,
+      "productUrl": "https://www.lotteon.com/p/product/LM8801027880727?sitmNo=LM8801027880727_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%8A%A4%EB%AF%B8%EB%85%B8%ED%94%84%20%EA%B7%B8%EB%A6%B0%EC%95%A0%ED%94%8C%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261008202642/LM/88/01/02/78/80/72/7_/00/1/LM8801027880727_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:21:21.613Z",
+      "name": "스미노프 그린애플 (700ML)",
+      "oldPrice": 38200,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 974,
+      "currentPrice": 30600,
+      "originalPrice": 30600,
+      "productUrl": "https://www.lotteon.com/p/product/LM8501110080248?sitmNo=LM8501110080248_001&mall_no=1&dp_infw_cd=SCH%5E%5E%ED%95%98%EB%B0%94%EB%82%98%ED%81%B4%EB%9F%BD%20%EC%95%84%EB%85%9C%ED%98%B8%203%20%EC%95%84%EB%87%A8%EC%8A%A4%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260307031644/LM/85/01/11/00/80/24/8_/00/1/LM8501110080248_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:21:29.235Z",
+      "name": "하바나클럽 아녜호 3 아뇨스 (750ML)",
+      "oldPrice": 30600,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 975,
+      "currentPrice": 38900,
+      "originalPrice": 38900,
+      "productUrl": "https://www.lotteon.com/p/product/LM7312040070701?sitmNo=LM7312040070701_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%95%B1%EC%86%94%EB%A3%A8%ED%8A%B8%20%EC%96%B4%ED%94%BC%EC%B9%98%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260731071640/LM/73/12/04/00/70/70/1_/00/1/LM7312040070701_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:21:37.317Z",
+      "name": "앱솔루트 어피치 (700ML)",
+      "oldPrice": 38900,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 976,
+      "currentPrice": 38900,
+      "originalPrice": 38900,
+      "productUrl": "https://www.lotteon.com/p/product/LM7312040551668?sitmNo=LM7312040551668_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%95%B1%EC%86%94%EB%A3%A8%ED%8A%B8%20%EB%9D%BC%EC%9E%84%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260905070643/LM/73/12/04/05/51/66/8_/00/1/LM7312040551668_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:21:43.96Z",
+      "name": "앱솔루트 라임 (700ML)",
+      "oldPrice": 38900,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 977,
+      "currentPrice": 41000,
+      "originalPrice": 41000,
+      "productUrl": "https://www.lotteon.com/p/product/LM7501035010109?sitmNo=LM7501035010109_001&mall_no=1&dp_infw_cd=SCH%5E%5E%ED%98%B8%EC%84%B8%EC%BF%A0%EC%97%98%EB%B3%B4%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261023024633/LM/75/01/03/50/10/10/9_/00/1/LM7501035010109_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:21:48.617Z",
+      "name": "호세쿠엘보 (750ML)",
+      "oldPrice": 41000,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 978,
+      "currentPrice": 32800,
+      "originalPrice": 32800,
+      "productUrl": "https://www.lotteon.com/p/product/LM7501035042322?sitmNo=LM7501035042322_001&mall_no=1&dp_infw_cd=SCH%5E%5E%ED%98%B8%EC%84%B8%EC%BF%A0%EC%97%98%EB%B3%B4%20%EC%8B%A4%EB%B2%84%20(750ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261008202641/LM/75/01/03/50/42/32/2_/00/1/LM7501035042322_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:21:54.996Z",
+      "name": "호세쿠엘보 실버 (750ML)",
+      "oldPrice": 41000,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 979,
+      "currentPrice": 24800,
+      "originalPrice": 24800,
+      "productUrl": "https://www.lotteon.com/p/product/LM5410316519724?sitmNo=LM5410316519724_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%8A%A4%EB%AF%B8%EB%85%B8%ED%94%84%20%EB%A0%88%EB%93%9C%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261022174631/LM/54/10/31/65/19/72/4_/00/1/LM5410316519724_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:21:59.602Z",
+      "name": "스미노프 레드 (700ML)",
+      "oldPrice": 33000,
+      "priceChanged": true
+    },
+    {
+      "liquorId": 980,
+      "currentPrice": 51500,
+      "originalPrice": 51500,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000299296066?sitmNo=LM5000299296066_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EB%A7%90%ED%94%BC%20%EB%A1%9C%EC%82%AC%20%EC%A7%84%20(700ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260307032640/LM/50/00/29/92/96/06/6_/00/1/LM5000299296066_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:22:05.315Z",
+      "name": "말피 로사 진 (700ML)",
+      "oldPrice": 51500,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 982,
+      "currentPrice": 20600,
+      "originalPrice": 20600,
+      "productUrl": "https://www.lotteon.com/p/product/LM0835229010420?sitmNo=LM0835229010420_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%95%B1%EC%86%94%EB%A3%A8%ED%8A%B8%20%EA%B7%B8%EB%A0%88%EC%9D%B4%ED%94%84%ED%94%84%EB%A3%A8%ED%8A%B8%20(375ML)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20260701070645/LM/08/35/22/90/10/42/0_/00/1/LM0835229010420_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:22:17.7Z",
+      "name": "앱솔루트 그레이프프루트 (375ML)",
+      "oldPrice": 20600,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 983,
+      "currentPrice": 428000,
+      "originalPrice": 428000,
+      "productUrl": "https://www.lotteon.com/p/product/LM5000267197500?sitmNo=LM5000267197500_001&mall_no=1&dp_infw_cd=SCH%5E%5E%EC%A1%B0%EB%8B%88%EC%9B%8C%EC%BB%A4%20%EB%B8%94%EB%A3%A8%20%EB%B1%80%EB%9D%A0%20%EC%97%90%EB%94%94%EC%85%98%20(1L)&areaCode=SCH",
+      "imageUrl": "https://contents.lotteon.com/itemimage/20261015070652/LM/50/00/26/71/97/50/0_/00/1/LM5000267197500_001_1.jpg/dims/optimize/resizemc/400x400",
+      "observedAt": "2026-10-23T02:22:22.498Z",
+      "name": "조니워커 블루 뱀띠 에디션 (1L)",
+      "oldPrice": 428000,
+      "priceChanged": false
+    },
+    {
+      "liquorId": 917,
+      "currentPrice": 199000,
+      "originalPrice": 199000,
+      "productUrl": "https://www.lotteon.com/p/product/LM5020613097858",
+      "imageUrl": "",
+      "observedAt": "2026-10-23T02:34:43.991Z",
+      "name": "C.Y.O.C Private Bottle 벤로막 SC 2014 (700ML)",
+      "oldPrice": 199000,
+      "priceChanged": false
+    }
+  ],
+  "skipped": [
+    {
+      "id": 863,
+      "name": "조니워커 블루라벨 750ml",
+      "knownCode": "LM5000267201351",
+      "knownListings": [
+        {
+          "name": "디아지오 조니워커 블루 붉은 말 에디션 (750ML)",
+          "price": 328000
+        }
+      ],
+      "reason": "상품 코드 불일치",
+      "selectedName": "조니워커 블루 (750ML)",
+      "selectedCode": "LM5000267114279",
+      "selectedPrice": 268000
+    },
+    {
+      "id": 866,
+      "name": "글렌피딕12년 (700ML)",
+      "knownCode": "LM5010327325736",
+      "knownListings": [
+        {
+          "name": "글렌피딕 12년 쉐리 (700ML)",
+          "price": 112200
+        }
+      ],
+      "reason": "상품 코드 불일치",
+      "selectedName": "글렌피딕12년 (700ML)",
+      "selectedCode": "LM5010327000176",
+      "selectedPrice": 103600
+    },
+    {
+      "id": 867,
+      "name": "글렌리벳12년 (700ML)",
+      "knownCode": "LM5000299213902",
+      "knownListings": [
+        {
+          "name": "글렌리벳 12년 200주년 (700ML)",
+          "price": 143000
+        }
+      ],
+      "reason": "상품 코드 불일치",
+      "selectedName": "글렌리벳12년 (700ML)",
+      "selectedCode": "LM0080432402825",
+      "selectedPrice": 88300
+    },
+    {
+      "id": 868,
+      "name": "글렌드로낙 12년 (700ML)",
+      "knownCode": "LM5060716145384",
+      "knownListings": [
+        {
+          "name": "더 글렌드로낙 12년 (700ML)",
+          "price": 115000
+        }
+      ],
+      "reason": "상품 코드 불일치",
+      "selectedName": "글렌드로낙 12년 (700ML)",
+      "selectedCode": "LM5060088791646",
+      "selectedPrice": 102200
+    },
+    {
+      "id": 880,
+      "name": "조니워커 블랙 라벨 700ml",
+      "knownCode": "LM5000267198576",
+      "knownListings": [
+        {
+          "name": "조니워커 블랙 루비 (700ML)",
+          "price": 56800
+        }
+      ],
+      "reason": "상품 코드 불일치",
+      "selectedName": "조니워커 블랙 (700ML)",
+      "selectedCode": "LM5000267024202",
+      "selectedPrice": 47800
+    },
+    {
+      "id": 898,
+      "name": "클라이넬리쉬 14년 (700ML)",
+      "knownCode": "LM5000281016535",
+      "knownListings": [],
+      "reason": "상품 코드 불일치",
+      "selectedName": "클라이넬리쉬 14년 (700ML)",
+      "selectedCode": "LM5000281016528",
+      "selectedPrice": 89800
+    },
+    {
+      "id": 937,
+      "name": "에프제이코리아 닛카 프론티어 (500ML)",
+      "knownCode": "LM4904230074342",
+      "knownListings": [],
+      "reason": "일치하는 검색 결과 없음",
+      "selectedName": null,
+      "selectedCode": null,
+      "selectedPrice": null
+    },
+    {
+      "id": 946,
+      "name": "헤네시 VSOP (700ML)",
+      "knownCode": "LM3245990969419",
+      "knownListings": [
+        {
+          "name": "헤네시 VSOP (700ML)",
+          "price": 119800
+        }
+      ],
+      "reason": "상품 코드 불일치",
+      "selectedName": "헤네시 VSOP (700ML)",
+      "selectedCode": "LM3245999484319",
+      "selectedPrice": 119800
+    },
+    {
+      "id": 964,
+      "name": "앱솔루트 라즈베리 (375ML)",
+      "knownCode": "LM0835229008809",
+      "knownListings": [],
+      "reason": "일치하는 검색 결과 없음",
+      "selectedName": null,
+      "selectedCode": null,
+      "selectedPrice": null
+    },
+    {
+      "id": 965,
+      "name": "아치로즈 시그니처 드라이 진 (700ML)",
+      "knownCode": "LM9350657000009",
+      "knownListings": [],
+      "reason": "일치하는 검색 결과 없음",
+      "selectedName": null,
+      "selectedCode": null,
+      "selectedPrice": null
+    },
+    {
+      "id": 981,
+      "name": "돈파파럼 10년 (700ML)",
+      "knownCode": "LM4809015157046",
+      "knownListings": [],
+      "reason": "일치하는 검색 결과 없음",
+      "selectedName": null,
+      "selectedCode": null,
+      "selectedPrice": null
+    }
+  ],
+  "failures": [],
+  "verification": {
+    "database_history": 100,
+    "database_price": 100,
+    "mismatches": 0,
+    "site_api": 100,
+    "database_url": 100
+  },
+  "runs": [
+    {
+      "id": 39887883939,
+      "failed": 1,
+      "conclusion": "failure",
+      "skipped": 11,
+      "saved": 99
+    },
+    {
+      "id": 39890120932,
+      "failed": 0,
+      "conclusion": "success",
+      "skipped": 0,
+      "saved": 1
+    }
+  ]
+}
