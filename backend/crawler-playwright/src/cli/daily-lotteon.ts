@@ -1,7 +1,7 @@
 import { createBrowserBundle } from '../core/browser.js';
 import { nowStamp, writeJsonArtifact, writeTextArtifact } from '../core/io.js';
 import { lotteonCode, sendObservations } from '../core/daily-lotteon.js';
-import { crawlLotteonKeyword } from '../sources/lotteon.js';
+import { crawlLotteonKeyword, LotteonAccessBlocked } from '../sources/lotteon.js';
 
 interface Item { id: number; name: string; volume: number; vendors: { source: string; product_url: string }[] }
 async function main() {
@@ -50,6 +50,8 @@ async function main() {
         failures++;
         results.push({ liquorId: item.id, status: 'failed', error: error instanceof Error ? error.message : String(error) });
         console.error(`FAILED id=${item.id}: ${error instanceof Error ? error.message : String(error)}`);
+        await writeTextArtifact(`daily/error-${item.id}.html`, await page.content());
+        if (error instanceof LotteonAccessBlocked) throw error;
       }
     }
   } finally {
