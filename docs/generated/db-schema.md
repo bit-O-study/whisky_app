@@ -20,3 +20,7 @@
 ## 참고 문서
 - [supabase-data-model.md](/home/ubuntu/code/bitO-liquor/docs/design-docs/supabase-data-model.md)
 - [liquor_latest_price_read_model.sql](/home/ubuntu/code/bitO-liquor/docs/references/liquor_latest_price_read_model.sql)
+
+## 서버 전용 적재 함수 (2026-10-23 운영 확인)
+- public.ingest_existing_liquor(jsonb): 기존 상품 가격·URL·이력을 한 트랜잭션에 저장. 가격과 관측 시각을 검증하고 오래된 관측을 거부한다.
+- SECURITY INVOKER, search_path 비움, service_role만 EXECUTE 가능. SQL 원본: backend/crawler-playwright/sql/ingest_existing_liquor.sql.

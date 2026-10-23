@@ -20,3 +20,6 @@
 
 ## 관련 문서
 - [008 archive brief](/home/ubuntu/code/bitO-liquor/docs/exec-plans/completed/008.catalog-deduped-vendor-pricing-sync/brief.md)
+
+## 일일 수집 경로
+GitHub Actions의 Playwright 수집은 운영 카탈로그의 기존 LOTTEON 상품만 대상으로 한다. Next.js 내부 적재 API에서 GitHub OIDC 실행 증명과 기존 상품 코드 일치를 검증한 후 서버 키로 RPC를 호출한다. 운영 DB 함수는 2026-10-23 사용자 승인 후 반영했다. DB 접속 정보는 Actions로 옮기지 않는다.

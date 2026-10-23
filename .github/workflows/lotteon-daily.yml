@@ -4,9 +4,15 @@ on:
   schedule:
     - cron: '0 0 * * *' # 09:00 Asia/Seoul
   workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Maximum products (0 = all)'
+        default: '0'
+        type: string
   pull_request:
     paths:
       - 'backend/**'
+      - 'frontend/**'
       - '.github/workflows/lotteon-daily.yml'
 
 permissions:
@@ -42,51 +48,43 @@ jobs:
           path: backend/crawler/build/reports/tests/
 
   crawl:
-    if: github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
     needs: verify
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    permissions:
+      contents: read
+      id-token: write
     defaults:
       run:
-        working-directory: backend
+        working-directory: backend/crawler-playwright
     env:
-      DB_URL: ${{ secrets.DB_URL }}
-      DB_USERNAME: ${{ secrets.DB_USERNAME }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      CRAWL_LIMIT: ${{ github.event.inputs.limit || '0' }}
     steps:
       - uses: actions/checkout@v4
-      - name: Check database configuration
-        shell: bash
-        run: |
-          for name in DB_URL DB_USERNAME DB_PASSWORD; do
-            if [ -z "${!name}" ]; then
-              echo "::error::Required repository secret is missing: $name"
-              exit 1
-            fi
-          done
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-node@v4
         with:
-          distribution: temurin
-          java-version: '21'
-      - name: Verify Chrome availability
-        run: google-chrome --version
-      - name: Crawl and save verified prices
+          node-version: '22'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Crawl existing products and save with workflow identity
         shell: bash
         run: |
           set -o pipefail
-          bash gradlew :crawler:bootRun --console=plain --args='--spring.main.web-application-type=none --spring.jpa.show-sql=false --lotteon.batch=true' 2>&1 | tee lotteon-daily.log
+          node dist/cli/daily-lotteon.js --limit "$CRAWL_LIMIT" 2>&1 | tee lotteon-daily.log
       - name: Execution summary
         if: always()
         shell: bash
         run: |
           if [ -f lotteon-daily.log ]; then
-            grep -E 'LOTTEON_DAILY_SUCCESS|크롤링 완료|저장 가능한 상품|수집 결과가 0건' lotteon-daily.log >> "$GITHUB_STEP_SUMMARY" || true
+            grep -E 'LOTTEON_DAILY_SUCCESS|SAVED|SKIPPED|FAILED' lotteon-daily.log >> "$GITHUB_STEP_SUMMARY" || true
           fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: lotteon-daily-${{ github.run_id }}
           path: |
-            backend/lotteon-daily.log
-            backend/lotteon_debug_*.html
+            backend/crawler-playwright/lotteon-daily.log
+            backend/crawler-playwright/artifacts/daily/
           retention-days: 14

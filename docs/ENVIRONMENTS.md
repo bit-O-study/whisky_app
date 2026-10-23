@@ -14,6 +14,8 @@
   서비스 키와 DB 자격증명 사용
 
 ## Runtime Boundaries
+로컬 서버 키가 없으면 `frontend/.env.local`에 `SUPABASE_LOCAL_SNAPSHOT=logs/catalog-snapshot.json`을 지정해 실제 DB에서 가져온 사본으로 미리볼 수 있다. 사본은 `{ capturedAt, projectRef, tables: { liquor, liquor_price, liquor_price_history } }` JSON이며 상품의 `liquor_info`와 `liquor_url` 관계를 포함한다. 개발 모드에서만 적용되며 서버 키 설정 시 실시간 연결을 우선한다. 갱신하려면 연결된 Supabase 도구로 사본을 다시 가져온다.
+
 - Browser runtime
   사용자 상호작용, 내부 API 호출만 담당
 - Next.js server runtime
@@ -26,8 +28,8 @@
   보조 운영 기능
 
 ## Deployment Notes
-- 롯데온 일일 작업: `.github/workflows/lotteon-daily.yml`, 매일 09:00 KST. GitHub 저장소 Actions secrets `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` 필요. 기본 브랜치 반영과 첫 수동 실행 성공까지 활성화 상태를 별도 확인한다. 설정 부재는 실패다.
-- Playwright 원자적 저장 RPC: `backend/crawler-playwright/sql/ingest_existing_liquor.sql`. 서버 역할만 실행할 수 있으며 운영 반영은 별도 승인 대기다.
+- 롯데온 일일 작업: `.github/workflows/lotteon-daily.yml`, 매일 09:00 KST. Playwright → GitHub OIDC → 운영 Next.js 내부 적재 API → 서버 전용 RPC. GitHub에 DB 시크릿을 추가하지 않는다. 웹서버의 기존 Supabase 서버 키를 사용한다. 기본 브랜치 반영·운영 배포·첫 수동 실행 성공으로 활성화를 확인한다.
+- Playwright 원자적 저장 RPC: `backend/crawler-playwright/sql/ingest_existing_liquor.sql`. 서버 역할만 실행할 수 있으며 2026-10-23 사용자 승인 후 운영 DB에 반영했다.
 - Next.js는 현재 Vercel 배포를 전제로 한 메타데이터와 계측 설정이 일부 반영돼 있다.
 - crawler와 backend/api는 로컬/서버 환경에서 별도 프로세스로 실행된다.
 - `backend/crawler-playwright`는 HTTP 서버가 아니라 별도 Node 프로세스/배치로 실행하는 것을 기본 전제로 둔다.
