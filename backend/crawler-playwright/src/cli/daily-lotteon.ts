@@ -1,6 +1,6 @@
 import { createBrowserBundle } from '../core/browser.js';
 import { nowStamp, writeJsonArtifact, writeTextArtifact } from '../core/io.js';
-import { lotteonCode, sendObservations } from '../core/daily-lotteon.js';
+import { lotteonCode, parseProductIds, sendObservations } from '../core/daily-lotteon.js';
 import { crawlLotteonKeyword, LotteonAccessBlocked } from '../sources/lotteon.js';
 
 interface Item { id: number; name: string; volume: number; vendors: { source: string; product_url: string }[] }
@@ -10,6 +10,9 @@ async function main() {
   const limitIndex = args.indexOf('--limit');
   const limit = limitIndex < 0 ? 0 : Number(args[limitIndex + 1]);
   if (!Number.isSafeInteger(limit) || limit < 0) throw new Error('Invalid limit');
+  const idsIndex = args.indexOf('--ids');
+  if (idsIndex >= 0 && args[idsIndex + 1] === undefined) throw new Error('Product IDs are required after --ids');
+  const ids = parseProductIds(idsIndex < 0 ? '' : args[idsIndex + 1]);
   const items: Item[] = [];
   for (let page = 0; ; page++) {
     if (page >= 100) throw new Error('Catalog pagination exceeded limit');
@@ -20,7 +23,9 @@ async function main() {
     if (!result.hasNext) break;
   }
   const targets = items.filter(item => item.vendors.some(v => v.source === 'LOTTEON' && lotteonCode(v.product_url)));
-  const selected = limit ? targets.slice(0, limit) : targets;
+  const requested = ids ? targets.filter(item => ids.has(item.id)) : targets;
+  if (ids && requested.length !== ids.size) throw new Error('Requested product does not have an existing Lotteon listing');
+  const selected = limit ? requested.slice(0, limit) : requested;
   if (!selected.length) throw new Error('No existing Lotteon products');
   const { browser, context, page } = await createBrowserBundle(false);
   const results: unknown[] = [];

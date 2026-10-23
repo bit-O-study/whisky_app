@@ -23,3 +23,21 @@ test('zero-price DOM results are discarded and decimal litres are converted corr
   assert.equal(result.bestMatch.currentPrice, 47800);
   assert.equal(result.bestMatch.alcoholPercent, 0);
 });
+
+test('script numeric strings become integer prices without string concatenation', async () => {
+  const name = 'C.Y.O.C Private Bottle 벤로막 SC 2014 (700ML)';
+  const item = JSON.stringify({ item_name: encodeURIComponent(name), item_id: 'LM5020613097858', price: '199000', discount: '10000' }).replaceAll('"', '&quot;');
+  const { result } = await crawlLotteonKeyword(pageFor([], `<div data-item="${item}"></div>`), name);
+  assert.equal(result.strategy, 'script');
+  assert.equal(result.bestMatch.currentPrice, 199000);
+  assert.equal(typeof result.bestMatch.currentPrice, 'number');
+  assert.equal(result.bestMatch.originalPrice, 209000);
+});
+
+for (const price of ['0', '-1', '1.5', 'not-a-price', '2147483648']) {
+  test(`invalid script price ${price} is discarded`, async () => {
+    const item = JSON.stringify({ item_name: 'Whisky 700ml', item_id: 'LM123', price, discount: 0 }).replaceAll('"', '&quot;');
+    const { result } = await crawlLotteonKeyword(pageFor([], `<div data-item="${item}"></div>`), 'Whisky 700ml');
+    assert.equal(result.bestMatch, null);
+  });
+}

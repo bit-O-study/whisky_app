@@ -1,6 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { lotteonCode, sendObservations, INGEST_URL } from '../dist/core/daily-lotteon.js';
+import { lotteonCode, parseProductIds, sendObservations, INGEST_URL } from '../dist/core/daily-lotteon.js';
+test('retry IDs are explicit positive safe integers', () => {
+  assert.equal(parseProductIds(''), null);
+  assert.deepEqual([...parseProductIds('917,918,917')], [917,918]);
+  for (const invalid of ['0', '-1', '917,', '917;echo', '1.5', '9007199254740993']) {
+    assert.throws(() => parseProductIds(invalid));
+  }
+});
 test('existing product identity is host and path constrained', () => {
   assert.equal(lotteonCode('https://www.lotteon.com/p/product/LM123?x=1'), 'LM123');
   assert.equal(lotteonCode('https://evil.test/p/product/LM123'), null);
