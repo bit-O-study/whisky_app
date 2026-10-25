@@ -240,7 +240,12 @@ test("catalog loads next page on scroll", async ({ page }) => {
   await page.goto("/");
 
   const searchBox = page.getByPlaceholder(SEARCH_PLACEHOLDER);
+  const firstSearchResponse = page.waitForResponse((response) =>
+    response.url().includes("/api/liquors/search?q=Bottle&page=0&size=24") && response.ok(),
+  );
   await searchBox.fill("Bottle");
+  await firstSearchResponse;
+  await expect(page.getByText('"Bottle" 검색')).toBeVisible();
   await expect(page.getByText(/^Bottle 1$/).first()).toBeVisible();
   await expect(page.getByText("Bottle 30")).toHaveCount(0);
 
@@ -279,7 +284,12 @@ test("catalog keeps current items when loading the next page fails and recovers 
   await page.goto("/");
 
   const searchBox = page.getByPlaceholder(SEARCH_PLACEHOLDER);
+  const firstSearchResponse = page.waitForResponse((response) =>
+    response.url().includes("/api/liquors/search?q=Bottle&page=0&size=24") && response.ok(),
+  );
   await searchBox.fill("Bottle");
+  await firstSearchResponse;
+  await expect(page.getByText('"Bottle" 검색')).toBeVisible();
   await expect(page.getByText(/^Bottle 1$/).first()).toBeVisible();
 
   const failedPageResponse = page.waitForResponse((response) =>

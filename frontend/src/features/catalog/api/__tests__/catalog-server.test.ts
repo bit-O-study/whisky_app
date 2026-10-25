@@ -204,7 +204,8 @@ describe("fetchCatalogPageFromServerWithClient", () => {
           source: "EMART",
           current_price: 98000,
           original_price: 115000,
-          crawled_at: "2026-03-25T09:30:00.000Z",
+          // DB timestamp without time zone is UTC, regardless of the host timezone.
+          crawled_at: "2026-03-25T09:30:00.000",
         },
         {
           liquor_id: 2,

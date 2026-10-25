@@ -160,6 +160,16 @@ function normalizeText(value: string | null | undefined, fallback = "") {
   return typeof value === "string" ? value : fallback;
 }
 
+function normalizeCrawledAt(value: string | null | undefined) {
+  const timestamp = normalizeText(value).trim().replace(" ", "T");
+  // The crawler stores timezone-less database timestamps in UTC.
+  const qualified = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?$/.test(timestamp)
+    ? `${timestamp}Z`
+    : timestamp;
+  const milliseconds = Date.parse(qualified);
+  return Number.isFinite(milliseconds) ? new Date(milliseconds).toISOString() : "";
+}
+
 function normalizePrice(value: number | null | undefined) {
   return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : 0;
 }
@@ -204,8 +214,8 @@ function buildVendorLookup(rows: LiquorPriceRow[], liquorRows: LiquorRow[]) {
       continue;
     }
 
-    const existingTime = existing.crawled_at ? new Date(existing.crawled_at).getTime() : 0;
-    const candidateTime = row.crawled_at ? new Date(row.crawled_at).getTime() : 0;
+    const existingTime = Date.parse(normalizeCrawledAt(existing.crawled_at)) || 0;
+    const candidateTime = Date.parse(normalizeCrawledAt(row.crawled_at)) || 0;
     if (candidateTime >= existingTime) {
       latestByLiquorAndSource.set(key, row);
     }
@@ -235,7 +245,7 @@ function buildVendorLookup(rows: LiquorPriceRow[], liquorRows: LiquorRow[]) {
         fallbackUrlByLiquor.get(row.liquor_id) ??
         "",
       discount_percent: calculateDiscountPercent(currentPrice, originalPrice),
-      crawled_at: normalizeText(row.crawled_at),
+      crawled_at: normalizeCrawledAt(row.crawled_at),
     });
     vendorLookup.set(row.liquor_id, vendors);
   }
