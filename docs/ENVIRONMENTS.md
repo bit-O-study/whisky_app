@@ -61,3 +61,7 @@
 - 수집 job은 whisky-lotteon 전용 Windows 실행기를 사용한다. 현재 사용자 로그온 시 WhiskyLotteonRunner 예약 작업이 숨김으로 시작한다.
 - PC가 켜져 있고 로그인 및 인터넷 연결이 유지되어야 한다. 절전 중에는 실행되지 않을 수 있으며 전원 정책은 변경하지 않는다.
 - 설치/중지/보안 검증: scripts/runner/README.md. GitHub 기본 서버는 검증 job을 계속 실행한다.
+
+## Windows server
+
+See [deployment operations](setup/windows-server.md). GitHub Actions builds main; the dedicated non-administrator runner deploys the resulting artifact. Existing crawler runner remains unchanged.

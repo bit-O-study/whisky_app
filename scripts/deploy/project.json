@@ -1,0 +1,7 @@
+{
+  "name": "whisky_app",
+  "port": 4103,
+  "app": "frontend",
+  "kind": "next",
+  "user": "bito_whisky"
+}
