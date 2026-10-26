@@ -19,6 +19,8 @@ Linux/macOS에서는 `bash scripts/collect-winegrab.sh` 또는 모든 OS에서 `
 
 ## 동작과 결과
 
+등록된 링크의 정기 가격 갱신과 운영 서버 예약 설치는 [AUTOMATION.md](AUTOMATION.md)를 참조한다. 아래 목록 전체 탐색과 별도의 실행 경로다.
+
 - 이마트와 트레이더스를 순서대로 선택하고 목록을 겹치게 스크롤한다. 상품 상세 페이지를 하나씩 열지 않는다.
 - 화면에 가격과 판매처 배지가 실제 노출되는 상품만 읽는다. 배경 WebView, 화면 밖 미리 로드된 상품, 하단 메뉴에 잘린 가격은 제외한다.
 - `artifacts/adb/<실행시각>/products.json`에 상품명, 용량, 표시가격, 정상가, 할인조건, 판매처, 관측시각과 읽은 상품 원문을 저장한다. 폴더는 Git에서 제외한다.
@@ -51,7 +53,7 @@ node scripts/adb/validate-file.mjs artifacts/adb/my-run/products.json artifacts/
 
 ## 기존 링크 갱신과 신규 발견
 
-기존 상품은 `liquor_url` 연결을 기준으로 직접 상세 페이지에 진입한다. 목록 전체를 다시 검색할 필요가 없다. `refresh-links.mjs`는 큐의 단축 URL을 실제 공식 상품 주소로 해석하고 `emart-today` 딥링크로 앱을 열어 표시 가격을 저장한다. `EMART_TRADERS`와 `EMART`를 구분하며 SSG 웹 채널은 이 앱 수집기에 섞지 않는다. 현재 기기 serial은 Galaxy S23 개발 기기로 고정돼 있다.
+기존 상품은 `liquor_url` 연결을 기준으로 직접 상세 페이지에 진입한다. 목록 전체를 다시 검색할 필요가 없다. `refresh-links.mjs`는 큐의 단축 URL을 실제 공식 상품 주소로 해석하고 `emart-today` 딥링크로 앱을 열어 표시 가격을 저장한다. `EMART_TRADERS`와 `EMART`를 구분하며 SSG 웹 채널은 이 앱 수집기에 섞지 않는다. `ADB_SERIAL`로 기기를 지정하거나 승인된 기기가 정확히 한 대일 때 자동 선택한다.
 
 ```powershell
 node scripts/adb/refresh-links.mjs QUEUE.json DB_SNAPSHOT.json OBSERVATIONS.json
