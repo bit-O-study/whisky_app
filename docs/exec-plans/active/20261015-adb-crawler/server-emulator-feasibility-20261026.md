@@ -37,6 +37,24 @@ Nox는 CLI로 인스턴스 시작/종료, 앱 설치/실행, ADB 호출, CPU/메
 
 현재 가용 메모리에서 게스트 2 GiB만 배정해도 호스트 부대비용과 기존 웹/DB/CI 여유가 작다. RAM 16 GiB 증설은 운영 여유를 위한 제안이며 앱 호환성 해결/성공 보장이 아니다. 설치 최소사양과 공용 서버의 운영 여유를 구별하고 비업무 시간에 경합을 실측한다.
 
+## 2026-10-26 RAM 추가 질문 후 확인
+
+부모 에이전트의 읽기 전용 실측 전달값과 공식 사양을 추가 대조했다. 이 문서 갱신에서는 원격 진단을 다시 실행하지 않았다.
+
+| 항목 | 실측값 |
+| --- | --- |
+| 시스템 모델 | Lenovo `10SQS1HQ00` — ThinkCentre M720t, 머신 타입 `10SQ` |
+| 장착 메모리 | 8GB 1개, Kingston `LV26D4U9S8HJ-8` |
+| 속도 | `Speed=2667`, `ConfiguredClockSpeed=2400` |
+| 규격 식별 | `SMBIOSMemoryType=26`, `FormFactor=8`, `DataWidth=64`, `TotalWidth=64` |
+| 메모리 어레이 | `MemoryDevices=4`, `MaxCapacity=67108864 KiB`(64 GiB) |
+
+[Lenovo M720 Tower 공식 사양](https://psref.lenovo.com/syspool/Sys/PDF/ThinkCentre/ThinkCentre_M720_Tower/ThinkCentre_M720_Tower_Spec.html)은 DDR4-2666, DIMM 슬롯 4개, 최대 64GB를 명시한다. 부모가 확인한 [Lenovo PSREF PDF](https://psref.lenovo.com/syspool/Sys/i_pdf/psref568.pdf)의 UDIMM/non-ECC 규격도 함께 근거로 남긴다. HTML 사양의 i3-9100 메모리 지원은 DDR4-2400이므로, 모듈 표시 속도 2667과 실제 설정 속도 2400은 구별한다.
+
+따라서 **호환되는 데스크톱용 DDR4 UDIMM non-ECC 8GB를 추가해 총 16GB로 구성하는 것은 슬롯·용량 기준으로 가능하다.** 장착 전 실제 빈 슬롯과 슬롯 배치, 추가 모듈 규격을 확인하고 장착 후 BIOS/Windows 인식 및 메모리 안정성을 검증한다. 현재 장착 또는 증설 후 부하 시험을 완료한 상태는 아니다.
+
+16GB 구성에서는 에뮬레이터 한 개를 사용하는 배치 파일럿이 더 현실적이라는 판단이다. 다만 RAM 증설만으로 무인 수집 준비가 끝나지는 않는다. BIOS VT/가속 활성화, 이마트 앱 설치·로그인·화면 파싱 호환성, 기존 웹·DB·CI 서비스와 동시 실행할 때의 CPU/메모리/응답시간 검증이 남아 있다. 이번 후속 확인에서도 설치·실수집·DB 반영은 실행하지 않았다.
+
 ## 기존 구현의 재사용 범위
 
 - `collect.mjs`: `--adb`, `--serial`, `--sources`, `--max-pages`, `--out`, `--resume`, `--links`, 체크포인트/기기 잠금 지원. resume는 결과를 유지한 처음부터 재순회이며 화면 위치 복원이 아니다.

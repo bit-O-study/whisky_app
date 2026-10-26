@@ -1,5 +1,12 @@
 ﻿# 진행 상태
 
+## 2026-10-26 RAM 추가 질문 후 검증
+
+- 부모의 읽기 진단에서 Lenovo `10SQS1HQ00`(M720t/10SQ), Kingston `LV26D4U9S8HJ-8` 8GB 1개, Speed 2667/ConfiguredClockSpeed 2400, SMBIOSMemoryType 26/FormFactor 8/DataWidth·TotalWidth 64를 확인했다. MemoryDevices 4, MaxCapacity 67108864 KiB(64 GiB)다.
+- [Lenovo 공식 M720 Tower 사양](https://psref.lenovo.com/syspool/Sys/PDF/ThinkCentre/ThinkCentre_M720_Tower/ThinkCentre_M720_Tower_Spec.html)의 DDR4-2666·4슬롯·64GB 및 부모가 대조한 [PSREF PDF](https://psref.lenovo.com/syspool/Sys/i_pdf/psref568.pdf)의 UDIMM/non-ECC 규격을 [평가 문서](server-emulator-feasibility-20261026.md)에 기록했다. i3-9100의 DDR4-2400 지원과 실제 2400 설정값도 구별했다.
+- 호환되는 8GB 추가로 총 16GB 구성은 슬롯·용량상 가능하며 단일 에뮬레이터 배치 파일럿이 더 현실적이다. VT/가속·이마트 호환성·동시 서비스 부하는 별도 검증이 필요하다. RAM 장착, 에뮬레이터 설치, 실수집, DB 반영은 수행하지 않았다.
+- 변경 범위는 평가 문서와 이 진행 기록 두 파일이다. 공식 HTML 재확인 및 문서 diff/공백 검사를 수행하며 기존 개발 변경은 보존한다.
+
 ## 2026-10-26 서버 에뮬레이터 배치 가능성 평가
 
 - 서버 Nox/Android Emulator 기반 이마트 앱 정기 수집 가능성을 평가했다. [평가 및 실행 설계](server-emulator-feasibility-20261026.md)에 서버 진단 전달값, 공식 근거, 기기 선택, 명령 출력 dry-run, 파일럿/중복 방지/복구/검수 조건을 기록했다.
