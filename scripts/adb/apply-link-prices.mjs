@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { identityName, volumeFromName } from './validate.mjs';
+import { database } from './database.mjs';
 
 export function priceReview(row, liquor, prices, now = Date.now(), verifiedBinding = false) {
   const reasons = [];
@@ -29,20 +30,10 @@ async function main() {
   const file = process.argv[2];
   if (!file) throw Error('Usage: apply-link-prices.mjs OBSERVATIONS_JSON [--apply]');
   const apply = process.argv.includes('--apply');
-  const envFile = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../frontend/.env.local');
-  const env = Object.fromEntries(fs.readFileSync(envFile, 'utf8').split(/\r?\n/)
-    .map(l => l.match(/^([A-Z_]+)=(.*)$/)).filter(Boolean).map(m => [m[1], m[2].replace(/^['"]|['"]$/g, '')]));
-  const base = env.SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL;
-  if (new URL(base).hostname !== 'jeqvxzkvumkiraclauvo.supabase.co') throw Error('Wrong DB');
-  async function request(route, method = 'GET', payload) {
-    const r = await fetch(base + '/rest/v1/' + route, { method, signal: AbortSignal.timeout(20000),
-      headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: 'Bearer ' + env.SUPABASE_SERVICE_ROLE_KEY,
-        'Content-Type': 'application/json', Prefer: 'return=representation' }, body: payload ? JSON.stringify(payload) : undefined });
-    if (!r.ok) throw Error('DB HTTP ' + r.status);
-    return r.json();
-  }
-  const before = { liquor: await request('liquor?select=*&limit=10000'), liquor_price: await request('liquor_price?select=*&limit=10000') };
-  const bindings = await request('liquor_url?select=liquor_id,source,product_url&limit=10000');
+  const strict = process.argv.includes('--strict-identity');
+  const { request, all } = database();
+  const before = { liquor: await all('liquor'), liquor_price: await all('liquor_price') };
+  const bindings = await all('liquor_url');
   const observations = [...new Map(JSON.parse(fs.readFileSync(file, 'utf8')).map(r => [r.queue_id, r])).values()];
   const report = { apply, started_at: new Date().toISOString(), before, reviewed: [], updated: [] };
   const receipt = path.join(path.dirname(file), 'price-apply-' + Date.now() + '.json');
@@ -52,7 +43,7 @@ async function main() {
     const liquor = before.liquor.find(l => l.id === row.liquor_id);
     const prices = before.liquor_price.filter(p => p.liquor_id === row.liquor_id && p.source === row.source);
     const binding = bindings.some(b => b.liquor_id === row.liquor_id && b.source === row.source && b.product_url === row.product_url);
-    const reasons = priceReview(row, liquor, prices, Date.now(), binding);
+    const reasons = priceReview(row, liquor, prices, Date.now(), strict ? false : binding);
     if (!binding) reasons.push('missing_live_link_binding');
     // Confirmed data error: both Blonde links open Black Ruby. Do not publish
     // another product's price under Blonde merely because a URL was stored.
