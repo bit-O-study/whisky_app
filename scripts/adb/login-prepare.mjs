@@ -1,9 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { randomUUID, generateKeyPairSync } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { device } from './device.mjs';
-import { parseNodes, visible } from './winegrab-parser.mjs';
+import { activeScreen, parseNodes, visible } from './winegrab-parser.mjs';
 import { captureEncryptedScreen } from './screen-evidence.mjs';
 
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -18,12 +19,19 @@ export async function prepareLogin(root) {
     const [x1, y1, x2, y2] = node.box;
     run(['shell', 'input', 'tap', String(Math.round((x1 + x2) / 2)), String(Math.round((y1 + y2) / 2))]);
   };
+  const screenNodes = xml => {
+    try { return activeScreen(xml).nodes.filter(n => visible(n)); }
+    catch { return parseNodes(xml).filter(n => visible(n)); }
+  };
   run(['shell', 'input', 'keyevent', '224']);
-  let nodes = parseNodes(capture()).filter(n => visible(n));
+  let nodes = screenNodes(capture());
+  if (nodes.some(n => n.text === '웰컴백 챌린지')) {
+    run(['shell', 'input', 'keyevent', '4']); await pause(1200); nodes = screenNodes(capture());
+  }
   const appLogin = nodes.find(n => n.text === '로그인하기' && n.clickable === 'true');
-  if (appLogin) { tap(appLogin); await pause(1800); nodes = parseNodes(capture()).filter(n => visible(n)); }
-  const naver = nodes.find(n => ['네이버', '네이버 로그인', '네이버로 로그인', '네이버로 시작하기'].includes(n.text || n['content-desc'] || ''));
-  if (naver) { tap(naver); await pause(2200); nodes = parseNodes(capture()).filter(n => visible(n)); }
+  if (appLogin) { tap(appLogin); await pause(1800); nodes = screenNodes(capture()); }
+  const naver = nodes.find(n => n.clickable === 'true' && ['네이버', '네이버 로그인', '네이버로 로그인', '네이버로 시작하기'].includes(n.text || n['content-desc'] || ''));
+  if (naver) { tap(naver); await pause(3000); nodes = screenNodes(capture()); }
   await captureEncryptedScreen(path.join(root, 'evidence.enc.json'), true);
   const ids = nodes.filter(n => n.class === 'android.widget.EditText').map(n => ({ id: n['resource-id'] || '', password: n.password === 'true' }));
   console.log(JSON.stringify({ stage: 'naver_login_screen_prepared', input_fields: ids }));
@@ -33,7 +41,9 @@ export async function prepareLogin(root) {
     return;
   }
   const keyId = randomUUID();
-  const directory = path.join(process.env.RUNNER_TEMP, 'whisky-login-' + keyId);
+  const store = path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData/Local'), 'Bit-O/whisky-login');
+  fs.mkdirSync(store, { recursive: true });
+  const directory = path.join(store, keyId);
   fs.mkdirSync(directory);
   const owner = execFileSync('whoami', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
   execFileSync('icacls', [directory, '/inheritance:r', '/grant:r', `${owner}:(OI)(CI)F`, '*S-1-5-18:(OI)(CI)F', '*S-1-5-32-544:(OI)(CI)F'], { stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true });
