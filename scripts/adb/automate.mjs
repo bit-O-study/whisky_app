@@ -16,6 +16,11 @@ export function makeQueue(rows) {
     seen.add(key); return true;
   });
 }
+export function coverageIssues(links, prices) {
+  const queue=makeQueue(links);
+  const vendors=new Map([...links,...prices].filter(r=>['EMART','EMART_TRADERS'].includes(r.source)).map(r=>[`${r.liquor_id}|${r.source}`,r]));
+  return [...vendors.values()].filter(r=>!queue.some(q=>q.liquor_id===r.liquor_id&&q.source===r.source)).map(r=>({liquor_id:r.liquor_id,source:r.source,reason:links.some(l=>l.liquor_id===r.liquor_id&&l.source===r.source)?'unsupported_registered_link':'missing_registered_link'}));
+}
 async function main() {
   const args = process.argv.slice(2);
   if (args.some(a => !['--apply', '--check'].includes(a))) throw Error('Usage: automate.mjs [--apply] [--check]');
@@ -44,9 +49,10 @@ async function main() {
     const [links, liquor, liquor_price] = await Promise.all([db.all('liquor_url'), db.all('liquor'), db.all('liquor_price')]);
     const queue = makeQueue(links);
     report.queued = queue.length;
+    report.coverage_issues = coverageIssues(links, liquor_price);
     report.unsupported_or_duplicate_links = links.length - queue.length;
     if (!queue.length) throw Error('no_registered_app_links');
-    if (args.includes('--check')) { report.status = 'ready_for_collection'; return; }
+    if (args.includes('--check')) { report.status = report.coverage_issues.length ? 'partial' : 'ready_for_collection'; if(report.coverage_issues.length)process.exitCode=2; return; }
     fs.writeFileSync(path.join(runDir, 'queue.json'), JSON.stringify(queue));
     fs.writeFileSync(path.join(runDir, 'catalog.json'), JSON.stringify({ liquor, liquor_price }));
     const observations = path.join(runDir, 'observations.json');
@@ -80,7 +86,7 @@ async function main() {
     report.eligible = receipt.reviewed.filter(r => !r.reasons.length).length;
     report.review = receipt.reviewed.filter(r => r.reasons.length).map(r => ({ id: r.id, source: r.source,
       expected_name: liquor.find(product => product.id === r.id)?.product_name, observed_name: r.name, reasons: r.reasons }));
-    report.status = collectStatus === 2 || report.review.length ? 'partial' : report.apply ? 'success' : 'validated';
+    report.status = collectStatus === 2 || report.review.length || report.coverage_issues.length ? 'partial' : report.apply ? 'success' : 'validated';
     if (report.status === 'partial') process.exitCode = 2;
   } catch (error) {
     report.status = 'failed'; report.error = error.message;
