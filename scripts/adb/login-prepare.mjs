@@ -47,6 +47,10 @@ export async function prepareLogin(root) {
   const activity = run(['shell', 'dumpsys', 'activity', 'activities']);
   const resumed = activity.split(/\r?\n/).filter(line => /(?:ResumedActivity|topResumedActivity)/.test(line));
   const trustedSdk = resumed.some(line => line.includes('com.emart.today/') && line.includes('com.nhn.android.naverlogin.ui.OAuthLoginActivity'));
+  console.log(JSON.stringify({ stage: 'activity_component', components: resumed.map(line => line.match(/\b[a-z][a-z0-9_.]+\/[a-zA-Z0-9_.$]+/)?.[0]).filter(Boolean) }));
+  for (const args of [['shell', '-t', 'uiautomator', 'dump', '/dev/tty'], ['exec-out', 'uiautomator', 'dump', '/dev/tty']]) {
+    try { const output = run(args); console.log(JSON.stringify({stage:'stream_probe',method:args[0]+(args[1]==='-t'?'-pty':''),xml:output.includes('</hierarchy>'),diagnostic:output.includes('<hierarchy')?'xml':output.slice(0,300)})); } catch { console.log(JSON.stringify({stage:'stream_probe',method:args[0],failed:true})); }
+  }
   const streamed = run(['shell', 'uiautomator', 'dump', '/proc/self/fd/1']).includes('</hierarchy>');
   console.log(JSON.stringify({ stage: 'login_transport_verified', official_naver_sdk: trustedSdk, streamed_ui: streamed }));
   if (!trustedSdk || !streamed) throw Error('login_transport_not_verified');
