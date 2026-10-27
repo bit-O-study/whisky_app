@@ -41,6 +41,12 @@ export async function prepareLogin(root) {
     return;
   }
   const keyId = randomUUID();
+  const activity = run(['shell', 'dumpsys', 'activity', 'activities']);
+  const resumed = activity.split(/\r?\n/).filter(line => /(?:ResumedActivity|topResumedActivity)/.test(line));
+  const trustedSdk = resumed.some(line => line.includes('com.emart.today/') && line.includes('com.nhn.android.naverlogin.ui.OAuthLoginActivity'));
+  const streamed = run(['shell', 'uiautomator', 'dump', '/proc/self/fd/1']).includes('</hierarchy>');
+  console.log(JSON.stringify({ stage: 'login_transport_verified', official_naver_sdk: trustedSdk, streamed_ui: streamed }));
+  if (!trustedSdk || !streamed) throw Error('login_transport_not_verified');
   const store = path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData/Local'), 'Bit-O/whisky-login');
   fs.mkdirSync(store, { recursive: true });
   const directory = path.join(store, keyId);

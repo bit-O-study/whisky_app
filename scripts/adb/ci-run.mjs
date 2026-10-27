@@ -4,10 +4,12 @@ import { spawnSync } from 'node:child_process';
 import { database } from './database.mjs';
 import { captureEncryptedScreen } from './screen-evidence.mjs';
 import { prepareLogin } from './login-prepare.mjs';
+import { submitLogin } from './login-submit.mjs';
 const mode = process.env.PRICE_MODE;
-if (!['inspect', 'collect', 'apply', 'screen', 'login_prepare'].includes(mode)) throw Error('invalid_price_mode');
+if (!['inspect', 'collect', 'apply', 'screen', 'login_prepare', 'login_submit'].includes(mode)) throw Error('invalid_price_mode');
 const root = path.resolve('artifacts/adb/automation');
 fs.mkdirSync(root, { recursive: true });
+if (mode === 'login_submit') { await submitLogin(); process.exit(process.exitCode || 0); }
 if (mode === 'login_prepare') { await prepareLogin(root); process.exit(0); }
 if (mode === 'screen') {
   captureEncryptedScreen(path.join(root, 'evidence.enc.json'));

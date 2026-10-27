@@ -5,11 +5,19 @@ on:
       mode:
         description: Check device, collect only, or collect and apply validated prices
         type: choice
-        options: [inspect, collect, apply, screen, login_prepare]
+        options: [inspect, collect, apply, screen, login_prepare, login_submit]
         default: inspect
         required: true
       evidence_public_key:
         description: RSA public key for encrypted screen diagnostics (screen mode only)
+        type: string
+        required: false
+      login_key_id:
+        description: One-time login key identifier
+        type: string
+        required: false
+      login_ciphertext:
+        description: RSA-OAEP encrypted login payload only
         type: string
         required: false
 permissions:
@@ -27,6 +35,8 @@ jobs:
       WHISKY_ENV_FILE: C:/services/Bit-O/whisky_app/config/runtime.env
       PRICE_MODE: ${{ inputs.mode }}
       EVIDENCE_PUBLIC_KEY: ${{ inputs.evidence_public_key }}
+      LOGIN_KEY_ID: ${{ inputs.login_key_id }}
+      LOGIN_CIPHERTEXT: ${{ inputs.login_ciphertext }}
     steps:
       - uses: actions/checkout@v4
         with:
