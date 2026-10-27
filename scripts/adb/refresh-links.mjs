@@ -6,11 +6,13 @@ import { device } from './device.mjs';
 import { detailAccessIssue, recoverExistingSession } from './detail-access.mjs';
 import { activeScreen, visible } from './winegrab-parser.mjs';
 import { identityName, volumeFromName } from './validate.mjs';
+import { listedPrice, pickupState } from './price-details.mjs';
 
 const [queueFile, catalogFile, outFile] = process.argv.slice(2);
 if (!outFile) throw Error('Usage: refresh-links.mjs QUEUE_JSON DB_SNAPSHOT OUTPUT_JSON');
 const queue = JSON.parse(fs.readFileSync(queueFile, 'utf8'));
-const catalog = JSON.parse(fs.readFileSync(catalogFile, 'utf8')).liquor;
+const snapshot = JSON.parse(fs.readFileSync(catalogFile, 'utf8'));
+const catalog = snapshot.liquor;
 const { serial, run } = device();
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const lockPath = path.join(os.tmpdir(), `winegrab-${createHash('sha256').update(serial).digest('hex').slice(0, 16)}.lock`);
@@ -39,14 +41,51 @@ async function resolveLink(value) {
   throw Error('Too many redirects');
 }
 async function capture() {
-  const remote = `/sdcard/winegrab-refresh-${process.pid}.xml`;
-  try {
     const activity = run(['shell', 'dumpsys', 'activity', 'activities']);
     if (!activity.split(/\r?\n/).some(line => /(?:ResumedActivity|topResumedActivity)/.test(line) && line.includes('com.emart.today/')))
       throw Error('emart_not_foreground');
-    run(['shell', 'uiautomator', 'dump', remote]);
-    return run(['shell', 'cat', remote]);
-  } finally { run(['shell', 'rm', '-f', remote]); }
+    return run(['exec-out', 'uiautomator', 'dump', '/dev/tty']);
+}
+const tap = node => {const [a,b,c,d]=node.box;run(['shell','input','tap',String(Math.round((a+c)/2)),String(Math.round((b+d)/2))]);};
+async function readProduct(uri, source) {
+  const open = async () => {
+    run(['shell','input','keyevent','224']);
+    run(['shell','am','start','-a','android.intent.action.VIEW','-d',"'"+uri+"'",'-p','com.emart.today']);
+    await sleep(2200);
+  };
+  const screen = async () => activeScreen(await capture()).nodes.filter(n=>visible(n));
+  await open();
+  let last;
+  for(let attempt=0;attempt<3;attempt++) {
+    try {
+      let nodes=await screen();
+      nodes=await recoverExistingSession(nodes,{tap:async n=>{tap(n);await sleep(3500);},capture:screen,reopen:open});
+      const texts=nodes.filter(n=>n.text).map(n=>n.text);
+      if(detailAccessIssue(texts))throw Error('emart_login_required');
+      if(!texts.includes('상품 정보'))throw Error('Product detail not opened');
+      const retailer=texts.indexOf(source==='EMART'?'이마트':'트레이더스');
+      if(retailer<0)throw Error('Missing retailer badge');
+      const name=texts.slice(retailer+1).find(t=>volumeFromName(t));
+      if(!name)throw Error('Missing product/price');
+      if(texts.includes('온라인 품절')&&!texts.includes('판매가'))return {name,volume_ml:volumeFromName(name),
+        availability:'unavailable',detail_text:texts,observed_at:new Date().toISOString(),status:'unpriced',reason:'online_sold_out'};
+      let discount_text;
+      if(texts.includes('최대할인가')) {
+        const button=nodes.find(n=>n.text==='할인내역정보 열기'&&n.clickable==='true');
+        if(!button)throw Error('discount_breakdown_missing');
+        tap(button);await sleep(700);
+        const dialog=await screen();discount_text=dialog.filter(n=>n.text).map(n=>n.text);
+        const close=dialog.find(n=>n.text==='닫기'&&n.clickable==='true');
+        if(!discount_text.includes('할인내역정보')||!close)throw Error('discount_dialog_unverified');
+        tap(close);await sleep(400);
+      }
+      const pricing=listedPrice(texts,discount_text);
+      return {name,volume_ml:volumeFromName(name),...pricing,discount_text,detail_text:texts,
+        availability:pickupState(texts),conditions:pricing.deductions?.filter(d=>d.label!=='가격할인')||[],
+        observed_at:new Date().toISOString(),status:'observed'};
+    }catch(error){last=error;if(error.message==='emart_login_required')throw error;if(attempt<2){await sleep(1000);await open();}}
+  }
+  throw last;
 }
 for (const item of queue) {
   if (output.some(r => r.queue_id === item.id && r.status === 'observed')) continue;
@@ -62,46 +101,14 @@ for (const item of queue) {
     result.product_id = url.pathname.split('/').at(-1);
     const safeUrl = `https://eapp.emart.com/webapp/wine/view/${result.product_id}?storeType=${storeType}`;
     const uri = 'emart-today://open_main_webpage/?link=' + safeUrl;
-    run(['shell', 'input', 'keyevent', '224']);
-    run(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', "'" + uri + "'", '-p', 'com.emart.today']);
-    await sleep(1700);
-    let nodes = activeScreen(await capture()).nodes.filter(n => visible(n));
-    nodes = await recoverExistingSession(nodes, {
-      tap: async node => {
-        const [x1, y1, x2, y2] = node.box;
-        run(['shell', 'input', 'tap', String(Math.round((x1 + x2) / 2)), String(Math.round((y1 + y2) / 2))]);
-        await sleep(3500);
-      },
-      capture: async () => {
-        // Login pages are read in memory; never persist credential form XML.
-        const activity = run(['shell', 'dumpsys', 'activity', 'activities']);
-        if (!activity.split(/\r?\n/).some(line => /(?:ResumedActivity|topResumedActivity)/.test(line) && line.includes('com.emart.today/'))) throw Error('emart_login_required');
-        return activeScreen(run(['exec-out', 'uiautomator', 'dump', '/dev/tty'])).nodes.filter(n => visible(n));
-      },
-      reopen: async () => {
-        run(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', "'" + uri + "'", '-p', 'com.emart.today']);
-        await sleep(1700);
-      },
-    });
-    const texts = nodes.filter(n => n.text).map(n => n.text);
-    const accessIssue = detailAccessIssue(nodes.map(n => n.text || n['content-desc'] || ''));
-    if (accessIssue) throw Error(accessIssue);
-    if (!texts.includes('상품 정보')) throw Error('Product detail not opened');
-    const retailer = texts.indexOf(item.source === 'EMART' ? '이마트' : '트레이더스');
-    if (retailer < 0) throw Error('Missing retailer badge');
-    const name = texts.slice(retailer + 1).find(t => volumeFromName(t));
-    const sale = texts.indexOf('판매가');
-    const price = sale >= 0 ? Number(texts[sale + 1]?.replaceAll(',', '')) : NaN;
-    if (!name || !Number.isSafeInteger(price) || price <= 0) throw Error('Missing product/price');
-    result.name = name;
-    result.volume_ml = volumeFromName(name);
-    result.displayed_price = price;
-    result.conditions = texts.filter(t => /최대할인가|카드할인|쿠폰|회원가/.test(t));
-    result.identity_matches = !!expected && identityName(name) === identityName(expected.product_name || '')
+    Object.assign(result,await readProduct(uri,item.source));
+    result.identity_matches = !!expected && identityName(result.name) === identityName(expected.product_name || '')
       && result.volume_ml === expected.volume_ml;
-    result.observed_at = new Date().toISOString();
-    result.status = 'observed';
-    result.detail_text = texts;
+    const old=snapshot.liquor_price?.find(p=>p.liquor_id===item.liquor_id&&p.source===item.source);
+    if(result.status==='observed'&&(!old||old.current_price>0&&Math.abs(result.displayed_price/old.current_price-1)>.4)) {
+      result.confirmation={...await readProduct(uri,item.source),product_id:result.product_id,source:item.source,resolved_url:result.resolved_url};
+      if(result.confirmation.name!==result.name||result.confirmation.displayed_price!==result.displayed_price)throw Error('reopened_product_or_price_changed');
+    }
     result.review_required = true;
   } catch (error) { result.status = 'review'; result.reason = error.message; }
   output.push(result);
@@ -110,4 +117,4 @@ for (const item of queue) {
     status: result.status, price: result.displayed_price, identity: result.identity_matches, reason: result.reason }));
   if (result.reason === 'emart_login_required') break;
 }
-if (output.some(row => row.status !== 'observed')) process.exitCode = 2;
+if (output.some(row => !['observed','unpriced'].includes(row.status))) process.exitCode = 2;

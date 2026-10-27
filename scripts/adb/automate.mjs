@@ -41,14 +41,14 @@ async function main() {
     report.device = serial;
     if (!run(['shell', 'pm', 'path', 'com.emart.today']).includes('package:')) throw Error('emart_app_not_installed');
     const db = database();
-    const [links, liquor] = await Promise.all([db.all('liquor_url'), db.all('liquor')]);
+    const [links, liquor, liquor_price] = await Promise.all([db.all('liquor_url'), db.all('liquor'), db.all('liquor_price')]);
     const queue = makeQueue(links);
     report.queued = queue.length;
     report.unsupported_or_duplicate_links = links.length - queue.length;
     if (!queue.length) throw Error('no_registered_app_links');
     if (args.includes('--check')) { report.status = 'ready_for_collection'; return; }
     fs.writeFileSync(path.join(runDir, 'queue.json'), JSON.stringify(queue));
-    fs.writeFileSync(path.join(runDir, 'catalog.json'), JSON.stringify({ liquor }));
+    fs.writeFileSync(path.join(runDir, 'catalog.json'), JSON.stringify({ liquor, liquor_price }));
     const observations = path.join(runDir, 'observations.json');
     const child = (script, scriptArgs, maxMinutes) => {
       const log = fs.openSync(path.join(runDir, `${script}.log`), 'a');
@@ -63,7 +63,8 @@ async function main() {
     if (![0, 2].includes(collectStatus)) throw Error('collection_failed');
     const rows = JSON.parse(fs.readFileSync(observations, 'utf8'));
     report.observed = rows.filter(r => r.status === 'observed').length;
-    report.collection_failures = rows.filter(r => r.status !== 'observed').map(r => ({ queue_id: r.queue_id, liquor_id: r.liquor_id, source: r.source, name: r.expected_name, reason: r.reason }));
+    report.unpriced = rows.filter(r => r.status === 'unpriced').length;
+    report.collection_failures = rows.filter(r => !['observed','unpriced'].includes(r.status)).map(r => ({ queue_id: r.queue_id, liquor_id: r.liquor_id, source: r.source, name: r.expected_name, reason: r.reason }));
     report.unattempted = queue.length - new Set(rows.map(row => row.queue_id)).size;
     if (rows.some(row => row.reason === 'emart_login_required')) {
       report.status = 'needs_user_action'; report.error = 'emart_login_required';
@@ -74,6 +75,8 @@ async function main() {
     const receiptFile = fs.readdirSync(runDir).filter(f => /^price-apply-\d+\.json$/.test(f)).sort().at(-1);
     const receipt = JSON.parse(fs.readFileSync(path.join(runDir, receiptFile), 'utf8'));
     report.updated = receipt.updated.length;
+    report.inserted = receipt.updated.filter(r=>r.inserted).length;
+    report.retired = receipt.retired?.length||0;
     report.eligible = receipt.reviewed.filter(r => !r.reasons.length).length;
     report.review = receipt.reviewed.filter(r => r.reasons.length).map(r => ({ id: r.id, source: r.source,
       expected_name: liquor.find(product => product.id === r.id)?.product_name, observed_name: r.name, reasons: r.reasons }));
