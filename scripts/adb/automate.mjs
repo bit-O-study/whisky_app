@@ -63,7 +63,7 @@ async function main() {
     if (![0, 2].includes(collectStatus)) throw Error('collection_failed');
     const rows = JSON.parse(fs.readFileSync(observations, 'utf8'));
     report.observed = rows.filter(r => r.status === 'observed').length;
-    report.collection_failures = rows.filter(r => r.status !== 'observed').map(r => ({ queue_id: r.queue_id, reason: r.reason }));
+    report.collection_failures = rows.filter(r => r.status !== 'observed').map(r => ({ queue_id: r.queue_id, liquor_id: r.liquor_id, source: r.source, name: r.expected_name, reason: r.reason }));
     report.unattempted = queue.length - new Set(rows.map(row => row.queue_id)).size;
     if (rows.some(row => row.reason === 'emart_login_required')) {
       report.status = 'needs_user_action'; report.error = 'emart_login_required';
@@ -75,7 +75,8 @@ async function main() {
     const receipt = JSON.parse(fs.readFileSync(path.join(runDir, receiptFile), 'utf8'));
     report.updated = receipt.updated.length;
     report.eligible = receipt.reviewed.filter(r => !r.reasons.length).length;
-    report.review = receipt.reviewed.filter(r => r.reasons.length).map(r => ({ id: r.id, source: r.source, reasons: r.reasons }));
+    report.review = receipt.reviewed.filter(r => r.reasons.length).map(r => ({ id: r.id, source: r.source,
+      expected_name: liquor.find(product => product.id === r.id)?.product_name, observed_name: r.name, reasons: r.reasons }));
     report.status = collectStatus === 2 || report.review.length ? 'partial' : report.apply ? 'success' : 'validated';
     if (report.status === 'partial') process.exitCode = 2;
   } catch (error) {

@@ -3,7 +3,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { createHash } from 'node:crypto';
 import { device } from './device.mjs';
-import { detailAccessIssue } from './detail-access.mjs';
+import { detailAccessIssue, recoverExistingSession } from './detail-access.mjs';
 import { activeScreen, visible } from './winegrab-parser.mjs';
 import { identityName, volumeFromName } from './validate.mjs';
 
@@ -65,7 +65,24 @@ for (const item of queue) {
     run(['shell', 'input', 'keyevent', '224']);
     run(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', "'" + uri + "'", '-p', 'com.emart.today']);
     await sleep(1700);
-    const nodes = activeScreen(await capture()).nodes.filter(n => visible(n));
+    let nodes = activeScreen(await capture()).nodes.filter(n => visible(n));
+    nodes = await recoverExistingSession(nodes, {
+      tap: async node => {
+        const [x1, y1, x2, y2] = node.box;
+        run(['shell', 'input', 'tap', String(Math.round((x1 + x2) / 2)), String(Math.round((y1 + y2) / 2))]);
+        await sleep(3500);
+      },
+      capture: async () => {
+        // Login pages are read in memory; never persist credential form XML.
+        const activity = run(['shell', 'dumpsys', 'activity', 'activities']);
+        if (!activity.split(/\r?\n/).some(line => /(?:ResumedActivity|topResumedActivity)/.test(line) && line.includes('com.emart.today/'))) throw Error('emart_login_required');
+        return activeScreen(run(['exec-out', 'uiautomator', 'dump', '/dev/tty'])).nodes.filter(n => visible(n));
+      },
+      reopen: async () => {
+        run(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', "'" + uri + "'", '-p', 'com.emart.today']);
+        await sleep(1700);
+      },
+    });
     const texts = nodes.filter(n => n.text).map(n => n.text);
     const accessIssue = detailAccessIssue(nodes.map(n => n.text || n['content-desc'] || ''));
     if (accessIssue) throw Error(accessIssue);
