@@ -3,12 +3,13 @@ import { execFileSync } from 'node:child_process';
 import { createPublicKey, publicEncrypt, randomBytes, createCipheriv, constants } from 'node:crypto';
 import { device } from './device.mjs';
 
-export function captureEncryptedScreen(file) {
+export function captureEncryptedScreen(file, loginFlow = false) {
   const publicKey = createPublicKey(process.env.EVIDENCE_PUBLIC_KEY || '');
   if (publicKey.asymmetricKeyType !== 'rsa' || publicKey.asymmetricKeyDetails.modulusLength < 2048) throw Error('RSA evidence public key required');
   const { adb, serial, run } = device();
   const activity = run(['shell', 'dumpsys', 'activity', 'activities']);
-  if (!activity.split(/\r?\n/).some(line => /(?:ResumedActivity|topResumedActivity)/.test(line) && line.includes('com.emart.today/')))
+  const packages = loginFlow ? ['com.emart.today/', 'com.android.chrome/', 'com.nhn.android.search/'] : ['com.emart.today/'];
+  if (!activity.split(/\r?\n/).some(line => /(?:ResumedActivity|topResumedActivity)/.test(line) && packages.some(pkg => line.includes(pkg))))
     throw Error('Refusing to capture a different foreground app');
   const remote = `/sdcard/whisky-evidence-${process.pid}.xml`;
   let xml;

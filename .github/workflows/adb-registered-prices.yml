@@ -5,7 +5,7 @@ on:
       mode:
         description: Check device, collect only, or collect and apply validated prices
         type: choice
-        options: [inspect, collect, apply, screen]
+        options: [inspect, collect, apply, screen, login_prepare]
         default: inspect
         required: true
       evidence_public_key:
@@ -58,9 +58,16 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
       - uses: actions/upload-artifact@v4
-        if: always() && inputs.mode == 'screen'
+        if: always() && (inputs.mode == 'screen' || inputs.mode == 'login_prepare')
         with:
           name: encrypted-adb-evidence-${{ github.run_id }}
           path: artifacts/adb/automation/evidence.enc.json
           if-no-files-found: error
+          retention-days: 1
+      - uses: actions/upload-artifact@v4
+        if: always() && inputs.mode == 'login_prepare'
+        with:
+          name: whisky-login-public-key-${{ github.run_id }}
+          path: artifacts/adb/automation/login-public-key.json
+          if-no-files-found: warn
           retention-days: 1
