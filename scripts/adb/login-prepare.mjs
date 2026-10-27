@@ -22,10 +22,10 @@ export async function prepareLogin(root) {
   let nodes = parseNodes(capture()).filter(n => visible(n));
   const appLogin = nodes.find(n => n.text === '로그인하기' && n.clickable === 'true');
   if (appLogin) { tap(appLogin); await pause(1800); nodes = parseNodes(capture()).filter(n => visible(n)); }
-  const naver = nodes.find(n => /네이버/.test(n.text || n['content-desc'] || '') && /로그인|시작/.test(n.text || n['content-desc'] || ''));
+  const naver = nodes.find(n => ['네이버', '네이버 로그인', '네이버로 로그인', '네이버로 시작하기'].includes(n.text || n['content-desc'] || ''));
   if (naver) { tap(naver); await pause(2200); nodes = parseNodes(capture()).filter(n => visible(n)); }
   await captureEncryptedScreen(path.join(root, 'evidence.enc.json'), true);
-  const ids = nodes.filter(n => n.class === 'android.widget.EditText').map(n => ({ id: n['resource-id'] || '', password: n.password === 'true', label: (n['content-desc'] || '').replace(/[^a-zA-Z가-힣\s]/g, '').slice(0, 40) }));
+  const ids = nodes.filter(n => n.class === 'android.widget.EditText').map(n => ({ id: n['resource-id'] || '', password: n.password === 'true' }));
   console.log(JSON.stringify({ stage: 'naver_login_screen_prepared', input_fields: ids }));
   // Require the Naver page's stable field IDs before creating an input capability.
   if (!nodes.some(n => n['resource-id'] === 'id' && n.class === 'android.widget.EditText') || !nodes.some(n => n['resource-id'] === 'pw' && n.password === 'true')) {
