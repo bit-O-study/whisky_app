@@ -25,13 +25,16 @@ export async function prepareLogin(root) {
   };
   run(['shell', 'input', 'keyevent', '224']);
   let nodes = screenNodes(capture());
+  if (nodes.some(n => n['resource-id'] === 'MM_SEARCH_FAKE')) {
+    run(['shell', 'input', 'keyevent', '4']); await pause(1200); nodes = screenNodes(capture());
+  }
   if (nodes.some(n => n.text === '웰컴백 챌린지')) {
     run(['shell', 'input', 'keyevent', '4']); await pause(1200); nodes = screenNodes(capture());
   }
   const appLogin = nodes.find(n => n.text === '로그인하기' && n.clickable === 'true');
   if (appLogin) { tap(appLogin); await pause(1800); nodes = screenNodes(capture()); }
   const naver = nodes.find(n => n.clickable === 'true' && ['네이버', '네이버 로그인', '네이버로 로그인', '네이버로 시작하기'].includes(n.text || n['content-desc'] || ''));
-  if (naver) { tap(naver); await pause(3000); nodes = screenNodes(capture()); }
+  if (naver && !nodes.some(n => n['resource-id'] === 'pw' && n.password === 'true')) { tap(naver); await pause(3000); nodes = screenNodes(capture()); }
   await captureEncryptedScreen(path.join(root, 'evidence.enc.json'), true);
   const ids = nodes.filter(n => n.class === 'android.widget.EditText').map(n => ({ id: n['resource-id'] || '', password: n.password === 'true' }));
   console.log(JSON.stringify({ stage: 'naver_login_screen_prepared', input_fields: ids }));
