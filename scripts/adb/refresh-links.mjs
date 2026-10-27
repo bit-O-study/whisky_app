@@ -3,6 +3,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { createHash } from 'node:crypto';
 import { device } from './device.mjs';
+import { detailAccessIssue } from './detail-access.mjs';
 import { activeScreen, visible } from './winegrab-parser.mjs';
 import { identityName, volumeFromName } from './validate.mjs';
 
@@ -66,6 +67,8 @@ for (const item of queue) {
     await sleep(1700);
     const nodes = activeScreen(await capture()).nodes.filter(n => visible(n));
     const texts = nodes.filter(n => n.text).map(n => n.text);
+    const accessIssue = detailAccessIssue(nodes.map(n => n.text || n['content-desc'] || ''));
+    if (accessIssue) throw Error(accessIssue);
     if (!texts.includes('상품 정보')) throw Error('Product detail not opened');
     const retailer = texts.indexOf(item.source === 'EMART' ? '이마트' : '트레이더스');
     if (retailer < 0) throw Error('Missing retailer badge');
@@ -88,5 +91,6 @@ for (const item of queue) {
   save();
   console.log(JSON.stringify({ index: output.length, total: queue.length, name: result.name || result.expected_name,
     status: result.status, price: result.displayed_price, identity: result.identity_matches, reason: result.reason }));
+  if (result.reason === 'emart_login_required') break;
 }
 if (output.some(row => row.status !== 'observed')) process.exitCode = 2;

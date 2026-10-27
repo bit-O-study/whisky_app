@@ -1,5 +1,14 @@
 # 진행
 
+## 2026-10-27 실제 수집 후 로그인 차단 확인
+
+- LAN/Tailscale 직접 SSH는 timeout. GitHub admin 실행기에서 기존 ADB daemon을 읽기 조회해 USB state=device 확인. 보호된 위스키 예약 결과와 task 정보는 접근 거부라 조회하지 못했다.
+- 위스키 전용 실행기 bito-server-whisky_app는 기존 runtime.env 접근 및 공식 ADB client로 기기·앱 검사에 성공했다. inspect 실행40433387842: 지원39개, 미지원/중복114개.
+- collect 실행40433560896: 등록39개 실제 시도, 관측0, 적격0, DB갱신0. 35개는 판매처 배지 없음, 2개는 URL판매처 불일치, 최초2개는 WebView/상세화면 미진입. DB 재조회에서 기존 가격을 보존했다.
+- 화면 진단40434586695를 RSA/AES-GCM으로 암호화해 가져와 현재 PC에서만 복호화했다. 이마트5.3.0의 상품정보 화면에 '로그인 후 이용할 수 있는 서비스예요.' 표시. 새로운 휴대폰의 앱 로그인이 필요하며 가격 검증을 완화하지 않는다.
+- 로그인 안내를 명확히 감지하면 needs_user_action/emart_login_required로 남은 순회를 중단하는 코드를 추가했다. 해당 보완은 GitHub runner 코드에 반영되며 보호된 pc계정의 04시 예약 설치본은 관리 접속 복구 후 갱신해야 한다. 다른 계정 TEMP 잠금이 전역이 아니므로 중복 예약을 만들지 않았다.
+- 사용자에게 이마트 로그인→와인그랩 열기 및 필요한 성인인증/픽업점 선택 안내를 전달했다. 실제 가격 반영 완료로 보고하지 않는다.
+
 - 2026-10-26: 로컬 PC ADB 기기0대. 사용자 응답으로 운영 서버 USB 연결 확인.
 - 운영 서버 DESKTOP-FIRUT4I에서 Samsung USB 및 ADB Interface 정상 감지. 알려진 경로에 ADB 없어서 `C:/services/Bit-O/tools/whisky-adb/platform-tools`에 기존 SDK 실행파일을 설치했다.
 - 실제 기기 `R39N505CG5Z`는 unauthorized. 사용자에게 휴대폰 USB 디버깅 항상 허용 요청 전달. 아직 실제 수집/DB 쓰기0건.
