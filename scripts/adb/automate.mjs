@@ -64,6 +64,11 @@ async function main() {
     const rows = JSON.parse(fs.readFileSync(observations, 'utf8'));
     report.observed = rows.filter(r => r.status === 'observed').length;
     report.collection_failures = rows.filter(r => r.status !== 'observed').map(r => ({ queue_id: r.queue_id, reason: r.reason }));
+    report.unattempted = queue.length - new Set(rows.map(row => row.queue_id)).size;
+    if (rows.some(row => row.reason === 'emart_login_required')) {
+      report.status = 'needs_user_action'; report.error = 'emart_login_required';
+      process.exitCode = 1; return;
+    }
     const applyStatus = child('apply-link-prices', [observations, '--strict-identity', ...(report.apply ? ['--apply'] : [])], 20);
     if (applyStatus !== 0) throw Error('price_apply_failed_see_receipt');
     const receiptFile = fs.readdirSync(runDir).filter(f => /^price-apply-\d+\.json$/.test(f)).sort().at(-1);
