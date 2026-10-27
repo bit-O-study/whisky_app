@@ -24,15 +24,15 @@ export async function submitLogin() {
     const { adb, serial, run } = device();
     const ui = () => {
       // Stream XML into process memory: no credential-bearing XML/screenshot file.
-      const xml = run(['shell', 'uiautomator', 'dump', '/proc/self/fd/1']);
+      const xml = run(['exec-out', 'uiautomator', 'dump', '/dev/tty']);
       if (!xml.includes('</hierarchy>')) throw Error('streamed_ui_unavailable');
       return activeScreen(xml).nodes.filter(n => visible(n));
     };
     const activity = run(['shell', 'dumpsys', 'activity', 'activities']);
     const resumed = activity.split(/\r?\n/).filter(line => /(?:ResumedActivity|topResumedActivity)/.test(line));
-    const trustedSdk = resumed.some(line => line.includes('com.emart.today/') && line.includes('com.nhn.android.naverlogin.ui.OAuthLoginActivity'));
-    if (!trustedSdk) throw Error('unverified_naver_login_origin');
     const nodes = ui();
+    const trustedApp = resumed.some(line => line.includes('com.emart.today/.presentation.activity.main.MainActivity'));
+    if (!trustedApp || !nodes.some(n => n.text === '이마트앱 로그인 중')) throw Error('unverified_naver_login_origin');
     const id = nodes.find(n => n['resource-id'] === 'id' && n.class === 'android.widget.EditText');
     const password = nodes.find(n => n['resource-id'] === 'pw' && n.password === 'true');
     const button = nodes.find(n => n['resource-id'] === 'loginBtn_column' && n.text === '로그인' && n.clickable === 'true');
