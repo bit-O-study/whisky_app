@@ -1,5 +1,13 @@
 # 등록 링크 정기 가격 갱신
 
+## GitHub 수동 실행
+
+운영 PC 직접 연결이 안 될 때는 `Registered ADB prices` 워크플로를 main에서 실행한다. `inspect`는 기기·앱·DB 연결 검사, `collect`는 DB 변경 없는 실제 상세 수집·검증, `apply`는 재수집 후 검증 통과 가격만 반영한다. 위스키 전용 `bito-whisky_app` 실행기와 기존 프로젝트 runtime.env를 사용하며 다른 프로젝트 권한을 변경하지 않는다.
+
+이미 실행 중인 localhost:5037 ADB 연결이 있어야 시작한다. 공식 Android platform-tools를 실행기 임시 폴더에 준비하고 고정 기기를 사용한다. `adb-price-summary-<run>` 아티팩트에 관측·반영 수, 검토 사유, DB 재조회 결과만 7일간 보관한다. 원본 UI 텍스트와 DB 백업은 업로드하지 않는다. Windows의 04시 예약과 동시에 수동 수집하지 않는다.
+
+2026-10-27 검사에서 USB 승인은 `device`, 앱 설치 및 기존 설정 접근은 정상, 지원 링크39개를 확인했다. 어드민 실행기는 위스키 예약 작업/결과 파일을 읽을 권한이 없어 별도 진단의 권한 오류를 정상적인 접근 제한으로 보고한다.
+
 `node scripts/adb/automate.mjs --check`는 승인된 ADB 기기, 이마트 앱 설치, DB 연결과 등록 링크를 확인한다. 실제 화면 수집은 `node scripts/adb/automate.mjs`, 검증 통과 가격 반영은 `node scripts/adb/automate.mjs --apply`다. `ADB_PATH`, `ADB_SERIAL`, `WHISKY_ENV_FILE`로 실행 환경을 지정한다. 기기가 여러 대면 serial 지정이 필수다.
 
 - 실행마다 DB `liquor_url`을 페이지 단위로 전부 읽는다. EMART/EMART_TRADERS의 공식 앱 링크만 큐에 포함하며 동일 상품·판매처·URL 중복을 제거한다. SSG 등 웹 채널은 지원 대상이 아니며 기존 다른 크롤러에는 영향을 주지 않는다.

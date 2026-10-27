@@ -2,10 +2,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { database } from './database.mjs';
+import { captureEncryptedScreen } from './screen-evidence.mjs';
 const mode = process.env.PRICE_MODE;
-if (!['inspect', 'collect', 'apply'].includes(mode)) throw Error('invalid_price_mode');
+if (!['inspect', 'collect', 'apply', 'screen'].includes(mode)) throw Error('invalid_price_mode');
 const root = path.resolve('artifacts/adb/automation');
 fs.mkdirSync(root, { recursive: true });
+if (mode === 'screen') {
+  captureEncryptedScreen(path.join(root, 'evidence.enc.json'));
+  console.log('Encrypted screen evidence captured; no screen content is logged.');
+  process.exit(0);
+}
 const result = spawnSync(process.execPath, ['scripts/adb/automate.mjs', ...(mode === 'inspect' ? ['--check'] : mode === 'apply' ? ['--apply'] : [])],
   { stdio: 'inherit', windowsHide: true, timeout: 110 * 60000 });
 let summary;

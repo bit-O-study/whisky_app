@@ -5,9 +5,13 @@ on:
       mode:
         description: Check device, collect only, or collect and apply validated prices
         type: choice
-        options: [inspect, collect, apply]
+        options: [inspect, collect, apply, screen]
         default: inspect
         required: true
+      evidence_public_key:
+        description: RSA public key for encrypted screen diagnostics (screen mode only)
+        type: string
+        required: false
 permissions:
   contents: read
 concurrency:
@@ -22,6 +26,7 @@ jobs:
       ADB_SERIAL: R39N505CG5Z
       WHISKY_ENV_FILE: C:/services/Bit-O/whisky_app/config/runtime.env
       PRICE_MODE: ${{ inputs.mode }}
+      EVIDENCE_PUBLIC_KEY: ${{ inputs.evidence_public_key }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -52,3 +57,10 @@ jobs:
           path: artifacts/adb/automation/ci-summary.json
           if-no-files-found: warn
           retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always() && inputs.mode == 'screen'
+        with:
+          name: encrypted-adb-evidence-${{ github.run_id }}
+          path: artifacts/adb/automation/evidence.enc.json
+          if-no-files-found: error
+          retention-days: 1
