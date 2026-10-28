@@ -4,7 +4,7 @@ import os from 'node:os';
 import { createHash } from 'node:crypto';
 import { device } from './device.mjs';
 import { detailAccessIssue, recoverExistingSession } from './detail-access.mjs';
-import { activeScreen, visible } from './winegrab-parser.mjs';
+import { activeScreen, parseNodes, visible } from './winegrab-parser.mjs';
 import { identityName, volumeFromName } from './validate.mjs';
 import { listedPrice, pickupState } from './price-details.mjs';
 
@@ -53,7 +53,12 @@ async function readProduct(uri, source) {
     run(['shell','am','start','-a','android.intent.action.VIEW','-d',"'"+uri+"'",'-p','com.emart.today']);
     await sleep(2200);
   };
-  const screen = async () => activeScreen(await capture()).nodes.filter(n=>visible(n));
+  const screen = async () => {
+    const xml = await capture();
+    // The app's provider selector is native, not a product WebView.
+    try { return activeScreen(xml).nodes.filter(n=>visible(n)); }
+    catch { return parseNodes(xml).filter(n=>visible(n)); }
+  };
   await open();
   let last;
   for(let attempt=0;attempt<3;attempt++) {

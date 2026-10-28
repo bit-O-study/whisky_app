@@ -31,3 +31,29 @@ test('ordinary product pages do not trigger session interaction', async () => {
   const nodes = [{ text: '상품 정보' }];
   assert.equal(await recoverExistingSession(nodes, { tap: () => assert.fail(), capture: () => assert.fail(), reopen: () => assert.fail() }), nodes);
 });
+
+test('native EMART login selector restores cached Naver session then reopens requested product', async () => {
+  const provider = { text: '네이버', clickable: 'true' };
+  const screens = [
+    [provider, { class: 'android.widget.EditText', password: 'true', 'resource-id': 'emart_password' }],
+    [{ text: '홈' }], [{ text: '상품 정보' }, { text: '요청 상품' }],
+  ];
+  const taps = [];
+  let reopens = 0;
+  const result = await recoverExistingSession(gate, {
+    tap: async n => taps.push(n.text), capture: async () => screens.shift(), reopen: async () => reopens++,
+  });
+  assert.deepEqual(taps, ['로그인하기', '네이버']);
+  assert.equal(reopens, 1);
+  assert.equal(result[1].text, '요청 상품');
+});
+
+test('Naver password or consent after provider selection stops without submission', async () => {
+  for (const blocked of [[{ password: 'true', 'resource-id': 'pw' }], [{ text: '동의하고 계속하기' }]]) {
+    let taps = 0;
+    await assert.rejects(recoverExistingSession([{ text: '네이버', clickable: 'true' }], {
+      tap: async () => taps++, capture: async () => blocked, reopen: async () => assert.fail('blocked'),
+    }), /emart_login_required/);
+    assert.equal(taps, 1);
+  }
+});
