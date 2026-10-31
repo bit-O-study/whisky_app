@@ -1,6 +1,6 @@
 import { createBrowserBundle } from '../core/browser.js';
 import { nowStamp, writeJsonArtifact, writeTextArtifact } from '../core/io.js';
-import { lotteonCode, parseProductIds, sendObservations } from '../core/daily-lotteon.js';
+import { CATALOG_URL, lotteonCode, parseProductIds, sendObservations } from '../core/daily-lotteon.js';
 import { crawlLotteonKeyword, LotteonAccessBlocked } from '../sources/lotteon.js';
 
 interface Item { id: number; name: string; volume: number; vendors: { source: string; product_url: string }[] }
@@ -16,7 +16,7 @@ async function main() {
   const items: Item[] = [];
   for (let page = 0; ; page++) {
     if (page >= 100) throw new Error('Catalog pagination exceeded limit');
-    const response = await fetch(`https://whisky-app-vert.vercel.app/api/liquors?page=${page}&size=100`, { signal: AbortSignal.timeout(30000) });
+    const response = await fetch(`${CATALOG_URL}?page=${page}&size=100`, { signal: AbortSignal.timeout(30000) });
     if (!response.ok) throw new Error(`Catalog failed: ${response.status}`);
     const result = await response.json() as { items: Item[]; hasNext: boolean };
     items.push(...result.items);

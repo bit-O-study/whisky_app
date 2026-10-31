@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { lotteonCode, parseProductIds, sendObservations, INGEST_URL } from '../dist/core/daily-lotteon.js';
+import { lotteonCode, parseProductIds, sendObservations, INGEST_URL, OIDC_AUDIENCE, CATALOG_URL } from '../dist/core/daily-lotteon.js';
 test('retry IDs are explicit positive safe integers', () => {
   assert.equal(parseProductIds(''), null);
   assert.deepEqual([...parseProductIds('917,918,917')], [917,918]);
@@ -23,7 +23,9 @@ test('requests audience scoped token and sends it only to fixed ingest endpoint'
   };
   try {
     assert.equal(await sendObservations([{ liquorId: 1 }], mock), 1);
-    assert.equal(new URL(calls[0].url).searchParams.get('audience'), INGEST_URL);
+    assert.equal(new URL(calls[0].url).searchParams.get('audience'), OIDC_AUDIENCE);
+    assert.equal(INGEST_URL, 'https://whisky.helthssu.co.kr/api/internal/lotteon-ingest');
+    assert.equal(new URL(CATALOG_URL).origin, new URL(INGEST_URL).origin);
     assert.equal(calls[1].url, INGEST_URL);
     assert.equal(calls[1].options.redirect, 'error');
     assert.equal(calls[1].options.headers.Authorization, 'Bearer signed-token');

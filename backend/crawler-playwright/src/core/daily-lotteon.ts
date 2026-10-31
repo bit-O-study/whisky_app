@@ -1,4 +1,8 @@
-export const INGEST_URL = 'https://whisky-app-vert.vercel.app/api/internal/lotteon-ingest';
+export const CATALOG_URL = 'https://whisky.helthssu.co.kr/api/liquors';
+export const INGEST_URL = 'https://whisky.helthssu.co.kr/api/internal/lotteon-ingest';
+// A token audience is an identity contract, not a network destination. Preserve
+// the audience accepted by the deployed verifier while moving both HTTP routes.
+export const OIDC_AUDIENCE = 'https://whisky-app-vert.vercel.app/api/internal/lotteon-ingest';
 export function parseProductIds(raw: string): Set<number> | null {
   if (!raw) return null;
   if (!/^[1-9]\d*(,[1-9]\d*)*$/.test(raw)) throw new Error('Invalid product IDs');
@@ -18,7 +22,7 @@ export async function sendObservations(observations: unknown[], transport: typeo
   const requestToken = process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
   if (!requestUrl || !requestToken) throw new Error('GitHub Actions OIDC permission is required');
   const url = new URL(requestUrl);
-  url.searchParams.set('audience', INGEST_URL);
+  url.searchParams.set('audience', OIDC_AUDIENCE);
   const identity = await transport(url, { headers: { Authorization: `Bearer ${requestToken}` }, redirect: 'error', signal: AbortSignal.timeout(30000) });
   if (!identity.ok) throw new Error(`OIDC request failed: ${identity.status}`);
   const token = await identity.json() as { value?: string };
