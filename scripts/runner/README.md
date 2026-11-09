@@ -14,3 +14,5 @@ GitHub Actions가 매일 09:17 KST에 작업을 요청하고 사용자 PC의 전
 - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/runner/Test-LotteonJobGuard.ps1`: 허용/거부 8가지 검증.
 - GitHub main에서 limit=3으로 실제 수집 및 OIDC 저장을 확인한 뒤 전체 작업을 실행한다.
 - Windows 예약 작업 `WhiskyLotteonRunner`를 중지/사용 안 함으로 설정하면 PC 실행기를 멈출 수 있다. 완전 제거 시 GitHub 저장소 Settings → Actions → Runners에서 전용 실행기도 제거한다. 공식 실행기 폴더의 자격증명·로그는 저장소에 커밋하지 않는다.
+
+Windows에서 작업 래퍼를 강제 중지해도 자식 Listener가 남을 수 있다. 복구 스크립트는 같은 설치 폴더의 Listener가 이미 있으면 중복 시작하지 않는다. 완전히 중지할 때는 예약을 비활성화한 다음 해당 설치 폴더의 Listener까지 종료됐는지 확인한다.
