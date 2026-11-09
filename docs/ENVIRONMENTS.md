@@ -28,7 +28,7 @@
   보조 운영 기능
 
 ## Deployment Notes
-- 롯데온 일일 작업: `.github/workflows/lotteon-daily.yml`, 매일 09:00 KST. Playwright → GitHub OIDC → 운영 Next.js 내부 적재 API → 서버 전용 RPC. GitHub에 DB 시크릿을 추가하지 않는다. 웹서버의 기존 Supabase 서버 키를 사용한다. 기본 브랜치 반영·운영 배포·첫 수동 실행 성공으로 활성화를 확인한다.
+- 롯데온 일일 작업: `.github/workflows/lotteon-daily.yml`, 매일 09:17 KST. Playwright → GitHub OIDC → 운영 Next.js 내부 적재 API → 서버 전용 RPC. GitHub에 DB 시크릿을 추가하지 않는다. 웹서버의 기존 Supabase 서버 키를 사용한다. 기본 브랜치 반영·운영 배포·첫 수동 실행 성공으로 활성화를 확인한다.
 - Playwright 원자적 저장 RPC: `backend/crawler-playwright/sql/ingest_existing_liquor.sql`. 서버 역할만 실행할 수 있으며 2026-10-23 사용자 승인 후 운영 DB에 반영했다.
 - Next.js는 현재 Vercel 배포를 전제로 한 메타데이터와 계측 설정이 일부 반영돼 있다.
 - crawler와 backend/api는 로컬/서버 환경에서 별도 프로세스로 실행된다.

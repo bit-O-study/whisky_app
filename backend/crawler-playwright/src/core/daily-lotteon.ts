@@ -3,6 +3,35 @@ export const INGEST_URL = 'https://whisky.helthssu.co.kr/api/internal/lotteon-in
 // A token audience is an identity contract, not a network destination. Preserve
 // the audience accepted by the deployed verifier while moving both HTTP routes.
 export const OIDC_AUDIENCE = 'https://whisky-app-vert.vercel.app/api/internal/lotteon-ingest';
+export class RetryableHttpError extends Error {}
+
+export function checkHttp(response: Response, stage: string, refreshAuth = false): void {
+  if (response.ok) return;
+  const message = `${stage} failed: ${response.status}`;
+  if ([408, 429, 500, 502, 503, 504].includes(response.status) || (refreshAuth && response.status === 401)) {
+    throw new RetryableHttpError(message);
+  }
+  throw new Error(message);
+}
+
+export async function retryTransient<T>(
+  stage: string,
+  operation: () => Promise<T>,
+  wait = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms)),
+): Promise<T> {
+  for (const delay of [2000, 8000]) {
+    try {
+      return await operation();
+    } catch (error) {
+      if (!(error instanceof RetryableHttpError ||
+        (error instanceof Error && (error.name === 'TimeoutError' ||
+          (error instanceof TypeError && error.message === 'fetch failed'))))) throw error;
+      console.log(`RETRY ${stage}: ${error.message}; waiting ${delay}ms`);
+      await wait(delay);
+    }
+  }
+  return operation();
+}
 export function parseProductIds(raw: string): Set<number> | null {
   if (!raw) return null;
   if (!/^[1-9]\d*(,[1-9]\d*)*$/.test(raw)) throw new Error('Invalid product IDs');
@@ -24,13 +53,13 @@ export async function sendObservations(observations: unknown[], transport: typeo
   const url = new URL(requestUrl);
   url.searchParams.set('audience', OIDC_AUDIENCE);
   const identity = await transport(url, { headers: { Authorization: `Bearer ${requestToken}` }, redirect: 'error', signal: AbortSignal.timeout(30000) });
-  if (!identity.ok) throw new Error(`OIDC request failed: ${identity.status}`);
+  checkHttp(identity, 'OIDC request');
   const token = await identity.json() as { value?: string };
   if (!token.value) throw new Error('OIDC token missing');
   const saved = await transport(INGEST_URL, { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(90000),
     headers: { Authorization: `Bearer ${token.value}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ observations }) });
-  if (!saved.ok) throw new Error(`Price save failed: ${saved.status}`);
+  checkHttp(saved, 'Price save', true);
   const result = await saved.json() as { updated?: number };
   if (result.updated !== observations.length) throw new Error('Saved count does not match observations');
   return result.updated;

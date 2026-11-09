@@ -1,6 +1,6 @@
 import { createBrowserBundle } from '../core/browser.js';
 import { nowStamp, writeJsonArtifact, writeTextArtifact } from '../core/io.js';
-import { CATALOG_URL, lotteonCode, parseProductIds, sendObservations } from '../core/daily-lotteon.js';
+import { CATALOG_URL, checkHttp, lotteonCode, parseProductIds, retryTransient, sendObservations } from '../core/daily-lotteon.js';
 import { crawlLotteonKeyword, LotteonAccessBlocked } from '../sources/lotteon.js';
 
 interface Item { id: number; name: string; volume: number; vendors: { source: string; product_url: string }[] }
@@ -16,9 +16,11 @@ async function main() {
   const items: Item[] = [];
   for (let page = 0; ; page++) {
     if (page >= 100) throw new Error('Catalog pagination exceeded limit');
-    const response = await fetch(`${CATALOG_URL}?page=${page}&size=100`, { signal: AbortSignal.timeout(30000) });
-    if (!response.ok) throw new Error(`Catalog failed: ${response.status}`);
-    const result = await response.json() as { items: Item[]; hasNext: boolean };
+    const result = await retryTransient(`catalog page=${page}`, async () => {
+      const response = await fetch(`${CATALOG_URL}?page=${page}&size=100`, { signal: AbortSignal.timeout(30000) });
+      checkHttp(response, 'Catalog');
+      return await response.json() as { items: Item[]; hasNext: boolean };
+    });
     items.push(...result.items);
     if (!result.hasNext) break;
   }
@@ -35,7 +37,7 @@ async function main() {
     for (const item of selected) {
       try {
         const keyword = /\d\s*(?:ml|l|리터)\b/i.test(item.name) ? item.name : `${item.name} ${item.volume}ml`;
-        const { result, html } = await crawlLotteonKeyword(page, keyword);
+        const { result, html } = await retryTransient(`search id=${item.id}`, () => crawlLotteonKeyword(page, keyword));
         const best = result.bestMatch;
         const known = item.vendors.find(v => v.source === 'LOTTEON')!;
         if (!best || lotteonCode(best.productUrl) !== lotteonCode(known.product_url)) {
@@ -48,14 +50,19 @@ async function main() {
         const observation = { liquorId: item.id, currentPrice: best.currentPrice,
           originalPrice: Math.max(best.originalPrice, best.currentPrice), productUrl: best.productUrl,
           imageUrl: best.imageUrl, observedAt: result.collectedAt };
-        if (!dryRun) updated += await sendObservations([observation]);
+        // Keep the observation timestamp fixed across POST retries so the DB can deduplicate history.
+        if (!dryRun) updated += await retryTransient(`save id=${item.id}`, () => sendObservations([observation]));
         results.push({ observation, status: dryRun ? 'dry-run' : 'saved' });
         console.log(`${dryRun ? 'DRY_RUN' : 'SAVED'} id=${item.id} price=${best.currentPrice}`);
       } catch (error) {
         failures++;
         results.push({ liquorId: item.id, status: 'failed', error: error instanceof Error ? error.message : String(error) });
         console.error(`FAILED id=${item.id}: ${error instanceof Error ? error.message : String(error)}`);
-        await writeTextArtifact(`daily/error-${item.id}.html`, await page.content());
+        try {
+          await writeTextArtifact(`daily/error-${item.id}.html`, await page.content());
+        } catch {
+          console.warn(`Diagnostic HTML unavailable for id=${item.id}`);
+        }
         if (error instanceof LotteonAccessBlocked) throw error;
       }
     }
