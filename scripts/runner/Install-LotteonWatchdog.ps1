@@ -5,7 +5,7 @@ if (!(Test-Path -LiteralPath (Join-Path $runner '.runner'))) { throw 'Registered
 $base = Split-Path -Parent $runner
 $state = Join-Path $base 'lotteon-daily-state'
 New-Item -ItemType Directory -Force -Path $state | Out-Null
-foreach ($file in @('Get-LotteonCatchupDecision.ps1', 'Invoke-LotteonDailyWatchdog.ps1')) {
+foreach ($file in @('Get-LotteonCatchupDecision.ps1', 'Invoke-LotteonDailyWatchdog.ps1', 'Run-LotteonWatchdogTask.ps1')) {
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot $file) -Destination (Join-Path $base $file) -Force
 }
 $taskName = 'WhiskyLotteonDailyWatchdog'
@@ -14,7 +14,7 @@ if ($existing) {
     Export-ScheduledTask -TaskName $taskName | Set-Content -LiteralPath (Join-Path $state ('task-backup-' + (Get-Date -Format 'yyyyMMddHHmmss') + '.xml')) -Encoding Unicode
 }
 $account = [Security.Principal.WindowsIdentity]::GetCurrent().Name
-$script = Join-Path $base 'Invoke-LotteonDailyWatchdog.ps1'
+$script = Join-Path $base 'Run-LotteonWatchdogTask.ps1'
 $action = New-ScheduledTaskAction -Execute 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' -Argument ('-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + $script + '" -StateDirectory "' + $state + '"')
 $triggers = @(
     (New-ScheduledTaskTrigger -AtLogOn -User $account),

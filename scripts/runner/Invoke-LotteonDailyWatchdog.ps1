@@ -23,9 +23,9 @@ try {
         $token = & gh auth token --user ParkSeryu
         if ($LASTEXITCODE -ne 0 -or !$token) { throw 'GitHub CLI account is not available for daily recovery' }
         $env:GH_TOKEN = $token
-        $response = (& gh api 'repos/bit-O-study/whisky_app/actions/workflows/lotteon-daily.yml/runs?branch=main&per_page=30') -join [Environment]::NewLine
+        $response = (& gh api 'repos/bit-O-study/whisky_app/actions/workflows/lotteon-daily.yml/runs?branch=main&per_page=30' --jq '[.workflow_runs[]|{id,event,status,conclusion,updated_at,created_at}]') -join [Environment]::NewLine
         if ($LASTEXITCODE -ne 0) { throw 'Cannot verify workflow state; refusing to dispatch blindly' }
-        $runs = ($response | ConvertFrom-Json).workflow_runs
+        $runs = @($response | ConvertFrom-Json)
         $decision = Get-LotteonCatchupDecision -Now $now -Success $success -Runs @($runs) -LastDispatch $lastDispatch
         if ($decision.Dispatch -and !$DryRun) {
             $inputFile = Join-Path $StateDirectory ('dispatch-' + [guid]::NewGuid().ToString('N') + '.json')
@@ -42,7 +42,7 @@ try {
         }
     }
     $line = $now.ToString('o') + ' ' + $decision.Reason + ' dryRun=' + $DryRun
-    Add-Content -LiteralPath (Join-Path $StateDirectory ('watchdog-' + $day + '.log')) -Value $line
+    Add-Content -LiteralPath (Join-Path $StateDirectory ('watchdog-' + $day + '.log')) -Encoding utf8 -Value $line
     Write-Output $line
     if ($decision.Reason -eq 'daily-attempt-limit') { exit 1 }
 } finally {
