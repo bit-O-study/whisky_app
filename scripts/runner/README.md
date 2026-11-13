@@ -16,3 +16,10 @@ GitHub Actions가 매일 09:17 KST에 작업을 요청하고 사용자 PC의 전
 - Windows 예약 작업 `WhiskyLotteonRunner`를 중지/사용 안 함으로 설정하면 PC 실행기를 멈출 수 있다. 완전 제거 시 GitHub 저장소 Settings → Actions → Runners에서 전용 실행기도 제거한다. 공식 실행기 폴더의 자격증명·로그는 저장소에 커밋하지 않는다.
 
 Windows에서 작업 래퍼를 강제 중지해도 자식 Listener가 남을 수 있다. 복구 스크립트는 같은 설치 폴더의 Listener가 이미 있으면 중복 시작하지 않는다. 완전히 중지할 때는 예약을 비활성화한 다음 해당 설치 폴더의 Listener까지 종료됐는지 확인한다.
+
+## 예약 이벤트 누락 보완
+`Install-LotteonWatchdog.ps1 -RunnerDirectory <설치 폴더>`는 현재 사용자 로그온 및 5분 반복 점검 작업 `WhiskyLotteonDailyWatchdog`를 설치한다. 09:30 KST 이후 오늘의 전체 수집 성공 기록과 GitHub 상태를 읽고 누락 시 같은 main 전체 작업을 호출한다. 진행/대기 작업이 있으면 기다린다. 호출 간 15분, 하루 최대 3회이며 GitHub 조회 실패 시 무작정 호출하지 않는다.
+
+성공 기록은 실행기 상위의 lotteon-daily-state/success.json에 두며 전체·쓰기·저장 양수·오류 0인 실행만 만든다. 표본 실행은 오늘 완료로 취급하지 않는다. 늦은 GitHub schedule과 자동 보완 호출은 이미 오늘 전체 성공 기록이 있으면 중복 수집을 생략한다. 사용자 수동 전체 실행은 기본적으로 계속 허용한다.
+
+점검 로그와 요청 상태도 같은 디렉터리에 보관한다. 설치 스크립트는 체크아웃 밖에 복사하고 GitHub 토큰을 파일에 저장하지 않는다. 점검 중지는 WhiskyLotteonDailyWatchdog 예약 작업을 사용 안 함으로 설정한다. 실행기 중지는 별도로 WhiskyLotteonRunner를 사용 안 함으로 설정한다.

@@ -2,6 +2,7 @@ import { createBrowserBundle } from '../core/browser.js';
 import { nowStamp, writeJsonArtifact, writeTextArtifact } from '../core/io.js';
 import { CATALOG_URL, checkHttp, lotteonCode, parseProductIds, retryTransient, sendObservations } from '../core/daily-lotteon.js';
 import { crawlLotteonKeyword, LotteonAccessBlocked } from '../sources/lotteon.js';
+import { hasTodayDailySuccess, recordDailySuccess } from '../core/daily-receipt.js';
 
 interface Item { id: number; name: string; volume: number; vendors: { source: string; product_url: string }[] }
 async function main() {
@@ -13,6 +14,13 @@ async function main() {
   const idsIndex = args.indexOf('--ids');
   if (idsIndex >= 0 && args[idsIndex + 1] === undefined) throw new Error('Product IDs are required after --ids');
   const ids = parseProductIds(idsIndex < 0 ? '' : args[idsIndex + 1]);
+  const fullRun = !ids && limit === 0;
+  const successFile = process.env.LOTTEON_DAILY_SUCCESS_FILE;
+  const skipIfUpdated = process.env.GITHUB_EVENT_NAME === 'schedule' || args.includes('--skip-if-updated');
+  if (skipIfUpdated && fullRun && !dryRun && await hasTodayDailySuccess(successFile)) {
+    console.log('LOTTEON_DAILY_ALREADY_UPDATED today has a successful full run');
+    return;
+  }
   const items: Item[] = [];
   for (let page = 0; ; page++) {
     if (page >= 100) throw new Error('Catalog pagination exceeded limit');
@@ -72,6 +80,7 @@ async function main() {
     await browser.close();
   }
   if (failures || (!dryRun && !updated)) throw new Error(`Daily crawl failed: updated=${updated}, failures=${failures}`);
+  await recordDailySuccess(successFile, { fullRun, dryRun, updated, failures, runId: process.env.GITHUB_RUN_ID ?? '' });
   console.log(`LOTTEON_DAILY_SUCCESS updated=${updated} dryRun=${dryRun} targets=${selected.length}`);
 }
 main().catch((error: unknown) => { console.error(error instanceof Error ? error.message : String(error)); process.exitCode = 1; });
