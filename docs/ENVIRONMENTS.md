@@ -65,3 +65,6 @@
 ## Windows server
 
 See [deployment operations](setup/windows-server.md). GitHub Actions builds main; the dedicated non-administrator runner deploys the resulting artifact. Existing crawler runner remains unchanged.
+
+## 롯데온 예약 누락 점검
+09:17 KST GitHub 예약은 UTC cron으로 명시한다. PC의 WhiskyLotteonDailyWatchdog가 09:30 이후 5분마다 전체 완료 기록과 GitHub 실행 상태를 확인하고 누락 시 main 전체 작업을 요청한다. 진행 중 작업·당일 성공 기록·15분 요청 간격·하루 최대 3회 제한으로 중복을 방지한다. 설치/중지 방법은 scripts/runner/README.md를 따른다.

@@ -2,10 +2,13 @@ name: Lotteon Daily Crawl
 
 on:
   schedule:
-    - cron: '17 9 * * *'
-      timezone: 'Asia/Seoul'
+    - cron: '17 0 * * *' # 09:17 Asia/Seoul, expressed in UTC
   workflow_dispatch:
     inputs:
+      skip_if_updated:
+        description: 'Skip automatic catch-up when today already has a successful full run'
+        default: false
+        type: boolean
       ids:
         description: 'Retry product IDs, comma-separated (empty = all)'
         default: ''
@@ -62,6 +65,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/runner/Test-LotteonJobGuard.ps1
+      - run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/runner/Test-LotteonWatchdog.ps1
 
   crawl:
     if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
@@ -79,6 +83,7 @@ jobs:
       CRAWL_IDS: ${{ github.event.inputs.ids || '' }}
       DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
       CRAWL_LIMIT: ${{ github.event.inputs.limit || '0' }}
+      SKIP_IF_UPDATED: ${{ github.event.inputs.skip_if_updated || 'false' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -90,16 +95,19 @@ jobs:
       - name: Crawl existing products and save with workflow identity
         run: |
           $ErrorActionPreference = 'Continue'
+          $stateBase = Split-Path (Split-Path (Split-Path $env:RUNNER_TEMP -Parent) -Parent) -Parent
+          $env:LOTTEON_DAILY_SUCCESS_FILE = Join-Path $stateBase 'lotteon-daily-state\success.json'
           $arguments = @('--limit', $env:CRAWL_LIMIT)
           if ($env:CRAWL_IDS) { $arguments += @('--ids', $env:CRAWL_IDS) }
           if ($env:DRY_RUN -eq 'true') { $arguments += '--dry-run' }
+          if ($env:SKIP_IF_UPDATED -eq 'true') { $arguments += '--skip-if-updated' }
           node dist/cli/daily-lotteon.js @arguments 2>&1 | Tee-Object -FilePath lotteon-daily.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Execution summary
         if: always()
         run: |
           if (Test-Path lotteon-daily.log) {
-            Get-Content lotteon-daily.log | Select-String 'LOTTEON_DAILY_SUCCESS|SAVED|SKIPPED|FAILED' | ForEach-Object { $_.Line } | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+            Get-Content lotteon-daily.log | Select-String 'LOTTEON_DAILY_(SUCCESS|ALREADY_UPDATED)|SAVED|SKIPPED|FAILED' | ForEach-Object { $_.Line } | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
           }
       - uses: actions/upload-artifact@v4
         if: always()
